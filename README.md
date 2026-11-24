@@ -264,6 +264,10 @@ NODE_ENV=production npm start  # Serve production dist/ + /api/* via server.ts
 ```
 
 ### Netlify Deployment
+- **Netlify project**: `nexoradesignapp`
+- **Primary domain**: `https://nexora.paguire.com` (CNAME `nexora` → `nexoradesignapp.netlify.app`, managed in Squarespace DNS for `paguire.com`)
+- **Legacy URL**: `nexoradesignapp.netlify.app` keeps serving and 301-redirects to the primary domain once it is set as primary in Netlify.
+
 Configured out of the box via `netlify.toml`:
 - **Build command**: `npm run build`
 - **Publish directory**: `dist`
@@ -271,6 +275,7 @@ Configured out of the box via `netlify.toml`:
 - **Redirects**: `/api/*` → `/.netlify/functions/api/:splat` (`200`), `/*` → `/index.html` (`200`)
 - **PWA Cache Headers**: `no-cache, no-store, must-revalidate` on `/sw.js` and `/registerSW.js`; immutable 1-year caching on `/assets/*`.
 - Set `GEMINI_API_KEY` in Netlify Site Environment Variables to enable the optional AI Assist routes in production.
+- Canonical URL, `og:*` and `twitter:*` tags in `index.html`, plus `public/robots.txt` and `public/sitemap.xml`, all point at `https://nexora.paguire.com`. Update all four if the primary domain ever changes.
 
 ---
 
