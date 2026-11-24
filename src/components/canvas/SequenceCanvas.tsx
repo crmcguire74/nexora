@@ -51,6 +51,7 @@ export const SequenceCanvas: React.FC<SequenceCanvasProps> = ({
   onDropLibraryItemDone,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastDropAtRef = useRef(0);
   const seq = doc.sequence!;
   const theme = DIAGRAM_THEMES[doc.settings.theme] ?? DIAGRAM_THEMES.modern;
   const isBlueprint = doc.settings.theme === 'blueprint';
@@ -169,7 +170,9 @@ export const SequenceCanvas: React.FC<SequenceCanvasProps> = ({
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) {
+      const targetTag = (e.target as HTMLElement)?.tagName;
+      if (e.code === 'Space' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(targetTag)) {
+        e.preventDefault();
         setSpacePressed(true);
       }
       if (e.key === 'Escape') {
@@ -449,16 +452,22 @@ export const SequenceCanvas: React.FC<SequenceCanvasProps> = ({
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const slot = dropSlotIndex ?? participants.length;
     setDropSlotIndex(null);
     if (!draggingLibraryItem || readOnly) return;
+    const now = Date.now();
+    if (now - lastDropAtRef.current < 150) return;
+    lastDropAtRef.current = now;
+    const droppedItem = draggingLibraryItem;
+    onDropLibraryItemDone();
 
     const newP: SequenceParticipant = {
       id: makeId('p'),
-      name: draggingLibraryItem.label,
-      role: draggingLibraryItem.participantRole ?? 'microservice',
-      subtitle: draggingLibraryItem.subtitle,
-      color: draggingLibraryItem.stroke,
+      name: droppedItem.label,
+      role: droppedItem.participantRole ?? 'microservice',
+      subtitle: droppedItem.subtitle,
+      color: droppedItem.stroke,
       order: slot,
     };
 
@@ -468,7 +477,6 @@ export const SequenceCanvas: React.FC<SequenceCanvasProps> = ({
     onUpdateDoc({ ...doc, sequence: { ...seq, participants: normalized } }, true);
     onSelectParticipants([newP.id]);
     onSelectMessages([]);
-    onDropLibraryItemDone();
   };
 
   const isModern = seq.viewMode === 'modern';
@@ -490,6 +498,12 @@ export const SequenceCanvas: React.FC<SequenceCanvasProps> = ({
         ref={svgRef}
         className="w-full h-full block"
         onMouseDown={(e) => {
+          if (
+            document.activeElement instanceof HTMLElement &&
+            !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)
+          ) {
+            document.activeElement.blur();
+          }
           if (e.button === 1 || spacePressed) {
             e.preventDefault();
             setPanState({ startX: e.clientX, startY: e.clientY, vpX: viewport.x, vpY: viewport.y });

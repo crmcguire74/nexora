@@ -21,7 +21,10 @@ import { EditorWorkspace } from './components/editor/EditorWorkspace';
 import { OfflineIndicator } from './components/pwa/OfflineIndicator';
 import { PWAInstallModal, PWAUninstallModal } from './components/pwa/PWAInstallButton';
 import { WorkspaceSettingsModal } from './components/modals/WorkspaceSettingsModal';
+import { SplashScreen } from './components/modals/SplashScreen';
 import { NexoraBrandLogo } from './components/icons/ShapeIcons';
+
+const SPLASH_HIDE_KEY = 'nexora_hide_splash';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -44,8 +47,23 @@ export default function App() {
     handle: DesktopFileHandle | null;
     fileName: string | null;
   }>({ handle: null, fileName: null });
+  const [activeIsNewDesign, setActiveIsNewDesign] = useState(false);
   const [editorSession, setEditorSession] = useState(0);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [hideSplashOnStartup, setHideSplashOnStartup] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(SPLASH_HIDE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [splashOpen, setSplashOpen] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(SPLASH_HIDE_KEY) !== 'true';
+    } catch {
+      return true;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -116,6 +134,7 @@ export default function App() {
     const doc = createBlankDiagram(type);
     await handleSaveDiagram(doc);
     setActiveDesktopFile({ handle: null, fileName: null });
+    setActiveIsNewDesign(true);
     setEditorSession((s) => s + 1);
     setActiveDiagram(doc);
   };
@@ -123,6 +142,7 @@ export default function App() {
   const handleUseTemplate = async (doc: DiagramDocument) => {
     await handleSaveDiagram(doc);
     setActiveDesktopFile({ handle: null, fileName: null });
+    setActiveIsNewDesign(true);
     setEditorSession((s) => s + 1);
     setActiveDiagram(doc);
   };
@@ -134,6 +154,7 @@ export default function App() {
   ) => {
     await handleSaveDiagram(doc);
     setActiveDesktopFile({ handle, fileName });
+    setActiveIsNewDesign(false);
     setEditorSession((s) => s + 1);
     setActiveDiagram(doc);
   };
@@ -170,6 +191,15 @@ export default function App() {
     saveLocalProfile(next);
   };
 
+  const handleToggleHideSplash = (hide: boolean) => {
+    setHideSplashOnStartup(hide);
+    try {
+      localStorage.setItem(SPLASH_HIDE_KEY, hide ? 'true' : 'false');
+    } catch {
+      // ignore
+    }
+  };
+
   if (loading) {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center gap-3 bg-[#E8EEF4] dark:bg-[#050810]">
@@ -189,6 +219,7 @@ export default function App() {
           initialDoc={activeDiagram}
           initialFileHandle={activeDesktopFile.handle}
           initialFileName={activeDesktopFile.fileName}
+          isNewDesign={activeIsNewDesign}
           darkMode={darkMode}
           onToggleDarkMode={() => setDarkMode((d) => !d)}
           profile={profile}
@@ -211,6 +242,7 @@ export default function App() {
           onImportNewDiagram={async (imported) => {
             await handleSaveDiagram(imported);
             setActiveDesktopFile({ handle: null, fileName: null });
+            setActiveIsNewDesign(false);
             setEditorSession((s) => s + 1);
             setActiveDiagram(imported);
           }}
@@ -221,6 +253,14 @@ export default function App() {
           onBackHome={async () => {
             setActiveDiagram(null);
             setActiveDesktopFile({ handle: null, fileName: null });
+            setActiveIsNewDesign(false);
+            await refreshLists();
+          }}
+          onDiscardAndBackHome={async (id: string) => {
+            await handleDeleteDiagram(id);
+            setActiveDiagram(null);
+            setActiveDesktopFile({ handle: null, fileName: null });
+            setActiveIsNewDesign(false);
             await refreshLists();
           }}
         />
@@ -234,6 +274,7 @@ export default function App() {
           profile={profile}
           onOpenDiagram={(doc) => {
             setActiveDesktopFile({ handle: null, fileName: null });
+            setActiveIsNewDesign(false);
             setEditorSession((s) => s + 1);
             setActiveDiagram(doc);
           }}
@@ -264,6 +305,22 @@ export default function App() {
         diagramCount={diagrams.length}
         customTemplateCount={customTemplates.length}
         customComponentCount={customComponents.length}
+        showSplashOnStartup={!hideSplashOnStartup}
+        onToggleShowSplashOnStartup={(show) => handleToggleHideSplash(!show)}
+        onPreviewSplash={() => {
+          setSettingsModalOpen(false);
+          setSplashOpen(true);
+        }}
+      />
+      <SplashScreen
+        open={splashOpen}
+        developerName={profile.name}
+        hideOnNextStartup={hideSplashOnStartup}
+        onToggleHideOnNextStartup={handleToggleHideSplash}
+        onUpdateDeveloperName={(name) =>
+          handleUpdateProfile({ ...profile, name })
+        }
+        onClose={() => setSplashOpen(false)}
       />
     </>
   );

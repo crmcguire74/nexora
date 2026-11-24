@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   ChevronDown,
   ChevronRight,
@@ -25,6 +25,7 @@ interface LeftLibraryPanelProps {
   recentIds: string[];
   onToggleFavorite: (id: string) => void;
   onStartDragItem: (item: LibraryItem) => void;
+  onEndDragItem?: () => void;
   onClickAddItem: (item: LibraryItem) => void;
   onAddCustomComponent: (comp: CustomComponent) => void;
   onDeleteCustomComponent: (id: string) => void;
@@ -46,6 +47,7 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
   recentIds,
   onToggleFavorite,
   onStartDragItem,
+  onEndDragItem,
   onClickAddItem,
   onAddCustomComponent,
   onDeleteCustomComponent,
@@ -60,6 +62,8 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
   const [tab, setTab] = useState<'library' | 'outline'>('library');
   const [query, setQuery] = useState('');
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const isDraggingRef = useRef(false);
+  const lastDragEndRef = useRef(0);
 
   const items = useMemo(() => getLibraryForType(doc.type), [doc.type]);
 
@@ -110,16 +114,28 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
         key={item.id}
         draggable
         onDragStart={(e) => {
+          isDraggingRef.current = true;
           e.dataTransfer.effectAllowed = 'copy';
           e.dataTransfer.setData('text/plain', item.id);
           onStartDragItem(item);
         }}
-        onClick={() => onClickAddItem(item)}
+        onDragEnd={() => {
+          isDraggingRef.current = false;
+          lastDragEndRef.current = Date.now();
+          onEndDragItem?.();
+        }}
+        onClick={(e) => {
+          if (isDraggingRef.current || Date.now() - lastDragEndRef.current < 250) return;
+          (e.currentTarget as HTMLElement).blur();
+          onClickAddItem(item);
+        }}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.repeat) return;
+          if (e.key === 'Enter') {
             e.preventDefault();
+            (e.currentTarget as HTMLElement).blur();
             onClickAddItem(item);
           }
         }}

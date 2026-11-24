@@ -22,7 +22,14 @@ import {
 } from '../../types/diagram';
 import { DIAGRAM_THEMES, PROTOCOL_STYLES, SWATCH_COLORS } from '../../engine/themes';
 import { LayoutDirection, validateDiagram } from '../../engine/layout';
-import { formatArea, formatLength } from '../../engine/geometry';
+import {
+  formatArea,
+  formatLength,
+  getDimensionInputSuffix,
+  inputValueToMeters,
+  isUSUnit,
+  metersToInputValue,
+} from '../../engine/geometry';
 import { makeId } from '../../engine/templates';
 
 interface RightPropertiesPanelProps {
@@ -602,9 +609,17 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
     if (selectedFloorItem.kind === 'furniture') {
       const f = fp.furniture.find((item) => item.id === selectedFloorItem.id);
       if (f) {
+        const unitSuffix = getDimensionInputSuffix(fp.unit);
+        const dimStep = fp.unit === 'mm' ? 50 : fp.unit === 'cm' ? 5 : 0.1;
+        const dimMin = fp.unit === 'mm' ? 300 : fp.unit === 'cm' ? 30 : isUSUnit(fp.unit) ? 1 : 0.3;
         return (
           <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
-            <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">Furniture</h3>
+            <div>
+              <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">Furniture</h3>
+              <p className="text-xs font-mono text-slate-500 tabular-nums mt-0.5">
+                {formatLength(f.width, fp.unit)} × {formatLength(f.depth, fp.unit)}
+              </p>
+            </div>
             <label className="block">
               <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Label</span>
               <input
@@ -630,12 +645,14 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
             </label>
             <div className="grid grid-cols-2 gap-2">
               <label>
-                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Width (m)</span>
+                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                  Width ({unitSuffix})
+                </span>
                 <input
                   type="number"
-                  step="0.1"
-                  min="0.3"
-                  value={f.width}
+                  step={dimStep}
+                  min={dimMin}
+                  value={metersToInputValue(f.width, fp.unit)}
                   disabled={readOnly}
                   onChange={(e) =>
                     onUpdateDoc(
@@ -644,7 +661,12 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                         floorplan: {
                           ...fp,
                           furniture: fp.furniture.map((it) =>
-                            it.id === f.id ? { ...it, width: Math.max(0.3, Number(e.target.value)) } : it
+                            it.id === f.id
+                              ? {
+                                  ...it,
+                                  width: Math.max(0.3, inputValueToMeters(Number(e.target.value), fp.unit)),
+                                }
+                              : it
                           ),
                         },
                       },
@@ -655,12 +677,14 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 />
               </label>
               <label>
-                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Depth (m)</span>
+                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                  Depth ({unitSuffix})
+                </span>
                 <input
                   type="number"
-                  step="0.1"
-                  min="0.3"
-                  value={f.depth}
+                  step={dimStep}
+                  min={dimMin}
+                  value={metersToInputValue(f.depth, fp.unit)}
                   disabled={readOnly}
                   onChange={(e) =>
                     onUpdateDoc(
@@ -669,7 +693,12 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                         floorplan: {
                           ...fp,
                           furniture: fp.furniture.map((it) =>
-                            it.id === f.id ? { ...it, depth: Math.max(0.3, Number(e.target.value)) } : it
+                            it.id === f.id
+                              ? {
+                                  ...it,
+                                  depth: Math.max(0.3, inputValueToMeters(Number(e.target.value), fp.unit)),
+                                }
+                              : it
                           ),
                         },
                       },
@@ -748,8 +777,12 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 }}
                 className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
               >
-                <option value="exterior">Exterior Wall (22 cm)</option>
-                <option value="interior">Interior Partition (14 cm)</option>
+                <option value="exterior">
+                  {isUSUnit(fp.unit) ? 'Exterior Wall (8.5 in)' : 'Exterior Wall (22 cm)'}
+                </option>
+                <option value="interior">
+                  {isUSUnit(fp.unit) ? 'Interior Partition (5.5 in)' : 'Interior Partition (14 cm)'}
+                </option>
               </select>
             </label>
           </aside>
@@ -1219,25 +1252,88 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
             Measurement System
           </div>
-          <select
-            value={doc.floorplan.unit}
-            onChange={(e) =>
-              onUpdateDoc(
-                {
-                  ...doc,
-                  floorplan: { ...doc.floorplan!, unit: e.target.value as MeasurementUnit },
-                },
-                true
-              )
-            }
-            className="w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
+          <div
+            className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-slate-100 dark:bg-[#080D16] border border-slate-200/80 dark:border-slate-800"
+            role="group"
+            aria-label="Measurement System"
           >
-            <option value="ft-in">Feet & Inches (14' 6")</option>
-            <option value="ft">Decimal Feet (14.5 ft)</option>
-            <option value="m">Meters (4.42 m)</option>
-            <option value="cm">Centimeters (442 cm)</option>
-            <option value="mm">Millimeters (4420 mm)</option>
-          </select>
+            <button
+              type="button"
+              disabled={readOnly}
+              onClick={() => {
+                if (!isUSUnit(doc.floorplan!.unit)) {
+                  onUpdateDoc(
+                    {
+                      ...doc,
+                      floorplan: { ...doc.floorplan!, unit: 'ft-in' },
+                    },
+                    true
+                  );
+                }
+              }}
+              className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                isUSUnit(doc.floorplan.unit)
+                  ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              US (Imperial)
+            </button>
+            <button
+              type="button"
+              disabled={readOnly}
+              onClick={() => {
+                if (isUSUnit(doc.floorplan!.unit)) {
+                  onUpdateDoc(
+                    {
+                      ...doc,
+                      floorplan: { ...doc.floorplan!, unit: 'm' },
+                    },
+                    true
+                  );
+                }
+              }}
+              className={`px-2.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                !isUSUnit(doc.floorplan.unit)
+                  ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              Metric
+            </button>
+          </div>
+          <label className="block">
+            <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+              Unit Precision
+            </span>
+            <select
+              value={doc.floorplan.unit}
+              disabled={readOnly}
+              onChange={(e) =>
+                onUpdateDoc(
+                  {
+                    ...doc,
+                    floorplan: { ...doc.floorplan!, unit: e.target.value as MeasurementUnit },
+                  },
+                  true
+                )
+              }
+              className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
+            >
+              {isUSUnit(doc.floorplan.unit) ? (
+                <>
+                  <option value="ft-in">Feet & Inches (14' 6")</option>
+                  <option value="ft">Decimal Feet (14.5 ft)</option>
+                </>
+              ) : (
+                <>
+                  <option value="m">Meters (4.42 m)</option>
+                  <option value="cm">Centimeters (442 cm)</option>
+                  <option value="mm">Millimeters (4420 mm)</option>
+                </>
+              )}
+            </select>
+          </label>
 
           <div className="space-y-2 pt-1">
             {(

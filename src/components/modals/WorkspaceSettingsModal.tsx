@@ -21,6 +21,9 @@ interface WorkspaceSettingsModalProps {
   diagramCount: number;
   customTemplateCount: number;
   customComponentCount: number;
+  showSplashOnStartup?: boolean;
+  onToggleShowSplashOnStartup?: (show: boolean) => void;
+  onPreviewSplash?: () => void;
 }
 
 export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
@@ -33,6 +36,9 @@ export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
   diagramCount,
   customTemplateCount,
   customComponentCount,
+  showSplashOnStartup = true,
+  onToggleShowSplashOnStartup,
+  onPreviewSplash,
 }) => {
   const { isInstalled, triggerInstall, openUninstall } = usePWAInstall();
 
@@ -88,6 +94,20 @@ export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block">
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                  Developer / Owner Name
+                </span>
+                <input
+                  type="text"
+                  value={profile.name}
+                  onChange={(e) =>
+                    onUpdateProfile({ ...profile, name: e.target.value })
+                  }
+                  className="mt-1.5 w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-[#080D16] border border-slate-300/80 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+                />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                   Workspace Name
                 </span>
                 <input
@@ -100,7 +120,7 @@ export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
                 />
               </label>
 
-              <label className="block">
+              <label className="block sm:col-span-2">
                 <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                   Active Permission Role
                 </span>
@@ -147,6 +167,40 @@ export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
               )}
             </button>
           </div>
+
+          {/* Startup Splash Screen Preference */}
+          {onToggleShowSplashOnStartup && (
+            <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                  Startup Splash Screen
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  Display the Nexora welcome splash screen when launching the application.
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <label className="inline-flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={showSplashOnStartup}
+                    onChange={(e) => onToggleShowSplashOnStartup(e.target.checked)}
+                    className="rounded border-slate-300 dark:border-slate-700 accent-teal-600"
+                  />
+                  <span>Show on startup</span>
+                </label>
+                {onPreviewSplash && (
+                  <button
+                    type="button"
+                    onClick={onPreviewSplash}
+                    className="px-3 py-1.5 rounded-lg border border-slate-300/80 dark:border-slate-700 bg-slate-50 dark:bg-[#121B2B] text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-teal-500/60 transition-colors whitespace-nowrap"
+                  >
+                    Preview
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Local Auto-Save Engine & IndexedDB Storage Overview */}
           <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 space-y-2.5">

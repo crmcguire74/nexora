@@ -347,6 +347,50 @@ export function formatArea(sqMeters: number, unit: MeasurementUnit): string {
   return `${sqMeters.toFixed(1)} m²`;
 }
 
+export function isUSUnit(unit: MeasurementUnit): boolean {
+  return unit === 'ft' || unit === 'ft-in';
+}
+
+export function getMeasurementSystem(unit: MeasurementUnit): 'us' | 'metric' {
+  return isUSUnit(unit) ? 'us' : 'metric';
+}
+
+export function getDimensionInputSuffix(unit: MeasurementUnit): string {
+  if (unit === 'ft' || unit === 'ft-in') return 'ft';
+  return unit;
+}
+
+export function metersToInputValue(meters: number, unit: MeasurementUnit): number {
+  switch (unit) {
+    case 'ft':
+    case 'ft-in':
+      return Number((meters * 3.28084).toFixed(2));
+    case 'cm':
+      return Math.round(meters * 100);
+    case 'mm':
+      return Math.round(meters * 1000);
+    case 'm':
+    default:
+      return Number(meters.toFixed(2));
+  }
+}
+
+export function inputValueToMeters(value: number, unit: MeasurementUnit): number {
+  if (!Number.isFinite(value)) return 0.3;
+  switch (unit) {
+    case 'ft':
+    case 'ft-in':
+      return Number((value / 3.28084).toFixed(3));
+    case 'cm':
+      return Number((value / 100).toFixed(3));
+    case 'mm':
+      return Number((value / 1000).toFixed(3));
+    case 'm':
+    default:
+      return Number(value.toFixed(3));
+  }
+}
+
 export function projectPointToWall(
   px: number,
   py: number,
