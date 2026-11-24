@@ -172,9 +172,9 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center gap-3 bg-[#F6F8FB] dark:bg-[#070B12]">
+      <div className="h-screen w-screen flex flex-col items-center justify-center gap-3 bg-[#E8EEF4] dark:bg-[#050810]">
         <NexoraBrandLogo className="w-11 h-11" />
-        <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
+        <div className="text-sm font-medium text-slate-600 dark:text-slate-400">
           Loading Nexora workspace...
         </div>
       </div>
@@ -232,7 +232,6 @@ export default function App() {
           darkMode={darkMode}
           onToggleDarkMode={() => setDarkMode((d) => !d)}
           profile={profile}
-          onUpdateProfile={handleUpdateProfile}
           onOpenDiagram={(doc) => {
             setActiveDesktopFile({ handle: null, fileName: null });
             setEditorSession((s) => s + 1);

@@ -75,54 +75,64 @@ export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
         </div>
 
         <div className="p-5 space-y-5 max-h-[76vh] overflow-y-auto">
-          {/* Identity & Permissions */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="block">
-              <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                Workspace Name
-              </span>
-              <input
-                type="text"
-                value={profile.workspaceName}
-                onChange={(e) =>
-                  onUpdateProfile({ ...profile, workspaceName: e.target.value })
-                }
-                className="mt-1.5 w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
-              />
-            </label>
+          {/* Local Identity & Permission Role Simulation */}
+          <div className="space-y-3">
+            <div className="space-y-0.5">
+              <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                Local Workspace Identity &amp; Permissions
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Customize your local workspace name or switch roles to verify read-only Viewer mode versus full Owner/Editor workflows without external cloud auth.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                  Workspace Name
+                </span>
+                <input
+                  type="text"
+                  value={profile.workspaceName}
+                  onChange={(e) =>
+                    onUpdateProfile({ ...profile, workspaceName: e.target.value })
+                  }
+                  className="mt-1.5 w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-[#080D16] border border-slate-300/80 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+                />
+              </label>
 
-            <label className="block">
-              <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                Active Permission Role
-              </span>
-              <select
-                value={profile.role}
-                onChange={(e) =>
-                  onUpdateProfile({ ...profile, role: e.target.value as LocalUserRole })
-                }
-                className="mt-1.5 w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
-              >
-                <option value="owner">Owner (Full Studio Access)</option>
-                <option value="editor">Editor (Can Modify Designs)</option>
-                <option value="viewer">Viewer (Read-Only Canvas)</option>
-              </select>
-            </label>
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                  Active Permission Role
+                </span>
+                <select
+                  value={profile.role}
+                  onChange={(e) =>
+                    onUpdateProfile({ ...profile, role: e.target.value as LocalUserRole })
+                  }
+                  className="mt-1.5 w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-[#080D16] border border-slate-300/80 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+                >
+                  <option value="owner">Diagram Owner (Full Control)</option>
+                  <option value="editor">Editor (Can Modify Designs)</option>
+                  <option value="viewer">Viewer (Read-Only Canvas)</option>
+                </select>
+              </label>
+            </div>
           </div>
 
           {/* Theme Toggle */}
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-4">
+          <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between gap-4">
             <div>
               <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                Studio Color Theme
+                Interface Appearance
               </div>
               <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                Toggle between Obsidian Dark and Crisp Light Studio workspaces.
+                Switch between Crisp Light Studio and Obsidian Dark workspace themes.
               </div>
             </div>
             <button
               type="button"
               onClick={onToggleDarkMode}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#121B2B] text-xs font-medium text-slate-800 dark:text-slate-100 hover:border-teal-500/60 transition-colors whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-300/80 dark:border-slate-700 bg-slate-50 dark:bg-[#121B2B] text-xs font-medium text-slate-800 dark:text-slate-100 hover:border-teal-500/60 transition-colors whitespace-nowrap shrink-0"
             >
               {darkMode ? (
                 <>
@@ -138,14 +148,19 @@ export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
             </button>
           </div>
 
-          {/* IndexedDB Local Storage Overview */}
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-2.5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-900 dark:text-slate-100">
-              <Database className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-              <span>Local Browser Storage (IndexedDB)</span>
+          {/* Local Auto-Save Engine & IndexedDB Storage Overview */}
+          <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-900 dark:text-slate-100">
+                <Database className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                <span>Local Auto-Save Engine (IndexedDB)</span>
+              </div>
+              <span className="text-[11px] font-mono text-teal-700 dark:text-teal-400">
+                Active · Offline Ready
+              </span>
             </div>
             <div className="grid grid-cols-3 gap-2.5">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#080D16] border border-slate-200/80 dark:border-slate-800">
+              <div className="p-3 rounded-xl bg-slate-100/80 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800">
                 <div className="text-lg font-display font-bold text-slate-900 dark:text-white tabular-nums">
                   {diagramCount}
                 </div>
@@ -153,7 +168,7 @@ export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
                   Saved Designs
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#080D16] border border-slate-200/80 dark:border-slate-800">
+              <div className="p-3 rounded-xl bg-slate-100/80 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800">
                 <div className="text-lg font-display font-bold text-slate-900 dark:text-white tabular-nums">
                   {customTemplateCount}
                 </div>
@@ -161,7 +176,7 @@ export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
                   My Templates
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#080D16] border border-slate-200/80 dark:border-slate-800">
+              <div className="p-3 rounded-xl bg-slate-100/80 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800">
                 <div className="text-lg font-display font-bold text-slate-900 dark:text-white tabular-nums">
                   {customComponentCount}
                 </div>

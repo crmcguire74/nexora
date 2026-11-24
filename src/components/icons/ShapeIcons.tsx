@@ -66,37 +66,55 @@ export const DiagramTypeIllustration: React.FC<DiagramPreviewProps> = ({ type, c
     case 'flowchart':
       return (
         <svg viewBox="0 0 220 96" className={className} fill="none" aria-hidden="true">
-          <rect x="16" y="34" width="44" height="24" rx="12" className="fill-emerald-50 dark:fill-emerald-950/60 stroke-emerald-600 dark:stroke-emerald-400" strokeWidth="1.5" />
-          <path d="M60 46 H84" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" />
-          <polygon points="108,24 132,46 108,68 84,46" className="fill-amber-50 dark:fill-amber-950/60 stroke-amber-600 dark:stroke-amber-400" strokeWidth="1.5" />
-          <path d="M132 46 H156 V26 H166" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" />
-          <path d="M132 46 H156 V66 H166" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" />
-          <rect x="166" y="15" width="38" height="22" rx="5" className="fill-teal-50 dark:fill-teal-950/60 stroke-teal-600 dark:stroke-teal-400" strokeWidth="1.5" />
-          <rect x="166" y="55" width="38" height="22" rx="5" className="fill-slate-50 dark:fill-slate-800/80 stroke-slate-500 dark:stroke-slate-400" strokeWidth="1.5" />
+          <rect x="14" y="34" width="46" height="24" rx="12" className="fill-emerald-100/90 dark:fill-emerald-500/22 stroke-emerald-600 dark:stroke-emerald-300" strokeWidth="1.6" />
+          <line x1="25" y1="46" x2="49" y2="46" className="stroke-emerald-700/50 dark:stroke-emerald-200/75" strokeWidth="2" strokeLinecap="round" />
+          <path d="M60 46 H82" className="stroke-slate-400 dark:stroke-slate-300" strokeWidth="1.6" />
+          <polygon points="83,46 78,43 78,49" className="fill-slate-400 dark:fill-slate-300" />
+          <polygon points="108,22 134,46 108,70 82,46" className="fill-amber-100/90 dark:fill-amber-500/24 stroke-amber-600 dark:stroke-amber-300" strokeWidth="1.6" />
+          <circle cx="108" cy="46" r="3" className="fill-amber-600/60 dark:fill-amber-300/80" />
+          <path d="M134 46 H154 V26 H165" className="stroke-teal-600/80 dark:stroke-teal-300" strokeWidth="1.6" />
+          <path d="M134 46 H154 V66 H165" className="stroke-indigo-500/80 dark:stroke-indigo-300" strokeWidth="1.6" />
+          <rect x="165" y="14" width="41" height="24" rx="5" className="fill-teal-100/90 dark:fill-teal-500/24 stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.6" />
+          <line x1="174" y1="26" x2="197" y2="26" className="stroke-teal-700/50 dark:stroke-teal-200/80" strokeWidth="2" strokeLinecap="round" />
+          <rect x="165" y="54" width="41" height="24" rx="5" className="fill-indigo-100/90 dark:fill-indigo-500/26 stroke-indigo-600 dark:stroke-indigo-300" strokeWidth="1.6" />
+          <line x1="174" y1="66" x2="197" y2="66" className="stroke-indigo-700/50 dark:stroke-indigo-200/80" strokeWidth="2" strokeLinecap="round" />
         </svg>
       );
     case 'architecture':
       return (
         <svg viewBox="0 0 220 96" className={className} fill="none" aria-hidden="true">
-          <rect x="68" y="10" width="138" height="76" rx="8" className="fill-sky-50/60 dark:fill-sky-950/25 stroke-sky-500/50 dark:stroke-sky-400/50" strokeWidth="1.25" strokeDasharray="4 3" />
+          <rect x="66" y="8" width="142" height="80" rx="9" className="fill-sky-100/55 dark:fill-sky-500/10 stroke-sky-500/65 dark:stroke-sky-400/70" strokeWidth="1.35" strokeDasharray="4 3" />
           {/* Browser icon */}
-          <g transform="translate(18, 32) scale(1.25)">
-            <SequenceRoleIconPaths role="browser" color="#38BDF8" strokeWidth={1.6} />
+          <g className="dark:hidden" transform="translate(16, 31) scale(1.3)">
+            <SequenceRoleIconPaths role="browser" color="#0284C7" fill="rgba(56,189,248,0.18)" strokeWidth={1.65} />
           </g>
-          <path d="M52 47 H84" className="stroke-sky-500 dark:stroke-sky-400" strokeWidth="1.5" />
+          <g className="hidden dark:block" transform="translate(16, 31) scale(1.3)">
+            <SequenceRoleIconPaths role="browser" color="#38BDF8" fill="rgba(56,189,248,0.22)" strokeWidth={1.7} />
+          </g>
+          <path d="M51 47 H83" className="stroke-sky-600 dark:stroke-sky-300" strokeWidth="1.6" />
+          <polygon points="84,47 79,44 79,50" className="fill-sky-600 dark:fill-sky-300" />
           {/* Microservice cube icon */}
-          <g transform="translate(86, 32) scale(1.25)">
-            <SequenceRoleIconPaths role="microservice" color="#2DD4BF" strokeWidth={1.6} />
+          <g className="dark:hidden" transform="translate(86, 31) scale(1.3)">
+            <SequenceRoleIconPaths role="microservice" color="#0D9488" fill="rgba(45,212,191,0.18)" strokeWidth={1.65} />
           </g>
-          <path d="M118 47 H144 V28 H156" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.25" />
-          <path d="M118 47 H144 V66 H156" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.25" />
+          <g className="hidden dark:block" transform="translate(86, 31) scale(1.3)">
+            <SequenceRoleIconPaths role="microservice" color="#2DD4BF" fill="rgba(45,212,191,0.24)" strokeWidth={1.7} />
+          </g>
+          <path d="M120 47 H144 V27 H157" className="stroke-emerald-600/80 dark:stroke-emerald-300" strokeWidth="1.5" />
+          <path d="M120 47 H144 V67 H157" className="stroke-amber-600/80 dark:stroke-amber-300" strokeWidth="1.5" />
           {/* Database cylinder icon */}
-          <g transform="translate(160, 15) scale(1.08)">
-            <SequenceRoleIconPaths role="database" color="#34D399" strokeWidth={1.6} />
+          <g className="dark:hidden" transform="translate(161, 13) scale(1.12)">
+            <SequenceRoleIconPaths role="database" color="#059669" fill="rgba(52,211,153,0.18)" strokeWidth={1.65} />
+          </g>
+          <g className="hidden dark:block" transform="translate(161, 13) scale(1.12)">
+            <SequenceRoleIconPaths role="database" color="#34D399" fill="rgba(52,211,153,0.24)" strokeWidth={1.7} />
           </g>
           {/* Cache bolt icon */}
-          <g transform="translate(160, 53) scale(1.08)">
-            <SequenceRoleIconPaths role="cache" color="#FBBF24" strokeWidth={1.6} />
+          <g className="dark:hidden" transform="translate(161, 53) scale(1.12)">
+            <SequenceRoleIconPaths role="cache" color="#D97706" fill="rgba(251,191,36,0.2)" strokeWidth={1.65} />
+          </g>
+          <g className="hidden dark:block" transform="translate(161, 53) scale(1.12)">
+            <SequenceRoleIconPaths role="cache" color="#FBBF24" fill="rgba(251,191,36,0.26)" strokeWidth={1.7} />
           </g>
         </svg>
       );
@@ -105,97 +123,194 @@ export const DiagramTypeIllustration: React.FC<DiagramPreviewProps> = ({ type, c
         <svg viewBox="0 0 220 96" className={className} fill="none" aria-hidden="true">
           {[36, 110, 184].map((cx, i) => (
             <g key={cx}>
-              <rect x={cx - 22} y="10" width="44" height="18" rx="4" className={i === 0 ? 'fill-slate-100 dark:fill-slate-800 stroke-slate-500 dark:stroke-slate-400' : i === 1 ? 'fill-sky-50 dark:fill-sky-950/60 stroke-sky-600 dark:stroke-sky-400' : 'fill-teal-50 dark:fill-teal-950/60 stroke-teal-600 dark:stroke-teal-400'} strokeWidth="1.4" />
-              <line x1={cx} y1="28" x2={cx} y2="86" className="stroke-slate-300 dark:stroke-slate-700" strokeWidth="1.25" strokeDasharray="3 3" />
+              <rect
+                x={cx - 24}
+                y="9"
+                width="48"
+                height="20"
+                rx="5"
+                className={
+                  i === 0
+                    ? 'fill-sky-100/90 dark:fill-sky-500/24 stroke-sky-600 dark:stroke-sky-300'
+                    : i === 1
+                    ? 'fill-teal-100/90 dark:fill-teal-500/24 stroke-teal-600 dark:stroke-teal-300'
+                    : 'fill-violet-100/90 dark:fill-violet-500/26 stroke-violet-600 dark:stroke-violet-300'
+                }
+                strokeWidth="1.5"
+              />
+              <line
+                x1={cx - 11}
+                y1="19"
+                x2={cx + 11}
+                y2="19"
+                className={
+                  i === 0
+                    ? 'stroke-sky-700/50 dark:stroke-sky-200/80'
+                    : i === 1
+                    ? 'stroke-teal-700/50 dark:stroke-teal-200/80'
+                    : 'stroke-violet-700/50 dark:stroke-violet-200/80'
+                }
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <line x1={cx} y1="29" x2={cx} y2="87" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1.35" strokeDasharray="3 3" />
             </g>
           ))}
-          <rect x="106" y="40" width="8" height="36" rx="2" className="fill-teal-500/20 stroke-teal-600 dark:stroke-teal-400" strokeWidth="1" />
-          <line x1="36" y1="44" x2="105" y2="44" className="stroke-sky-600 dark:stroke-sky-400" strokeWidth="1.6" />
-          <polygon points="105,44 99,41 99,47" className="fill-sky-600 dark:fill-sky-400" />
-          <line x1="114" y1="58" x2="183" y2="58" className="stroke-teal-600 dark:stroke-teal-400" strokeWidth="1.6" />
-          <polygon points="183,58 177,55 177,61" className="fill-teal-600 dark:fill-teal-400" />
-          <line x1="183" y1="73" x2="114" y2="73" className="stroke-slate-500 dark:stroke-slate-400" strokeWidth="1.4" strokeDasharray="4 2" />
-          <polygon points="114,73 120,70 120,76" className="fill-slate-500 dark:fill-slate-400" />
+          <rect x="106" y="39" width="8" height="39" rx="2" className="fill-teal-500/25 dark:fill-teal-400/35 stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.2" />
+          <line x1="36" y1="44" x2="105" y2="44" className="stroke-sky-600 dark:stroke-sky-300" strokeWidth="1.7" />
+          <polygon points="105,44 99,40.5 99,47.5" className="fill-sky-600 dark:fill-sky-300" />
+          <line x1="114" y1="59" x2="183" y2="59" className="stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.7" />
+          <polygon points="183,59 177,55.5 177,62.5" className="fill-teal-600 dark:fill-teal-300" />
+          <line x1="183" y1="74" x2="114" y2="74" className="stroke-violet-500 dark:stroke-violet-300" strokeWidth="1.5" strokeDasharray="4 2" />
+          <polygon points="114,74 120,70.5 120,77.5" className="fill-violet-500 dark:fill-violet-300" />
         </svg>
       );
     case 'floorplan':
       return (
         <svg viewBox="0 0 220 96" className={className} fill="none" aria-hidden="true">
-          <rect x="26" y="14" width="168" height="68" className="fill-amber-50/40 dark:fill-slate-800/50 stroke-slate-700 dark:stroke-slate-300" strokeWidth="3" />
-          <line x1="120" y1="14" x2="120" y2="82" className="stroke-slate-700 dark:stroke-slate-300" strokeWidth="2" />
-          <path d="M120 42 A18 18 0 0 1 138 60" className="stroke-teal-600 dark:stroke-teal-400" strokeWidth="1.25" strokeDasharray="2 2" />
-          <line x1="120" y1="42" x2="120" y2="60" className="stroke-white dark:stroke-[#0C121E]" strokeWidth="3" />
-          <line x1="120" y1="60" x2="138" y2="60" className="stroke-teal-600 dark:stroke-teal-400" strokeWidth="1.5" />
-          <rect x="44" y="28" width="46" height="22" rx="2" className="fill-slate-200 dark:fill-slate-700 stroke-slate-500" strokeWidth="1" />
-          <rect x="142" y="26" width="36" height="40" rx="2" className="fill-teal-100 dark:fill-teal-950/60 stroke-teal-500" strokeWidth="1" />
+          <rect x="24" y="13" width="96" height="70" className="fill-amber-100/65 dark:fill-sky-950/55" />
+          <rect x="120" y="13" width="76" height="70" className="fill-teal-50/75 dark:fill-teal-950/50" />
+          <rect x="24" y="13" width="172" height="70" className="stroke-slate-700 dark:stroke-slate-200" strokeWidth="3" />
+          <line x1="120" y1="13" x2="120" y2="83" className="stroke-slate-700 dark:stroke-slate-200" strokeWidth="2.2" />
+          {/* Door swing */}
+          <line x1="120" y1="41" x2="120" y2="61" className="stroke-slate-100 dark:stroke-[#091122]" strokeWidth="3.5" />
+          <path d="M120 41 A20 20 0 0 1 140 61" className="stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.4" strokeDasharray="2.5 2" />
+          <line x1="120" y1="61" x2="140" y2="61" className="stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.8" />
+          {/* Window highlight on exterior wall */}
+          <line x1="52" y1="13" x2="88" y2="13" className="stroke-sky-500 dark:stroke-sky-300" strokeWidth="3.2" />
+          {/* Furniture */}
+          <rect x="42" y="28" width="52" height="22" rx="3" className="fill-sky-200/80 dark:fill-sky-500/28 stroke-sky-600 dark:stroke-sky-300" strokeWidth="1.3" />
+          <rect x="52" y="57" width="32" height="14" rx="2" className="fill-amber-200/80 dark:fill-amber-500/28 stroke-amber-600 dark:stroke-amber-300" strokeWidth="1.2" />
+          <rect x="144" y="25" width="36" height="44" rx="3" className="fill-teal-200/80 dark:fill-teal-500/28 stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.3" />
+          <rect x="149" y="29" width="11" height="8" rx="1.5" className="fill-white/80 dark:fill-teal-200/35 stroke-teal-600/60 dark:stroke-teal-300/80" strokeWidth="1" />
+          <rect x="164" y="29" width="11" height="8" rx="1.5" className="fill-white/80 dark:fill-teal-200/35 stroke-teal-600/60 dark:stroke-teal-300/80" strokeWidth="1" />
         </svg>
       );
     case 'network':
       return (
         <svg viewBox="0 0 220 96" className={className} fill="none" aria-hidden="true">
-          <g transform="translate(20, 34) scale(1.15)">
-            <SequenceRoleIconPaths role="cloud" color="#38BDF8" strokeWidth={1.6} />
+          <line x1="51" y1="48" x2="86" y2="48" className="stroke-sky-500 dark:stroke-sky-300" strokeWidth="1.6" />
+          <path d="M119 48 H138 V26 H156" className="stroke-indigo-500 dark:stroke-indigo-300" strokeWidth="1.6" />
+          <path d="M119 48 H138 V70 H156" className="stroke-teal-500 dark:stroke-teal-300" strokeWidth="1.6" />
+          <g className="dark:hidden" transform="translate(18, 33) scale(1.25)">
+            <SequenceRoleIconPaths role="cloud" color="#0284C7" fill="rgba(56,189,248,0.18)" strokeWidth={1.65} />
           </g>
-          <g transform="translate(88, 34) scale(1.15)">
-            <DiagramObjectIconPaths type="net-firewall" stroke="#F87171" fill="rgba(248,113,113,0.14)" />
+          <g className="hidden dark:block" transform="translate(18, 33) scale(1.25)">
+            <SequenceRoleIconPaths role="cloud" color="#38BDF8" fill="rgba(56,189,248,0.24)" strokeWidth={1.7} />
           </g>
-          <g transform="translate(158, 12) scale(1.1)">
-            <DiagramObjectIconPaths type="net-router" stroke="#818CF8" fill="rgba(129,140,248,0.14)" />
+          <g className="dark:hidden" transform="translate(88, 33) scale(1.25)">
+            <DiagramObjectIconPaths type="net-firewall" stroke="#E11D48" fill="rgba(251,113,133,0.18)" strokeWidth={1.65} />
           </g>
-          <g transform="translate(158, 54) scale(1.1)">
-            <DiagramObjectIconPaths type="net-server" stroke="#2DD4BF" fill="rgba(45,212,191,0.14)" />
+          <g className="hidden dark:block" transform="translate(88, 33) scale(1.25)">
+            <DiagramObjectIconPaths type="net-firewall" stroke="#FB7185" fill="rgba(251,113,133,0.26)" strokeWidth={1.7} />
           </g>
-          <line x1="50" y1="48" x2="86" y2="48" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" />
-          <path d="M118 48 H138 V26 H156" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" />
-          <path d="M118 48 H138 V68 H156" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" />
+          <g className="dark:hidden" transform="translate(159, 11) scale(1.15)">
+            <DiagramObjectIconPaths type="net-router" stroke="#4F46E5" fill="rgba(129,140,248,0.18)" strokeWidth={1.65} />
+          </g>
+          <g className="hidden dark:block" transform="translate(159, 11) scale(1.15)">
+            <DiagramObjectIconPaths type="net-router" stroke="#A5B4FC" fill="rgba(129,140,248,0.26)" strokeWidth={1.7} />
+          </g>
+          <g className="dark:hidden" transform="translate(159, 55) scale(1.15)">
+            <DiagramObjectIconPaths type="net-server" stroke="#0D9488" fill="rgba(45,212,191,0.18)" strokeWidth={1.65} />
+          </g>
+          <g className="hidden dark:block" transform="translate(159, 55) scale(1.15)">
+            <DiagramObjectIconPaths type="net-server" stroke="#2DD4BF" fill="rgba(45,212,191,0.26)" strokeWidth={1.7} />
+          </g>
         </svg>
       );
     case 'erd':
       return (
         <svg viewBox="0 0 220 96" className={className} fill="none" aria-hidden="true">
-          <rect x="20" y="16" width="66" height="62" rx="5" className="fill-white dark:fill-slate-800/80 stroke-teal-600 dark:stroke-teal-400" strokeWidth="1.5" />
-          <rect x="20" y="16" width="66" height="18" rx="4" className="fill-teal-600/15 dark:fill-teal-400/20" />
-          <line x1="20" y1="34" x2="86" y2="34" className="stroke-teal-600/40" strokeWidth="1" />
-          <line x1="28" y1="46" x2="72" y2="46" className="stroke-slate-400" strokeWidth="2" strokeLinecap="round" />
-          <line x1="28" y1="58" x2="62" y2="58" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="2" strokeLinecap="round" />
-          <rect x="134" y="16" width="66" height="62" rx="5" className="fill-white dark:fill-slate-800/80 stroke-sky-600 dark:stroke-sky-400" strokeWidth="1.5" />
-          <rect x="134" y="16" width="66" height="18" rx="4" className="fill-sky-600/15 dark:fill-sky-400/20" />
-          <line x1="134" y1="34" x2="200" y2="34" className="stroke-sky-600/40" strokeWidth="1" />
-          <line x1="142" y1="46" x2="186" y2="46" className="stroke-slate-400" strokeWidth="2" strokeLinecap="round" />
-          <line x1="142" y1="58" x2="176" y2="58" className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="2" strokeLinecap="round" />
-          <path d="M86 47 H134" className="stroke-slate-500 dark:stroke-slate-400" strokeWidth="1.5" />
-          <path d="M126 42 L134 47 L126 52" className="stroke-slate-500 dark:stroke-slate-400" strokeWidth="1.5" />
+          <rect x="18" y="14" width="68" height="66" rx="6" className="fill-white dark:fill-[#131F35] stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.6" />
+          <rect x="18" y="14" width="68" height="19" rx="5" className="fill-teal-600/20 dark:fill-teal-400/28" />
+          <line x1="18" y1="33" x2="86" y2="33" className="stroke-teal-600/45 dark:stroke-teal-300/60" strokeWidth="1.1" />
+          <circle cx="28" cy="46" r="2.6" className="fill-amber-500 dark:fill-amber-300" />
+          <line x1="35" y1="46" x2="74" y2="46" className="stroke-slate-500 dark:stroke-slate-200" strokeWidth="2.1" strokeLinecap="round" />
+          <line x1="27" y1="59" x2="66" y2="59" className="stroke-slate-400 dark:stroke-slate-400" strokeWidth="2" strokeLinecap="round" />
+          <line x1="27" y1="70" x2="58" y2="70" className="stroke-slate-300 dark:stroke-slate-500" strokeWidth="2" strokeLinecap="round" />
+
+          <rect x="134" y="14" width="68" height="66" rx="6" className="fill-white dark:fill-[#131F35] stroke-sky-600 dark:stroke-sky-300" strokeWidth="1.6" />
+          <rect x="134" y="14" width="68" height="19" rx="5" className="fill-sky-600/20 dark:fill-sky-400/28" />
+          <line x1="134" y1="33" x2="202" y2="33" className="stroke-sky-600/45 dark:stroke-sky-300/60" strokeWidth="1.1" />
+          <circle cx="144" cy="46" r="2.6" className="fill-amber-500 dark:fill-amber-300" />
+          <line x1="151" y1="46" x2="190" y2="46" className="stroke-slate-500 dark:stroke-slate-200" strokeWidth="2.1" strokeLinecap="round" />
+          <circle cx="144" cy="59" r="2.2" className="fill-teal-500 dark:fill-teal-300" />
+          <line x1="151" y1="59" x2="182" y2="59" className="stroke-slate-400 dark:stroke-slate-400" strokeWidth="2" strokeLinecap="round" />
+          <line x1="143" y1="70" x2="174" y2="70" className="stroke-slate-300 dark:stroke-slate-500" strokeWidth="2" strokeLinecap="round" />
+
+          <path d="M86 48 H134" className="stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.6" />
+          <line x1="94" y1="43" x2="94" y2="53" className="stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.5" />
+          <path d="M125 42 L134 48 L125 54" className="stroke-sky-600 dark:stroke-sky-300" strokeWidth="1.6" />
         </svg>
       );
     case 'orgchart':
       return (
         <svg viewBox="0 0 220 96" className={className} fill="none" aria-hidden="true">
-          <rect x="82" y="12" width="56" height="22" rx="5" className="fill-slate-800 dark:fill-teal-500/85" />
-          <path d="M110 34 V48 M46 48 H174 M46 48 V60 M110 48 V60 M174 48 V60" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" />
-          <rect x="22" y="60" width="48" height="22" rx="5" className="fill-teal-50 dark:fill-teal-950/60 stroke-teal-600 dark:stroke-teal-400" strokeWidth="1.4" />
-          <rect x="86" y="60" width="48" height="22" rx="5" className="fill-sky-50 dark:fill-sky-950/60 stroke-sky-600 dark:stroke-sky-400" strokeWidth="1.4" />
-          <rect x="150" y="60" width="48" height="22" rx="5" className="fill-indigo-50 dark:fill-indigo-950/60 stroke-indigo-600 dark:stroke-indigo-400" strokeWidth="1.4" />
+          <rect x="78" y="10" width="64" height="24" rx="6" className="fill-teal-700 dark:fill-teal-500/35 stroke-teal-800 dark:stroke-teal-300" strokeWidth="1.5" />
+          <line x1="94" y1="22" x2="126" y2="22" className="stroke-white/85 dark:stroke-teal-100" strokeWidth="2.2" strokeLinecap="round" />
+          <path d="M110 34 V48 M46 48 H174 M46 48 V60 M110 48 V60 M174 48 V60" className="stroke-slate-400 dark:stroke-slate-400" strokeWidth="1.6" />
+          <rect x="20" y="60" width="52" height="24" rx="6" className="fill-teal-100/90 dark:fill-teal-500/24 stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.5" />
+          <line x1="32" y1="72" x2="60" y2="72" className="stroke-teal-700/55 dark:stroke-teal-200/80" strokeWidth="2" strokeLinecap="round" />
+          <rect x="84" y="60" width="52" height="24" rx="6" className="fill-sky-100/90 dark:fill-sky-500/24 stroke-sky-600 dark:stroke-sky-300" strokeWidth="1.5" />
+          <line x1="96" y1="72" x2="124" y2="72" className="stroke-sky-700/55 dark:stroke-sky-200/80" strokeWidth="2" strokeLinecap="round" />
+          <rect x="148" y="60" width="52" height="24" rx="6" className="fill-violet-100/90 dark:fill-violet-500/26 stroke-violet-600 dark:stroke-violet-300" strokeWidth="1.5" />
+          <line x1="160" y1="72" x2="188" y2="72" className="stroke-violet-700/55 dark:stroke-violet-200/80" strokeWidth="2" strokeLinecap="round" />
         </svg>
       );
     case 'journey':
       return (
         <svg viewBox="0 0 220 96" className={className} fill="none" aria-hidden="true">
-          {[18, 84, 150].map((x, idx) => (
-            <g key={x}>
-              <rect x={x} y="14" width="52" height="16" rx="4" className="fill-slate-800 dark:fill-slate-700" />
-              <rect x={x} y="42" width="52" height="36" rx="6" className={idx === 2 ? 'fill-emerald-50 dark:fill-emerald-950/50 stroke-emerald-600 dark:stroke-emerald-400' : 'fill-white dark:fill-slate-800/80 stroke-slate-300 dark:stroke-slate-600'} strokeWidth="1.4" />
+          {[
+            {
+              x: 16,
+              hdr: 'fill-sky-600 dark:fill-sky-500/35 stroke-sky-700 dark:stroke-sky-300',
+              card: 'fill-white dark:fill-[#131F35] stroke-sky-400/75 dark:stroke-sky-400/70',
+              bar: 'stroke-sky-500 dark:stroke-sky-300',
+            },
+            {
+              x: 84,
+              hdr: 'fill-indigo-600 dark:fill-indigo-500/35 stroke-indigo-700 dark:stroke-indigo-300',
+              card: 'fill-white dark:fill-[#131F35] stroke-indigo-400/75 dark:stroke-indigo-400/70',
+              bar: 'stroke-indigo-500 dark:stroke-indigo-300',
+            },
+            {
+              x: 152,
+              hdr: 'fill-emerald-600 dark:fill-emerald-500/35 stroke-emerald-700 dark:stroke-emerald-300',
+              card: 'fill-emerald-50/90 dark:fill-emerald-500/20 stroke-emerald-600 dark:stroke-emerald-300',
+              bar: 'stroke-emerald-500 dark:stroke-emerald-300',
+            },
+          ].map((col) => (
+            <g key={col.x}>
+              <rect x={col.x} y="12" width="52" height="17" rx="4.5" className={col.hdr} strokeWidth="1.3" />
+              <line x1={col.x + 12} y1="20.5" x2={col.x + 40} y2="20.5" className="stroke-white/85 dark:stroke-white/90" strokeWidth="2" strokeLinecap="round" />
+              <rect x={col.x} y="40" width="52" height="40" rx="6" className={col.card} strokeWidth="1.5" />
+              <line x1={col.x + 9} y1="53" x2={col.x + 41} y2="53" className={col.bar} strokeWidth="2.2" strokeLinecap="round" />
+              <line x1={col.x + 9} y1="64" x2={col.x + 33} y2="64" className="stroke-slate-300 dark:stroke-slate-400" strokeWidth="2" strokeLinecap="round" />
             </g>
           ))}
-          <path d="M70 60 H84 M136 60 H150" className="stroke-teal-600 dark:stroke-teal-400" strokeWidth="1.5" />
+          <path d="M68 60 H84 M136 60 H152" className="stroke-teal-600 dark:stroke-teal-300" strokeWidth="1.7" />
         </svg>
       );
     case 'whiteboard':
       return (
         <svg viewBox="0 0 220 96" className={className} fill="none" aria-hidden="true">
-          <rect x="26" y="18" width="48" height="44" rx="3" transform="rotate(-3 50 40)" className="fill-amber-100 dark:fill-amber-900/40 stroke-amber-400" strokeWidth="1.25" />
-          <rect x="88" y="26" width="48" height="44" rx="3" transform="rotate(2 112 48)" className="fill-sky-100 dark:fill-sky-900/40 stroke-sky-400" strokeWidth="1.25" />
-          <rect x="148" y="18" width="48" height="44" rx="3" transform="rotate(-1 172 40)" className="fill-emerald-100 dark:fill-emerald-900/40 stroke-emerald-400" strokeWidth="1.25" />
-          <path d="M74 44 C80 44, 82 48, 88 48" className="stroke-slate-400" strokeWidth="1.4" strokeDasharray="3 2" />
+          <g transform="rotate(-3 50 42)">
+            <rect x="24" y="18" width="50" height="46" rx="4" className="fill-amber-100 dark:fill-amber-400/24 stroke-amber-500 dark:stroke-amber-300" strokeWidth="1.5" />
+            <line x1="33" y1="33" x2="64" y2="33" className="stroke-amber-700/45 dark:stroke-amber-200/80" strokeWidth="2" strokeLinecap="round" />
+            <line x1="33" y1="43" x2="56" y2="43" className="stroke-amber-700/30 dark:stroke-amber-200/55" strokeWidth="2" strokeLinecap="round" />
+          </g>
+          <g transform="rotate(2 112 50)">
+            <rect x="87" y="26" width="50" height="46" rx="4" className="fill-sky-100 dark:fill-sky-400/24 stroke-sky-500 dark:stroke-sky-300" strokeWidth="1.5" />
+            <line x1="96" y1="41" x2="127" y2="41" className="stroke-sky-700/45 dark:stroke-sky-200/80" strokeWidth="2" strokeLinecap="round" />
+            <line x1="96" y1="51" x2="118" y2="51" className="stroke-sky-700/30 dark:stroke-sky-200/55" strokeWidth="2" strokeLinecap="round" />
+          </g>
+          <g transform="rotate(-1.5 173 42)">
+            <rect x="148" y="18" width="50" height="46" rx="4" className="fill-emerald-100 dark:fill-emerald-400/24 stroke-emerald-500 dark:stroke-emerald-300" strokeWidth="1.5" />
+            <line x1="157" y1="33" x2="188" y2="33" className="stroke-emerald-700/45 dark:stroke-emerald-200/80" strokeWidth="2" strokeLinecap="round" />
+            <line x1="157" y1="43" x2="179" y2="43" className="stroke-emerald-700/30 dark:stroke-emerald-200/55" strokeWidth="2" strokeLinecap="round" />
+          </g>
+          <path d="M74 45 C80 45, 82 50, 87 50" className="stroke-slate-500 dark:stroke-slate-300" strokeWidth="1.6" strokeDasharray="3 2" />
+          <path d="M137 50 C142 50, 143 45, 148 45" className="stroke-slate-500 dark:stroke-slate-300" strokeWidth="1.6" strokeDasharray="3 2" />
         </svg>
       );
   }

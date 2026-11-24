@@ -231,7 +231,7 @@ export const NewDesignModal: React.FC<NewDesignModalProps> = ({
                             }}
                             className="group flex flex-col text-left rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#111928] hover:border-teal-500 dark:hover:border-teal-400 transition-colors overflow-hidden"
                           >
-                            <div className="px-3 pt-2.5 pb-1.5 bg-slate-50/80 dark:bg-[#080D16] border-b border-slate-100 dark:border-slate-800/80">
+                            <div className="px-3 pt-2.5 pb-1.5 nx-preview-stage border-b border-slate-200/80 dark:border-slate-800/90">
                               <DiagramTypeIllustration type={dt.type} className="w-full h-14 transition-transform duration-150 group-hover:scale-[1.03]" />
                             </div>
                             <div className="p-2.5">
@@ -320,7 +320,7 @@ export const NewDesignModal: React.FC<NewDesignModalProps> = ({
                           key={ct.id}
                           className="group flex flex-col rounded-xl border border-teal-500/35 dark:border-teal-500/30 bg-teal-50/25 dark:bg-[#101B29] overflow-hidden"
                         >
-                          <div className="px-4 py-3 bg-white/70 dark:bg-[#080D16] border-b border-slate-100 dark:border-slate-800/80">
+                          <div className="px-4 py-3 nx-preview-stage border-b border-slate-200/80 dark:border-slate-800/90">
                             <DiagramTypeIllustration type={ct.type} className="w-full h-16" />
                           </div>
                           <div className="p-3 flex-1 flex flex-col justify-between gap-2.5">
@@ -390,7 +390,7 @@ export const NewDesignModal: React.FC<NewDesignModalProps> = ({
                         }}
                         className="group flex flex-col text-left rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-[#111928] hover:border-teal-500 dark:hover:border-teal-400 transition-colors overflow-hidden"
                       >
-                        <div className="px-4 py-3 bg-slate-50/80 dark:bg-[#080D16] border-b border-slate-100 dark:border-slate-800/80">
+                        <div className="px-4 py-3 nx-preview-stage border-b border-slate-200/80 dark:border-slate-800/90">
                           <DiagramTypeIllustration type={tpl.category} className="w-full h-16 transition-transform duration-150 group-hover:scale-[1.03]" />
                         </div>
                         <div className="p-3 space-y-1">
