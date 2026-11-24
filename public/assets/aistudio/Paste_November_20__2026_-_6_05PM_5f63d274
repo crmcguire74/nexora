@@ -1,0 +1,3064 @@
+# Product Requirements Document
+# Project Canvas
+**Working title:** Project Canvas  
+**Product category:** Web-based diagramming, architecture modeling, and visual design platform  
+**Document version:** 1.0  
+**Status:** Initial product requirements  
+**Primary platforms:** Desktop web, tablet web  
+**Design objective:** Premium, award-winning UX/UI with exceptionally intuitive interactions  
+**Architecture objective:** Modular, extensible React application with independently developed diagram editors
+
+---
+
+# 1. Executive overview
+
+## 1.1 Product vision
+
+Project Canvas is a modern visual workspace for designing, documenting, communicating, and collaborating on processes, systems, spaces, and software architectures.
+
+The application will enable users to create sophisticated diagrams through direct manipulation, intelligent drag-and-drop interactions, automated layouts, reusable components, and context-aware editing tools.
+
+Project Canvas should feel less like operating a technical diagram editor and more like working with a professional visual design application.
+
+Users should be able to produce polished, presentation-ready diagrams in minutes rather than hours.
+
+The platform will support several specialized editing experiences built on a shared canvas engine:
+
+1. General-purpose flowcharts and process diagrams
+2. Software system architecture diagrams
+3. Sequence diagrams and software call flows
+4. Office and residential floor plans
+5. Network and infrastructure diagrams
+6. Data flow and entity relationship diagrams
+7. Organizational and hierarchy diagrams
+8. User journey and workflow diagrams
+9. Whiteboarding and concept mapping
+
+Each editing experience will offer specialized tools, shapes, properties, and interactions while maintaining common functionality.
+
+## 1.2 Product philosophy
+
+The application must prioritize:
+
+- **Direct manipulation:** Users interact with objects on the canvas rather than navigating complex property dialogs.
+- **Progressive disclosure:** Basic operations remain simple. Advanced capabilities appear contextually.
+- **Intelligent defaults:** Objects, connectors, labels, and layouts should look professional without requiring manual formatting.
+- **Non-destructive editing:** Users can rearrange, modify, group, restyle, and reorganize content without rebuilding diagrams.
+- **Rapid creation:** Common diagrams should require minimal actions.
+- **Consistency:** All specialized editors should share predictable interactions.
+- **Design quality:** Default diagrams must be aesthetically polished and immediately suitable for documentation or presentations.
+- **Extensibility:** New diagram types, shape libraries, and editing tools must be introduced without rewriting the core platform.
+- **Data ownership:** Diagrams must use a documented, structured, portable format.
+- **Accessibility:** The platform must accommodate keyboard navigation, screen readers, and different interaction methods.
+
+## 1.3 Core differentiator
+
+Traditional diagramming products often depend on selecting shapes from libraries, manually aligning objects, and painstakingly adjusting connectors.
+
+Project Canvas will introduce a more intelligent, responsive editing experience.
+
+For example, dragging a new server into an existing architecture diagram should:
+
+1. Identify the nearest logical insertion point.
+2. Display potential connections.
+3. Show a preview of the resulting layout.
+4. Reposition nearby components when appropriate.
+5. Create or reroute connectors automatically when the user confirms.
+6. Preserve user-defined positions and relationships.
+
+This same principle applies to flowcharts, sequence diagrams, floor plans, and other diagram types.
+
+**The goal is to minimize the mechanical work of diagramming and maximize time spent designing and communicating ideas.**
+
+---
+
+# 2. Target users
+
+## 2.1 Software architects and engineers
+
+**Primary needs**
+
+- Document technical architecture.
+- Illustrate interactions across system layers.
+- Build sequence diagrams representing API calls and data flows.
+- Explain complex application logic.
+- Model cloud infrastructure.
+- Document system dependencies.
+- Maintain diagrams as architecture evolves.
+
+**Expected outcome**
+
+Accurate architecture diagrams that can be modified quickly and shared with technical and nontechnical stakeholders.
+
+## 2.2 Business analysts and product managers
+
+**Primary needs**
+
+- Build workflows and business process diagrams.
+- Communicate requirements.
+- Document approval processes.
+- Visualize user journeys.
+- Model dependencies and decision trees.
+
+**Expected outcome**
+
+Clear, professional diagrams that simplify communication.
+
+## 2.3 UX/UI designers
+
+**Primary needs**
+
+- Create user flows and interaction models.
+- Organize user journeys.
+- Map application navigation.
+- Visualize screen transitions and product workflows.
+- Create lightweight wireframes.
+
+**Expected outcome**
+
+Diagrams that can evolve alongside product design.
+
+## 2.4 IT and infrastructure professionals
+
+**Primary needs**
+
+- Model networks, services, cloud systems, and security boundaries.
+- Document infrastructure topology.
+- Map service dependencies.
+- Illustrate deployment architecture.
+
+**Expected outcome**
+
+Reusable architecture diagrams that remain maintainable as systems change.
+
+## 2.5 Office planners and homeowners
+
+**Primary needs**
+
+- Draw rooms and walls.
+- Organize furniture.
+- Visualize office and residential layouts.
+- Work with real-world measurements.
+- Experiment with alternative layouts.
+
+**Expected outcome**
+
+Accurate, understandable floor plans without requiring professional CAD expertise.
+
+## 2.6 Students, educators, and general business users
+
+**Primary needs**
+
+- Quickly communicate concepts.
+- Create simple diagrams without training.
+- Produce graphics for documents and presentations.
+
+**Expected outcome**
+
+A diagramming tool that is approachable on first use.
+
+---
+
+# 3. Product experience and navigation
+
+## 3.1 Application structure
+
+The application will have five primary areas:
+
+**Home dashboard**
+
+Provides access to recent diagrams, templates, folders, workspaces, shared projects, and application settings.
+
+**Diagram editor**
+
+The primary interactive workspace where users create and manipulate diagrams.
+
+**Template library**
+
+A searchable collection of professionally designed diagrams and starter layouts.
+
+**Component library**
+
+Reusable shapes, symbols, assemblies, and custom diagram components.
+
+**Workspace management**
+
+Supports organization, sharing, version history, collaboration, and project-level settings.
+
+## 3.2 First-launch experience
+
+When opening Project Canvas, the user should see a clean welcome screen with a simple choice:
+
+"What would you like to create?"
+
+Present visually distinct options for:
+
+- Flowchart
+- System architecture
+- Sequence diagram
+- Floor plan
+- Network diagram
+- User journey
+- Blank canvas
+- Browse templates
+
+Each option includes an illustrative preview and a short description.
+
+A user should be able to start editing with one click.
+
+Account creation should not be required for locally stored diagrams in development or guest mode.
+
+## 3.3 Editor layout
+
+The default editor will use a flexible, panel-based layout.
+
+### Top application bar
+
+Contains:
+
+- Product logo and navigation
+- Diagram title, editable in place
+- Save status
+- Undo and redo
+- Diagram type
+- View controls
+- Preview or presentation mode
+- Export
+- Share
+- User and workspace controls
+
+### Left library panel
+
+Contains:
+
+- Searchable components and shapes
+- Diagram-specific libraries
+- Recently used objects
+- Favorites
+- Custom component libraries
+- Templates and design assets
+
+The panel must support collapse, resizing, and docking.
+
+### Central canvas
+
+The main interactive editing surface, featuring:
+
+- Infinite or configurable canvas
+- Optional background grid
+- Pan and zoom
+- Contextual controls
+- Selection overlays
+- Connection guides
+- Smart alignment guides
+- Drag previews
+- Optional rulers and measurements
+
+### Right properties panel
+
+Dynamically displays properties for the current selection.
+
+When nothing is selected, it displays diagram-level settings.
+
+When an object is selected, it displays relevant geometry, appearance, data, and behavior.
+
+The panel should collapse automatically when unnecessary and be resizable.
+
+### Contextual floating toolbar
+
+Appears close to selected objects and provides the most common actions:
+
+- Edit label
+- Change color
+- Connect
+- Duplicate
+- Align
+- Group
+- Delete
+- More actions
+
+Frequently used actions must not require opening the properties panel.
+
+### Bottom canvas toolbar
+
+Contains:
+
+- Zoom controls
+- Fit to screen
+- Reset viewport
+- Toggle grid
+- Toggle snap
+- Mini-map
+- Keyboard shortcut help
+
+## 3.4 Adaptive layout
+
+Desktop receives the complete editing environment.
+
+Tablet receives touch-friendly controls with collapsible floating panels.
+
+Mobile will initially support viewing, commenting, sharing, and limited editing. Full precision-based diagram editing is not required in the initial release.
+
+---
+
+# 4. Shared diagram canvas engine
+
+The canvas is the central technical and experiential foundation.
+
+Every specialized editor will use the same interaction infrastructure while extending it with diagram-specific behavior.
+
+## 4.1 Object model
+
+Every canvas element must support a consistent base schema.
+
+Common properties:
+
+- Unique identifier
+- Object type
+- Position
+- Dimensions
+- Rotation
+- Scale
+- Layer
+- Z-index
+- Visibility
+- Lock state
+- Style
+- Custom metadata
+- Connection ports
+- Parent or group relationship
+- Optional semantic type
+- Creation and modification timestamps
+
+Supported element categories:
+
+- Shape
+- Text
+- Connector
+- Image
+- Icon
+- Group
+- Container
+- Annotation
+- Measurement
+- Diagram-specific object
+
+## 4.2 Drag-and-drop interactions
+
+Users must be able to drag elements directly from libraries onto the canvas.
+
+Required behaviors:
+
+1. Show a visual preview while dragging.
+2. Display valid placement targets.
+3. Snap to guides when enabled.
+4. Highlight potential relationships.
+5. Support inserting objects into containers.
+6. Provide immediate feedback for invalid placements.
+7. Allow escape to cancel the operation.
+8. Support touch and stylus interaction where practical.
+9. Preserve object configuration when moving between regions.
+10. Support multi-item dragging.
+
+Objects must remain responsive during dragging, including when a diagram contains hundreds of elements.
+
+## 4.3 Object selection
+
+Support:
+
+- Single-click selection
+- Multiselect with Shift
+- Marquee selection
+- Keyboard selection
+- Select all
+- Selection by type
+- Selection by layer
+- Selection within a container
+- Hierarchical selection for grouped elements
+
+Selected objects must have clear, subtle selection outlines and appropriate handles.
+
+## 4.4 Object manipulation
+
+Users can:
+
+- Move
+- Resize
+- Rotate
+- Duplicate
+- Copy
+- Paste
+- Cut
+- Delete
+- Group
+- Ungroup
+- Lock
+- Hide
+- Bring forward
+- Send backward
+- Align
+- Distribute
+- Replace shape
+- Change styling
+
+All operations must be reversible through undo.
+
+Dragging a shape should not inadvertently change attached relationships or invalidate its data.
+
+## 4.5 Smart connectors
+
+Connectors are first-class diagram objects, not merely rendered lines.
+
+Supported styles:
+
+- Straight
+- Orthogonal
+- Curved
+- Bezier
+- Elbow
+- Bidirectional
+- Dashed
+- Dotted
+- Directional
+- Labeled
+
+Connectors must support:
+
+- Dynamic attachment points
+- Automatic routing
+- Obstacle avoidance
+- Automatic rerouting when nodes move
+- Manual waypoints
+- Adjustable endpoints
+- Inline labels
+- Multiple labels
+- Arrowhead selection
+- Line thickness and color
+- Semantic relationship types
+
+Users should be able to create a connector by dragging from a visible connection handle to another object.
+
+Connection handles appear on hover or selection, rather than cluttering the canvas permanently.
+
+## 4.6 Smart alignment and placement
+
+Provide:
+
+- Alignment guides
+- Equal spacing indicators
+- Edge snapping
+- Center snapping
+- Object snapping
+- Grid snapping
+- Automatic distribution
+- Layout suggestions
+- Overlap warnings
+- Collision-aware placement
+- Optional automatic layout
+
+Smart placement must be optional and reversible.
+
+The system should never unexpectedly reorganize an entire diagram during a simple drag operation.
+
+## 4.7 Auto-layout engine
+
+Support layout algorithms for:
+
+- Left-to-right flow
+- Top-to-bottom flow
+- Hierarchical trees
+- Directed graphs
+- Swimlanes
+- Radial layouts
+- Grid arrangements
+- Force-directed networks
+
+Users must be able to select an entire diagram or a subset of objects and apply a layout.
+
+Manual positions can be pinned.
+
+Layout operations must preserve semantic relationships and labels.
+
+## 4.8 Canvas navigation
+
+Required behaviors:
+
+- Mouse wheel zoom
+- Trackpad pinch zoom
+- Touch pinch zoom
+- Spacebar plus drag to pan
+- Middle-mouse panning
+- Zoom around pointer
+- Fit selection
+- Fit diagram
+- Reset viewport
+- Mini-map navigation
+- Smooth animated viewport transitions
+
+The canvas should support very large diagrams without exhausting browser memory.
+
+## 4.9 Editing history
+
+A comprehensive command-based history system must support undo and redo for:
+
+- Object changes
+- Connector changes
+- Layout changes
+- Text edits
+- Group operations
+- Style modifications
+- Import operations
+- Floor-plan geometry edits
+- Sequence diagram modifications
+
+Undo should restore meaningful user actions rather than arbitrary low-level state updates.
+
+A single drag gesture should produce one undoable command.
+
+---
+
+# 5. Specialized editor: flowcharts and business processes
+
+## 5.1 Overview
+
+The flowchart editor supports general-purpose diagrams, structured business workflows, and decision models.
+
+## 5.2 Shape library
+
+Provide standard objects including:
+
+- Start/end
+- Process
+- Decision
+- Input/output
+- Document
+- Multiple documents
+- Database
+- Data storage
+- Manual operation
+- Delay
+- Subprocess
+- Connector
+- Annotation
+- Swimlane
+- Container
+
+Provide recognizable default styles and customizable alternatives.
+
+## 5.3 Rapid flow creation
+
+A user should be able to create a flowchart without repeatedly returning to the shape library.
+
+When a node is selected, contextual addition controls should appear around its edges.
+
+Clicking or dragging one of these controls creates the next connected node.
+
+The user can select a node type from a compact contextual menu.
+
+Example:
+
+1. Create a start node.
+2. Click the bottom insertion control.
+3. Choose Process.
+4. Enter a label.
+5. Click the next insertion control.
+6. Choose Decision.
+7. Create Yes and No branches.
+
+The editor should automatically connect and space the objects.
+
+## 5.4 Decision branches
+
+Decision nodes support named outcomes.
+
+Examples:
+
+- Yes / No
+- True / False
+- Approved / Rejected
+- Success / Failure
+- Custom labels
+
+Branch labels should be directly editable on the canvas.
+
+## 5.5 Swimlanes
+
+Support horizontal and vertical swimlanes.
+
+Users can:
+
+- Create lanes
+- Rename lanes
+- Reorder lanes
+- Resize lanes
+- Move objects between lanes
+- Add nested lanes where supported
+- Apply distinct colors
+- Collapse or expand lane contents
+
+Connectors should remain attached when objects move between lanes.
+
+## 5.6 Flow validation
+
+Optional validation checks may identify:
+
+- Disconnected nodes
+- Missing start or end points
+- Unlabeled decision branches
+- Unreachable nodes
+- Dead ends
+- Unexpected cycles
+
+Validation warnings must not prevent users from creating intentionally unconventional diagrams.
+
+---
+
+# 6. Specialized editor: software architecture diagrams
+
+## 6.1 Overview
+
+The architecture editor will help users visually model systems ranging from small web applications to complex distributed enterprise architectures.
+
+The primary goal is to represent components, their responsibilities, infrastructure relationships, and the flow of data.
+
+## 6.2 Component categories
+
+### User and client layer
+
+- User
+- Administrator
+- Browser
+- Mobile device
+- Desktop application
+- External client
+- Third-party application
+
+### Presentation layer
+
+- Web application
+- SPA
+- Micro frontend
+- Module federation host
+- UI component
+- Authentication screen
+- CDN
+- Static hosting service
+
+### Application and API layer
+
+- API gateway
+- REST API
+- GraphQL service
+- Backend-for-frontend
+- Microservice
+- Serverless function
+- Application server
+- Authentication service
+- Authorization service
+
+### Data and integration layer
+
+- Relational database
+- NoSQL database
+- Cache
+- Object storage
+- Message queue
+- Event bus
+- Data warehouse
+- ETL pipeline
+- External integration
+- File system
+
+### Infrastructure layer
+
+- Cloud environment
+- Virtual machine
+- Container
+- Kubernetes cluster
+- Load balancer
+- Firewall
+- Network
+- VPC
+- Subnet
+- Security boundary
+- Region
+- Availability zone
+
+### Enterprise service categories
+
+- Identity provider
+- Logging
+- Monitoring
+- Notifications
+- Search
+- Analytics
+- Secrets management
+- Feature flags
+- Job scheduler
+- Audit service
+
+## 6.3 Architecture-specific properties
+
+Architecture objects can include:
+
+- Component name
+- Component category
+- Description
+- Technology
+- Version
+- Environment
+- Deployment location
+- Owner
+- API endpoint
+- Repository URL
+- Documentation URL
+- Security classification
+- Operational status
+- Custom tags
+- Associated diagrams
+
+Properties should be optional and progressively disclosed.
+
+## 6.4 Container hierarchy
+
+Architecture diagrams must support nested containers representing logical or physical boundaries.
+
+Examples:
+
+- Enterprise
+  - Cloud environment
+    - Virtual network
+      - Subnet
+        - Application cluster
+          - Microservice
+
+Containers should support:
+
+- Dragging objects into and out of boundaries
+- Automatic resizing
+- Collapsing
+- Locking
+- Styling
+- Named sections
+- Displaying aggregate metadata
+
+## 6.5 Connection semantics
+
+Relationships between components should support types such as:
+
+- HTTP
+- HTTPS
+- REST
+- GraphQL
+- WebSocket
+- gRPC
+- TCP
+- Event
+- Message queue
+- Database connection
+- File transfer
+- Authentication
+- Data replication
+- Custom protocol
+
+The selected relationship type can control the connector's default appearance.
+
+## 6.6 Cloud vendor libraries
+
+Provide optional branded component libraries for:
+
+- Microsoft Azure
+- Amazon Web Services
+- Google Cloud
+- Kubernetes
+- Generic cloud architecture
+
+Vendor symbols should follow applicable branding and usage guidelines.
+
+## 6.7 Environment variants
+
+Users should be able to represent multiple environments:
+
+- Local
+- Development
+- Testing
+- Staging
+- Production
+
+An architecture diagram may contain environment-specific visibility or styling.
+
+Future functionality may support comparing environment variants and highlighting differences.
+
+---
+
+# 7. Specialized editor: sequence diagrams and software call flows
+
+## 7.1 Product objective
+
+The sequence diagram editor is a flagship feature.
+
+It must provide a dramatically more intuitive experience than traditional sequence diagram builders.
+
+Users should be able to model interactions across users, interfaces, services, databases, and external systems through direct manipulation.
+
+The supplied reference demonstrates a recognizable sequence diagram structure containing a participant library, participant lifelines, directional messages, and a properties panel.
+
+Project Canvas must retain the familiarity of that structure while substantially improving discoverability, manipulation, spacing, editing, and visual presentation.
+
+## 7.2 Fundamental diagram structure
+
+Sequence diagrams contain:
+
+- Participants
+- Lifelines
+- Messages
+- Activations
+- Returns
+- Self-messages
+- Notes
+- Groups
+- Conditional fragments
+- Loops
+- Parallel execution
+- Breaks
+- References
+- Optional timing information
+
+The editor must understand that sequence diagrams are ordered semantic models, not arbitrary collections of lines.
+
+## 7.3 Participant library
+
+Provide participant types including:
+
+- Actor
+- User
+- Browser
+- Mobile
+- Desktop
+- Web UI
+- Frontend module
+- Application
+- API
+- Server
+- Microservice
+- Authentication service
+- Event bus
+- Queue
+- Cache
+- Database
+- Cloud service
+- External system
+- Custom component
+
+Each participant is displayed with an icon or customizable header.
+
+Every participant must have an associated lifeline extending through the diagram.
+
+## 7.4 Participant interactions
+
+Users can drag participants from the library onto the diagram header.
+
+The editor automatically:
+
+1. Inserts the participant into the correct horizontal sequence.
+2. Creates its lifeline.
+3. Aligns the participant header.
+4. Adjusts spacing between neighboring participants.
+5. Extends the lifeline to match the diagram's content.
+6. Updates message routes if necessary.
+
+Users can reorder participants by dragging their headers.
+
+Connected messages must follow the participant automatically.
+
+No message endpoints should become detached as a result of participant reordering.
+
+Users may rename participants by double-clicking their labels.
+
+Participant widths and horizontal spacing should be adjustable individually or globally.
+
+## 7.5 Creating a message
+
+The preferred interaction is direct drag-to-connect.
+
+**Example workflow**
+
+1. Hover over a participant lifeline.
+2. A subtle plus or connection handle appears.
+3. Drag horizontally toward another participant.
+4. The destination lifeline highlights.
+5. Release to create the message.
+6. An inline editor appears to enter the message name.
+7. The message is added to the sequence with intelligent vertical spacing.
+
+The user should not need to manually select arrow-drawing tools for routine messages.
+
+## 7.6 Message properties
+
+Every message supports:
+
+- Unique ID
+- Name
+- Source participant
+- Destination participant
+- Sequence position
+- Message type
+- Direction
+- Description
+- Payload
+- Protocol
+- Operation or API endpoint
+- Request/response schema
+- Status or outcome
+- Color
+- Line style
+- Arrowhead
+- Tags
+- Notes
+
+## 7.7 Message types
+
+Support:
+
+**Synchronous call**
+
+Solid arrow representing a blocking request.
+
+**Asynchronous call**
+
+Distinct arrowhead or line treatment representing a nonblocking operation.
+
+**Return message**
+
+Typically dashed, representing a response or returned value.
+
+**Self-message**
+
+A message that loops from a participant back to itself.
+
+**Create message**
+
+Represents creation of a participant or instance.
+
+**Destroy message**
+
+Represents termination of a participant or instance.
+
+**Event publication**
+
+Represents a published event or notification.
+
+**Custom message**
+
+Allows user-defined semantics and styling.
+
+## 7.8 Intelligent message insertion
+
+Messages must occupy logical sequence rows.
+
+When a user inserts a message between two existing calls, subsequent calls automatically shift downward.
+
+The application must not require the user to manually move every message below the insertion point.
+
+Example sequence:
+
+1. User → UI: Submit login
+2. UI → API: Authenticate
+3. API → Identity Provider: Validate credentials
+4. Identity Provider → API: Return token
+5. API → UI: Return session
+6. UI → User: Display dashboard
+
+Inserting a new validation step between messages two and three should automatically adjust the sequence.
+
+## 7.9 Message reordering
+
+Users must be able to drag messages vertically to change their sequence.
+
+While dragging, show an insertion indicator.
+
+On release:
+
+- Update the message's logical order.
+- Reflow adjacent messages.
+- Preserve participant relationships.
+- Adjust activation bars.
+- Adjust group boundaries.
+- Preserve notes attached to the message.
+
+Provide keyboard commands to move selected messages earlier or later.
+
+## 7.10 Participant reordering
+
+Participants can be rearranged horizontally by dragging their headers.
+
+All source and destination relationships must remain semantically intact.
+
+Only the rendered coordinates should change.
+
+## 7.11 Activation bars
+
+Activation bars represent periods during which participants are executing operations.
+
+Support:
+
+- Manual activation
+- Automatic activation
+- Nested activation
+- Resizing
+- Styling
+- Association with message calls and returns
+
+Automatic activation is optional and should be driven by the semantic model when enabled.
+
+## 7.12 Conditional fragments
+
+Support UML-style combined fragments:
+
+- `alt`
+- `opt`
+- `loop`
+- `par`
+- `break`
+- `critical`
+- `ref`
+
+Users create fragments through a library item or by selecting messages and choosing "Wrap in fragment."
+
+The editor then creates the fragment around the selected sequence steps.
+
+### Fragment operations
+
+- Rename
+- Add branch
+- Remove branch
+- Resize
+- Reorder branch
+- Collapse
+- Expand
+- Move as a group
+- Edit guard expressions
+- Change appearance
+
+Fragment boundaries should automatically expand when contained messages are added.
+
+## 7.13 Advanced message details
+
+Messages may have structured request and response details.
+
+For example:
+
+**Message:** Authenticate user
+
+**Method:** POST
+
+**Endpoint:** `/api/auth/login`
+
+**Payload:**
+```json
+{
+  "username": "user@example.com",
+  "password": "***"
+}
+```
+
+**Response:**
+```json
+{
+  "accessToken": "...",
+  "expiresIn": 3600
+}
+```
+
+The UI should display compact previews rather than placing large payload blocks directly on the canvas.
+
+Full payload details appear in the properties panel or contextual inspector.
+
+## 7.14 Notes and annotations
+
+Users can attach notes to:
+
+- Participants
+- Messages
+- Activations
+- Fragments
+- Specific diagram coordinates
+
+Attached notes should move with their target when applicable.
+
+## 7.15 Sequence auto-layout
+
+The editor automatically manages:
+
+- Participant alignment
+- Lifeline extension
+- Message row spacing
+- Fragment boundaries
+- Activation alignment
+- Label positioning
+- Note offsets
+- Overall diagram dimensions
+
+Users may adjust spacing manually, but auto-layout should be the default.
+
+## 7.16 Sequence-specific views
+
+Support two primary visualization modes.
+
+**Classic mode**
+
+Traditional sequence diagram format with participant headers, vertical lifelines, and horizontal messages.
+
+**Modern mode**
+
+A refined presentation with visually richer participant cards, subtle layer grouping, message indicators, and more sophisticated information hierarchy.
+
+Both modes must use the same underlying semantic data model.
+
+Changing modes must not destroy or alter interactions.
+
+## 7.17 Architecture and sequence diagram integration
+
+A participant should optionally reference an existing architecture component.
+
+For example:
+
+A component called Authentication API in an architecture diagram can also appear as a participant in a sequence diagram.
+
+This allows:
+
+- Shared metadata
+- Reused component names
+- Links between architecture and behavior
+- Navigation from participant to architectural component
+- Cross-diagram dependency exploration
+
+Users may create stand-alone participants without linking them to a broader architecture.
+
+## 7.18 Sequence diagram acceptance criteria
+
+- Users can create five participants and connect ten messages without opening a properties panel.
+- Participants can be reordered without breaking connections.
+- Messages can be inserted between existing calls.
+- Message order can be changed through drag-and-drop.
+- Conditional fragments can be created around existing messages.
+- A sequence diagram can be generated from a template and fully modified afterward.
+- All changes participate in undo and redo.
+- Exported diagrams preserve participant and message labels.
+- Sequence semantics remain valid after importing, saving, reopening, or changing display modes.
+
+---
+
+# 8. Specialized editor: floor plans
+
+## 8.1 Overview
+
+The floor plan editor provides a visually approachable environment for residential and commercial space planning.
+
+The product should prioritize practical layout planning rather than full architectural CAD functionality.
+
+## 8.2 Floor plan objects
+
+Support:
+
+- Exterior walls
+- Interior walls
+- Doors
+- Windows
+- Rooms
+- Stairs
+- Columns
+- Furniture
+- Appliances
+- Fixtures
+- Electrical outlets
+- Lighting fixtures
+- Labels
+- Dimension lines
+- Architectural symbols
+
+## 8.3 Measurement system
+
+Support:
+
+- Feet and inches
+- Decimal feet
+- Meters
+- Centimeters
+- Millimeters
+
+Projects must define a unit system.
+
+Changing display units must not alter actual dimensions.
+
+## 8.4 Wall drawing
+
+Users should be able to:
+
+1. Select the Wall tool.
+2. Click to establish a starting point.
+3. Drag or click to establish the next wall endpoint.
+4. Continue drawing connected wall segments.
+5. Finish using Enter, Escape, or a completion gesture.
+
+Provide live measurements during drawing.
+
+Walls should snap to:
+
+- Existing wall endpoints
+- Perpendicular angles
+- Parallel alignments
+- Room boundaries
+- Grid intersections
+
+## 8.5 Smart room detection
+
+When walls form an enclosed region, the editor should recognize it as a potential room.
+
+Users can assign:
+
+- Room name
+- Room type
+- Floor material
+- Area
+- Color
+- Notes
+
+Room area should be calculated using stored geometry.
+
+## 8.6 Doors and windows
+
+Dragging a door or window onto a wall should:
+
+- Detect the wall.
+- Snap to it.
+- Create the opening.
+- Align orientation.
+- Support resizing.
+- Allow repositioning along the wall.
+
+Door objects should support swing direction and opening angle.
+
+## 8.7 Furniture placement
+
+Provide an extensive library including:
+
+- Desks
+- Office chairs
+- Conference tables
+- Sofas
+- Beds
+- Dining tables
+- Cabinets
+- Storage
+- Reception furniture
+- Appliances
+- Bathroom fixtures
+
+Objects should have real-world default dimensions that users can override.
+
+## 8.8 Floor plan editing
+
+Support:
+
+- Multiple floors
+- Furniture rotation
+- Room labels
+- Measurement annotations
+- Furniture grouping
+- Layer visibility
+- Layout alternatives
+- Printing to scale
+- Grid and ruler controls
+
+## 8.9 Floor plan views
+
+Initial release:
+
+- 2D floor plan
+- Furniture layout
+- Dimension view
+- Print layout
+
+Future enhancement:
+
+- Basic 3D room preview
+- Wall elevation
+- Perspective view
+- Material visualization
+
+Professional CAD, structural engineering, and building-code certification are outside the initial scope.
+
+---
+
+# 9. Additional diagram editors
+
+## 9.1 Network diagrams
+
+Support:
+
+- Routers
+- Switches
+- Firewalls
+- Servers
+- Workstations
+- Wireless access points
+- Network boundaries
+- Subnets
+- VLANs
+- Connection types
+
+## 9.2 Entity relationship diagrams
+
+Support:
+
+- Entities
+- Attributes
+- Primary keys
+- Foreign keys
+- One-to-one relationships
+- One-to-many relationships
+- Many-to-many relationships
+- Cardinality notation
+
+## 9.3 Organization charts
+
+Support:
+
+- People
+- Positions
+- Teams
+- Reporting lines
+- Departments
+- Nested hierarchy
+- Collapse and expand
+- Automatic hierarchical layout
+
+## 9.4 User journeys
+
+Support:
+
+- Journey stages
+- User actions
+- Touchpoints
+- Emotions
+- Pain points
+- Opportunities
+- Responsible teams
+- Supporting documents
+
+## 9.5 Whiteboarding
+
+Support:
+
+- Freeform shapes
+- Sticky notes
+- Text
+- Freehand drawing
+- Connectors
+- Images
+- Frames
+- Grouping
+- Collaboration cursors
+
+---
+
+# 10. Templates and starter diagrams
+
+## 10.1 Template gallery
+
+Templates should be professionally designed and immediately editable.
+
+Provide:
+
+- Category filters
+- Keyword search
+- Preview thumbnails
+- Popular templates
+- Recently used templates
+- Favorites
+- Custom templates
+
+## 10.2 Initial template coverage
+
+**Flowcharts**
+
+- Simple process
+- Approval workflow
+- Customer onboarding
+- Decision tree
+- Incident escalation
+- Employee onboarding
+
+**Architecture**
+
+- Three-tier web application
+- React frontend with API
+- Microservices
+- Azure application architecture
+- Event-driven application
+- Authentication architecture
+- Data processing pipeline
+- Modular frontend architecture
+
+**Sequence diagrams**
+
+- User login
+- OAuth authentication
+- API request and response
+- Database transaction
+- Event publication
+- Asynchronous processing
+- Multi-service orchestration
+- Error handling and retry
+
+**Floor plans**
+
+- Single room
+- Home office
+- Open office
+- Conference room
+- Residential floor plan
+- Retail layout
+
+## 10.3 Custom templates
+
+Users can save existing diagrams as templates.
+
+Templates may preserve:
+
+- Diagram structure
+- Visual styles
+- Components
+- Default labels
+- Layout
+- Metadata
+- Measurement settings
+- Diagram-specific rules
+
+---
+
+# 11. Design system and visual language
+
+## 11.1 Design objective
+
+Project Canvas must have a premium, coherent design identity.
+
+The application should resemble a modern professional design tool rather than a traditional enterprise diagramming interface.
+
+Visual polish must not come at the expense of precision, discoverability, or accessibility.
+
+## 11.2 Design principles
+
+- Clear visual hierarchy
+- Minimal persistent clutter
+- Context-sensitive controls
+- Purposeful motion
+- Consistent geometry
+- Generous but controlled spacing
+- Balanced typography
+- Refined iconography
+- Accessible contrast
+- Predictable interaction states
+
+## 11.3 Design system foundation
+
+Use a token-based design system aligned with modern Material Design principles, while allowing a distinctive Project Canvas brand.
+
+Tokens must cover:
+
+- Colors
+- Typography
+- Spacing
+- Border radii
+- Elevation
+- Motion
+- Opacity
+- Shadows
+- Icon sizes
+- Interactive states
+- Canvas object styling
+
+Support light and dark themes.
+
+## 11.4 Diagram styling
+
+Diagram objects should use consistent style definitions.
+
+Provide several professionally designed diagram themes:
+
+**Minimal**
+
+Neutral surfaces, thin borders, understated typography.
+
+**Modern**
+
+Soft depth, refined accent colors, contemporary iconography.
+
+**Technical**
+
+Dense but readable, high clarity, suitable for engineering documentation.
+
+**Presentation**
+
+Larger labels, stronger hierarchy, more expressive visual grouping.
+
+**Blueprint**
+
+Architectural or engineering-inspired canvas treatment.
+
+## 11.5 Color and visual semantics
+
+Object appearance should communicate meaning when appropriate.
+
+Examples:
+
+- User-facing components
+- Application services
+- Data systems
+- External integrations
+- Security components
+- Decisions
+- Success and failure states
+
+Colors should remain user-configurable.
+
+Do not rely on color alone to convey critical semantics.
+
+## 11.6 Typography
+
+Default typography should be optimized for UI readability and diagram labels.
+
+Provide:
+
+- Predictable type scale
+- Text wrapping
+- Truncation controls
+- Inline rich-text formatting where supported
+- Accessible minimum sizes
+- Consistent label alignment
+
+## 11.7 Interaction animation
+
+Use restrained motion for:
+
+- Drag previews
+- Object insertion
+- Connector attachment
+- Selection
+- Auto-layout
+- Panel transitions
+- Zoom and viewport movement
+- Undo and redo
+
+Animations must be interruptible and respect reduced-motion preferences.
+
+## 11.8 Accessibility
+
+Target WCAG 2.2 AA for the application interface and supported editing workflows.
+
+Required capabilities include:
+
+- Keyboard navigation
+- Keyboard-based object manipulation
+- Visible focus states
+- Accessible panel controls
+- Object labels for assistive technology
+- Screen-reader-friendly diagram outline
+- Reduced-motion support
+- Sufficient contrast
+- Non-color-only state indicators
+- Customizable keyboard shortcuts where practical
+
+The product must offer a navigable structural representation of diagrams for users who cannot interact directly with a visual canvas.
+
+---
+
+# 12. Intelligent productivity features
+
+## 12.1 Universal command palette
+
+Provide a searchable command palette accessible through a keyboard shortcut.
+
+Examples:
+
+- Add server
+- Insert decision
+- Align left
+- Apply auto-layout
+- Create sequence message
+- Add room
+- Export as SVG
+- Find component
+
+Commands should be context-sensitive.
+
+## 12.2 Context-aware quick actions
+
+When selecting an object, surface relevant actions rather than a generic set of tools.
+
+Examples:
+
+Selecting a sequence message offers message type, rename, reorder, and fragment actions.
+
+Selecting a wall offers length, thickness, angle, and add-door actions.
+
+Selecting a flowchart decision offers branch creation.
+
+## 12.3 Smart replacement
+
+Allow users to change an object's type without recreating it.
+
+For example:
+
+- Process → Decision
+- Server → Microservice
+- Database → Cache
+- Desk → Conference table
+
+Preserve applicable properties and attached relationships.
+
+Warn when a conversion would discard incompatible information.
+
+## 12.4 Search and navigation
+
+Provide diagram-wide search for:
+
+- Object names
+- Participant names
+- Labels
+- Metadata
+- Tags
+- Descriptions
+- Component types
+
+Selecting a search result should focus the corresponding canvas object.
+
+## 12.5 Layers and groups
+
+Provide a layers panel with:
+
+- Nested groups
+- Visibility
+- Locking
+- Renaming
+- Reordering
+- Selection
+- Layer filtering
+
+Advanced users should be able to manage complex diagrams without relying exclusively on canvas interactions.
+
+## 12.6 Reusable components
+
+Users can create reusable diagram components.
+
+A component may include:
+
+- Shape or icon
+- Styles
+- Metadata
+- Connection ports
+- Nested objects
+- Default dimensions
+- Custom properties
+
+Reusable components can be stored in personal or shared libraries.
+
+---
+
+# 13. AI-assisted diagram generation
+
+## 13.1 Overview
+
+AI capabilities should enhance the visual editing experience rather than become a dependency.
+
+The application must remain fully usable without AI.
+
+AI integration will be optional, modular, and configurable.
+
+## 13.2 Natural language generation
+
+Users can describe a diagram in plain English.
+
+Example:
+
+"Create an architecture showing a React application hosted on Azure communicating with an API gateway, three backend services, Redis cache, and SQL database."
+
+The system should generate an editable diagram.
+
+AI-generated objects must use the same native data structures as manually created objects.
+
+The result cannot be a flattened image.
+
+## 13.3 Natural language sequence creation
+
+Example:
+
+"Show a user logging in through a React frontend, calling an authentication API, validating credentials against an identity provider, then fetching permissions from a database."
+
+The system should create:
+
+- Participants
+- Lifelines
+- Ordered messages
+- Return messages
+- Activation bars where appropriate
+
+Users must then be able to modify every element using drag-and-drop.
+
+## 13.4 AI diagram modification
+
+Examples:
+
+- "Add a caching layer."
+- "Move the authentication flow before the database call."
+- "Group these services under an Azure environment."
+- "Make the flowchart more compact."
+- "Add an error handling branch."
+- "Create a parallel execution fragment."
+
+AI should propose structured changes and display a preview of the affected diagram.
+
+Users can accept, reject, or undo those changes.
+
+## 13.5 Diagram analysis
+
+Potential AI functions:
+
+- Explain architecture
+- Summarize workflow
+- Identify missing steps
+- Suggest simplifications
+- Identify apparent circular dependencies
+- Highlight ambiguous relationships
+- Draft documentation
+- Generate a sequence diagram from architecture relationships
+
+AI-generated technical interpretations must be labeled as suggestions rather than verified system behavior.
+
+## 13.6 AI provider architecture
+
+AI must use a provider abstraction.
+
+Potential integrations:
+
+- OpenAI
+- Azure OpenAI
+- Other compatible model providers
+- Enterprise-hosted models
+
+API credentials must remain server-side.
+
+User diagram content must not be sent to an AI provider without an authorized user action or configured organizational policy.
+
+---
+
+# 14. Import, export, and interoperability
+
+## 14.1 Native format
+
+Project Canvas must provide a versioned JSON document format.
+
+The native format should preserve:
+
+- Object identities
+- Coordinates
+- Dimensions
+- Connections
+- Styles
+- Groups
+- Diagram semantics
+- Component metadata
+- Template references
+- Document settings
+
+## 14.2 Export formats
+
+Initial support:
+
+- PNG
+- SVG
+- PDF
+- Native JSON
+
+Additional formats:
+
+- JPEG
+- Mermaid
+- PlantUML
+- CSV for suitable tabular metadata
+
+Not every diagram type maps losslessly to every export format.
+
+## 14.3 Import formats
+
+Initial support:
+
+- Native JSON
+- Supported SVG objects
+- Mermaid flowcharts
+- Mermaid sequence diagrams
+
+Later support:
+
+- Draw.io XML
+- Visio-compatible formats
+- PlantUML
+- Structured architecture definitions
+- Additional interoperable formats
+
+## 14.4 Visio compatibility
+
+Because Visio is a major reference point, import and export compatibility should be considered strategically important.
+
+However, full fidelity with every Visio feature is not an initial-release requirement.
+
+A dedicated compatibility assessment must identify support levels for:
+
+- VSDX files
+- Pages
+- Shapes
+- Connectors
+- Text
+- Groups
+- Styles
+- Layers
+- Metadata
+- Specialized Visio objects
+
+Unsupported constructs must be identified to users during import.
+
+## 14.5 Export quality
+
+Exports must support:
+
+- Transparent background
+- Solid background
+- Custom scale
+- Custom dimensions
+- Selection-only export
+- Whole-diagram export
+- Margins
+- Print-friendly output
+- High-resolution rasterization
+- Consistent font rendering
+
+SVG exports should preserve vector geometry where possible.
+
+---
+
+# 15. Collaboration and sharing
+
+## 15.1 Initial collaboration
+
+Support:
+
+- Save
+- Open
+- Rename
+- Duplicate
+- Share a document
+- Read-only access
+- Editable access
+- Comments
+- Version history
+
+## 15.2 Real-time collaboration
+
+Future implementation should support:
+
+- Multiple concurrent editors
+- Presence indicators
+- Live cursors
+- Object selection awareness
+- Live diagram updates
+- Conflict handling
+- Collaborative comments
+
+A concurrency-safe synchronization model will be required.
+
+## 15.3 Permissions
+
+Potential permission levels:
+
+- Owner
+- Editor
+- Commenter
+- Viewer
+
+Permission enforcement must occur on the server, not solely through the UI.
+
+## 15.4 Version history
+
+Users can:
+
+- View previous versions
+- Compare revisions
+- Restore previous versions
+- Identify authors
+- View modification timestamps
+
+Autosave history and named versions should be separate concepts.
+
+---
+
+# 16. Document and workspace management
+
+## 16.1 Workspace hierarchy
+
+Proposed hierarchy:
+
+Workspace → Folder → Project → Diagram
+
+A project may contain multiple related diagrams.
+
+For example:
+
+**Customer Portal Project**
+
+- Architecture diagram
+- Login sequence
+- API sequence
+- Data flow diagram
+- Deployment diagram
+- User onboarding flow
+
+## 16.2 Related diagrams
+
+Support links between documents.
+
+Users may associate a sequence diagram with architecture components or reference a process diagram from a larger system diagram.
+
+## 16.3 Search
+
+Search across:
+
+- Titles
+- Tags
+- Diagram types
+- Object labels
+- Metadata
+- Projects
+- Owners
+
+## 16.4 Document status
+
+Every diagram should have a visible save state:
+
+- Saved
+- Saving
+- Offline
+- Unsaved changes
+- Save failed
+- Conflict requiring attention
+
+---
+
+# 17. Software architecture
+
+## 17.1 Architectural direction
+
+The platform should use a modular React-based frontend architecture.
+
+The canvas infrastructure will be shared while diagram-specific editing experiences are implemented as independently maintainable modules.
+
+A recommended structure:
+
+```text
+Project Canvas
+│
+├── Application Shell
+│   ├── Navigation
+│   ├── Workspace Management
+│   ├── Authentication
+│   ├── Theme and Design System
+│   └── Global Commands
+│
+├── Core Diagram Engine
+│   ├── Document Model
+│   ├── Geometry Engine
+│   ├── Rendering Engine
+│   ├── Selection Engine
+│   ├── Drag and Drop
+│   ├── Connection Engine
+│   ├── Layout Engine
+│   ├── Command History
+│   └── Serialization
+│
+├── Diagram Modules
+│   ├── Flowchart
+│   ├── Architecture
+│   ├── Sequence
+│   ├── Floor Plan
+│   ├── Network
+│   ├── ERD
+│   ├── Organization Chart
+│   └── Whiteboard
+│
+├── Shared Services
+│   ├── Templates
+│   ├── Component Libraries
+│   ├── Document Storage
+│   ├── Search
+│   ├── Import / Export
+│   ├── Collaboration
+│   └── AI Integration
+│
+└── Backend Services
+    ├── API
+    ├── Identity and Access
+    ├── Document Persistence
+    ├── Asset Storage
+    ├── Collaboration
+    └── AI Gateway
+```
+
+## 17.2 Frontend technology
+
+Recommended foundation:
+
+- React
+- TypeScript
+- Vite
+- Modular application shell
+- Component-based design system
+- Functional programming patterns
+- Immutable document updates
+- Explicit state management
+
+All diagram modules should expose documented lifecycle and integration contracts.
+
+## 17.3 Canvas rendering strategy
+
+The core engine must separate the semantic document model from visual rendering.
+
+Rendering technologies should be evaluated against requirements such as:
+
+- Connection precision
+- Complex text layout
+- Scalable geometry
+- Large-diagram performance
+- Hit testing
+- Accessibility
+- Export fidelity
+- Rich styling
+
+SVG is a strong initial candidate for standard diagram rendering.
+
+Canvas or WebGL rendering may be introduced for very large scenes or specialized workloads.
+
+Hybrid rendering should be supported architecturally.
+
+The product should not assume that one rendering technology is optimal for every diagram type.
+
+## 17.4 Module registration
+
+Diagram modules must register capabilities through a standard interface.
+
+Conceptual TypeScript contract:
+
+```typescript
+interface DiagramModule {
+  id: string;
+  name: string;
+  version: string;
+
+  supportedObjects: string[];
+
+  createDocument(): DiagramDocument;
+
+  getToolDefinitions(): ToolDefinition[];
+
+  getPropertyPanels(): PropertyPanelDefinition[];
+
+  getTemplates(): TemplateDefinition[];
+
+  validate(
+    document: DiagramDocument
+  ): ValidationResult[];
+
+  serialize(
+    document: DiagramDocument
+  ): unknown;
+
+  deserialize(
+    data: unknown
+  ): DiagramDocument;
+}
+```
+
+Modules should not directly manipulate internal state owned by unrelated modules.
+
+## 17.5 Module isolation
+
+Each module should own:
+
+- Specialized object definitions
+- Diagram validation
+- Layout rules
+- Tooling
+- Property editors
+- Templates
+- Module documentation
+- Module tests
+
+Shared functionality should be exposed through stable core APIs.
+
+A module failure should not corrupt the global document model.
+
+## 17.6 State management
+
+Separate:
+
+**Document state**
+
+Persistent objects, relationships, styles, and metadata.
+
+**Interaction state**
+
+Selections, active tools, drag operations, hover states, and temporary previews.
+
+**Viewport state**
+
+Zoom, pan, visible region, and presentation settings.
+
+**Application state**
+
+Authentication, workspace configuration, panel visibility, user preferences.
+
+Document changes should use immutable updates and explicit commands.
+
+## 17.7 Command architecture
+
+Represent diagram modifications through commands.
+
+Examples:
+
+- AddObject
+- RemoveObject
+- MoveObject
+- ResizeObject
+- AddConnector
+- UpdateConnector
+- ReorderParticipant
+- InsertSequenceMessage
+- AddWall
+- UpdateRoom
+
+Commands should support:
+
+- Execute
+- Undo
+- Redo
+- Validation
+- Transaction grouping
+- Serialization where needed
+
+This supports consistent history, testing, and future collaborative editing.
+
+## 17.8 Routing and layout services
+
+The connection-routing engine and automatic-layout engine should be independently testable services.
+
+They should accept structured inputs and return deterministic outputs for equivalent inputs and configuration.
+
+## 17.9 Worker-based processing
+
+Computationally expensive operations should be able to run outside the main UI thread.
+
+Examples:
+
+- Auto-layout
+- Connector routing
+- Document validation
+- Large import parsing
+- Complex geometry
+- Diagram export
+
+User interactions must remain responsive during these operations.
+
+---
+
+# 18. Data architecture and persistence
+
+## 18.1 Local-first development
+
+The application must support fully functional local development without requiring a deployed backend.
+
+Use a persistence abstraction with at least two implementations:
+
+1. IndexedDB-backed local storage
+2. Cloud-backed storage
+
+All document operations must go through the same service interface.
+
+## 18.2 Repository interface
+
+Conceptual interface:
+
+```typescript
+interface DiagramRepository {
+  list(): Promise<DiagramSummary[]>;
+
+  get(id: string): Promise<DiagramDocument>;
+
+  create(
+    input: CreateDiagramInput
+  ): Promise<DiagramDocument>;
+
+  update(
+    id: string,
+    changes: DiagramChanges
+  ): Promise<DiagramDocument>;
+
+  delete(id: string): Promise<void>;
+}
+```
+
+Switching storage providers must not require changing diagram components.
+
+## 18.3 Persistence requirements
+
+Support:
+
+- Autosave
+- Manual save
+- Save recovery
+- Schema versioning
+- Document validation
+- Optimistic updates
+- Error recovery
+- Migration
+- Offline storage
+
+## 18.4 Document schema
+
+Illustrative model:
+
+```typescript
+interface DiagramDocument {
+  id: string;
+  schemaVersion: number;
+  type: DiagramType;
+  title: string;
+
+  objects: DiagramObject[];
+  connections: DiagramConnection[];
+
+  layers: DiagramLayer[];
+  groups: DiagramGroup[];
+
+  settings: DiagramSettings;
+  metadata: Record<string, unknown>;
+
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+Specialized diagram modules extend this model through namespaced metadata or explicitly versioned semantic structures.
+
+## 18.5 Stable identifiers
+
+All objects must have durable IDs.
+
+Relationship references must use IDs rather than array positions or screen coordinates.
+
+This is especially important for sequence diagrams, where changing participant order must not change message meaning.
+
+## 18.6 Schema migrations
+
+Every persisted document must declare its schema version.
+
+Opening an older document should invoke necessary migrations before editing.
+
+Migration failures must preserve the original file and present a recovery or export option.
+
+## 18.7 Cloud storage
+
+A future backend may use:
+
+- Relational database for workspaces, permissions, metadata, and version information
+- Document storage for diagrams
+- Object storage for assets and exports
+- Real-time synchronization service for collaboration
+
+The cloud implementation must preserve compatibility with the native document schema.
+
+---
+
+# 19. Authentication and authorization
+
+## 19.1 Local development authentication
+
+Developers must be able to run the application without configuring a cloud identity provider.
+
+Provide a dedicated local authentication adapter with:
+
+- Clearly marked development-only test identities
+- Canned local role assignments
+- Simulated sign-in and sign-out
+- Configurable workspace ownership
+- Test permissions
+
+The local adapter must not be enabled in production builds.
+
+## 19.2 Production authentication
+
+Use standards-based authentication through a configurable identity provider.
+
+Support OAuth 2.0 / OpenID Connect integration.
+
+Potential options include enterprise Microsoft Entra ID and other supported identity services.
+
+## 19.3 Authorization roles
+
+Initial roles:
+
+- Workspace Administrator
+- Workspace Member
+- Diagram Owner
+- Editor
+- Commenter
+- Viewer
+
+## 19.4 Security controls
+
+Requirements include:
+
+- Server-side permission enforcement
+- Secure session handling
+- Protected document access
+- Input validation
+- Import sanitization
+- Safe SVG handling
+- Cross-site scripting prevention
+- API rate limiting
+- Audit logging for sensitive operations
+- Secure credential storage
+- Role-based access policies
+
+---
+
+# 20. APIs and integration contracts
+
+## 20.1 API design
+
+Use versioned APIs with documented request and response schemas.
+
+Conceptual endpoints:
+
+```text
+GET    /api/v1/diagrams
+POST   /api/v1/diagrams
+GET    /api/v1/diagrams/{id}
+PATCH  /api/v1/diagrams/{id}
+DELETE /api/v1/diagrams/{id}
+
+GET    /api/v1/templates
+POST   /api/v1/templates
+
+GET    /api/v1/libraries
+POST   /api/v1/libraries
+
+POST   /api/v1/import
+POST   /api/v1/export
+
+GET    /api/v1/workspaces
+POST   /api/v1/workspaces
+```
+
+## 20.2 API requirements
+
+- Explicit versioning
+- Schema validation
+- Structured errors
+- Pagination
+- Authentication
+- Authorization
+- Request IDs
+- Optimistic concurrency control
+- Document revision numbers
+- Appropriate caching
+- API documentation
+
+## 20.3 External integrations
+
+Potential future integrations:
+
+- GitHub
+- Azure DevOps
+- Jira
+- Confluence
+- Microsoft Teams
+- SharePoint
+- Google Drive
+- OneDrive
+- Cloud architecture inventories
+
+These integrations should be separate optional modules.
+
+---
+
+# 21. Performance requirements
+
+The system must remain fluid during common editing operations.
+
+Proposed initial performance targets:
+
+| Metric | Target |
+|---|---|
+| Initial interactive editor load | Under 3 seconds on the defined reference device and network |
+| Object drag feedback | Target 60 FPS |
+| Standard selection response | Under 100 ms |
+| Contextual toolbar response | Under 150 ms |
+| Local autosave debounce | Within 1 second after activity settles |
+| Typical document open | Under 2 seconds |
+| Undo/redo visual response | Under 150 ms for ordinary commands |
+| Standard export | Under 5 seconds for a typical diagram |
+
+These are product targets, not guaranteed results. The team must define reference hardware, browsers, diagram fixtures, and measurement methodology before using them as release gates.
+
+## 21.1 Large-diagram handling
+
+The application should support:
+
+- Hundreds of objects in ordinary documents
+- Thousands of objects in optimized large documents
+- Large participant and message counts
+- Nested containers
+- Complex connectors
+- Long editing sessions
+
+Performance techniques may include:
+
+- Incremental rendering
+- Viewport culling
+- Spatial indexing
+- Memoization
+- Background workers
+- Batched state updates
+- Incremental layout
+- Efficient hit testing
+
+## 21.2 Memory management
+
+Repeated operations must not produce unbounded memory growth.
+
+Dragging, zooming, reopening documents, and undoing operations should be included in memory profiling.
+
+---
+
+# 22. Reliability and data integrity
+
+## 22.1 Data preservation
+
+Diagram content must survive:
+
+- Browser refresh
+- Temporary connectivity loss
+- Recoverable application errors
+- Autosave interruptions
+- Reopening documents
+- Schema migrations
+
+## 22.2 Referential integrity
+
+Object relationships must remain valid.
+
+For example:
+
+- Removing a participant must trigger a deliberate policy for associated sequence messages.
+- Removing a shape must not silently leave invalid connector references.
+- Moving a wall must update connected floor-plan geometry.
+- Reordering a sequence message must preserve its source and target.
+
+## 22.3 Error recovery
+
+Provide user-facing recovery options for:
+
+- Failed save
+- Corrupted import
+- Unsupported format
+- Rendering failure
+- Sync conflict
+- Invalid document structure
+- Missing external assets
+
+Errors must use understandable language and offer specific recovery actions.
+
+---
+
+# 23. Testing strategy
+
+## 23.1 Unit testing
+
+Required coverage:
+
+- Geometry calculations
+- Object transformations
+- Connection routing
+- Document commands
+- Serialization
+- Validation
+- Layout behavior
+- Sequence ordering
+- Floor-plan measurements
+- Permissions
+
+## 23.2 Component testing
+
+Test:
+
+- Library panels
+- Property editors
+- Contextual toolbars
+- Selection controls
+- Dialogs
+- Template browser
+- Workspace views
+
+## 23.3 Integration testing
+
+Validate:
+
+- Drag from library to canvas
+- Connect objects
+- Change object type
+- Reorder participants
+- Insert messages
+- Save and reload
+- Import and export
+- Undo and redo
+- Authentication and permissions
+
+## 23.4 End-to-end testing
+
+Automate realistic workflows.
+
+**Flowchart scenario**
+
+Create a decision workflow, add a branch, rearrange nodes, save, reopen, export.
+
+**Architecture scenario**
+
+Build a three-tier application, create a container, move services, connect a database, run auto-layout.
+
+**Sequence scenario**
+
+Create participants, drag messages between lifelines, insert a call, reorder participants, add an `alt` fragment, save, reopen.
+
+**Floor plan scenario**
+
+Create a rectangular room, modify dimensions, add a door and furniture, export a measured plan.
+
+## 23.5 Visual regression testing
+
+Maintain visual snapshots for:
+
+- Diagram themes
+- Major object types
+- Connection styles
+- Selection states
+- Light and dark mode
+- Responsive layouts
+- PDF and SVG rendering
+
+## 23.6 Accessibility testing
+
+Combine automated accessibility checks with manual keyboard and assistive technology testing.
+
+## 23.7 Performance testing
+
+Maintain benchmark fixtures for:
+
+- Small diagrams
+- Medium diagrams
+- Large diagrams
+- Long sequence diagrams
+- Deeply nested architecture diagrams
+- Dense floor plans
+
+## 23.8 Build integration
+
+The continuous integration pipeline should:
+
+1. Validate formatting.
+2. Run linting.
+3. Check TypeScript types.
+4. Run unit tests.
+5. Run integration tests.
+6. Build the application.
+7. Run critical end-to-end tests.
+8. Run selected accessibility checks.
+9. Publish test results.
+10. Reject builds that fail required release gates.
+
+---
+
+# 24. Documentation requirements
+
+Documentation is a required product deliverable.
+
+## 24.1 Master README
+
+The primary README must include:
+
+- Product overview
+- Capabilities
+- Supported diagram types
+- Technology stack
+- Architecture overview
+- Repository structure
+- Installation
+- Local execution
+- Development authentication
+- Environment configuration
+- Build commands
+- Test commands
+- Deployment
+- Storage configuration
+- Security architecture
+- Troubleshooting
+- Contribution guidelines
+
+## 24.2 Technical architecture documentation
+
+Maintain dedicated documentation for:
+
+- Application shell
+- Diagram engine
+- Rendering model
+- Document schema
+- Object model
+- Connector model
+- Command history
+- State management
+- Module boundaries
+- Authentication
+- Authorization
+- Storage
+- APIs
+- Import and export
+- Collaboration
+- AI integration
+
+## 24.3 Module documentation
+
+Each diagram module must have its own README describing:
+
+- Supported workflows
+- Specialized objects
+- Object properties
+- Layout rules
+- User interactions
+- Extension points
+- Data model
+- Testing
+- Known limitations
+- Examples
+
+## 24.4 User documentation
+
+Provide accessible, task-oriented documentation covering:
+
+- Getting started
+- Creating diagrams
+- Using templates
+- Adding objects
+- Connecting objects
+- Editing properties
+- Organizing diagrams
+- Working with sequence diagrams
+- Creating floor plans
+- Sharing
+- Exporting
+- Keyboard shortcuts
+- Troubleshooting
+
+Documentation should emphasize workflows rather than internal implementation details.
+
+---
+
+# 25. Prioritization and release strategy
+
+## 25.1 Phase 1: Core foundation
+
+**Priority: P0**
+
+Deliver:
+
+- Application shell
+- Design system
+- Home dashboard
+- Shared canvas engine
+- Drag-and-drop object placement
+- Selection and manipulation
+- Connectors
+- Undo/redo
+- Pan and zoom
+- Object properties
+- JSON persistence
+- IndexedDB local storage
+- Development authentication
+- Basic flowchart editor
+- PNG/SVG export
+- Core automated tests
+
+**Exit criteria:** A user can create, modify, save, reopen, and export a complete flowchart without data loss.
+
+## 25.2 Phase 2: Advanced diagramming and sequence editor
+
+**Priority: P0**
+
+Deliver:
+
+- Full sequence participant system
+- Lifelines
+- Drag-to-connect messages
+- Automatic sequence ordering
+- Participant reordering
+- Message reordering
+- Return and asynchronous messages
+- Activation bars
+- Conditional fragments
+- Sequence templates
+- Improved auto-layout
+- Architecture component library
+- Architecture containers
+
+**Exit criteria:** A user can build a realistic authentication or distributed-service sequence diagram entirely through visual interactions.
+
+## 25.3 Phase 3: Architecture and productivity
+
+**Priority: P1**
+
+Deliver:
+
+- Expanded architecture libraries
+- Cloud provider libraries
+- Rich component metadata
+- Component reuse
+- Universal command palette
+- Advanced alignment tools
+- Document search
+- More diagram themes
+- Improved import/export
+- Related diagrams
+
+**Exit criteria:** A software architect can create professional architecture and sequence diagrams with shared components.
+
+## 25.4 Phase 4: Floor plans and extended diagrams
+
+**Priority: P1**
+
+Deliver:
+
+- Floor-plan editor
+- Units and measurement
+- Wall drawing
+- Room detection
+- Doors and windows
+- Furniture library
+- Print-to-scale export
+- Network diagram editor
+- ERD editor
+- Organization chart editor
+
+**Exit criteria:** A user can create a measured room layout and produce a usable print-ready plan.
+
+## 25.5 Phase 5: Cloud and collaboration
+
+**Priority: P1**
+
+Deliver:
+
+- Production authentication
+- Cloud document repository
+- Workspaces
+- Sharing permissions
+- Comments
+- Version history
+- Collaboration foundation
+- Administrative settings
+
+Real-time collaboration may follow as a separately scoped release.
+
+## 25.6 Phase 6: Intelligent assistance
+
+**Priority: P2**
+
+Deliver:
+
+- Natural language diagram creation
+- AI sequence generation
+- AI-assisted diagram editing
+- Architecture explanations
+- AI layout suggestions
+- Additional import formats
+
+**Exit criteria:** AI-generated diagrams are completely editable with native canvas tools.
+
+---
+
+# 26. Nonfunctional requirements
+
+## 26.1 Browser support
+
+Support current stable desktop versions of:
+
+- Chrome
+- Edge
+- Firefox
+- Safari
+
+Compatibility must be validated across supported operating systems.
+
+## 26.2 Responsive behavior
+
+Prioritize desktop editing while supporting tablet interaction.
+
+Small-screen devices must support diagram viewing without broken navigation.
+
+## 26.3 Offline capability
+
+Locally stored diagrams should remain accessible offline.
+
+Cloud-backed documents should support clearly defined caching and synchronization behavior.
+
+## 26.4 Observability
+
+Provide:
+
+- Structured application logs
+- Error tracking
+- Performance metrics
+- Save failure monitoring
+- Import/export failure reporting
+- Module error reporting
+
+Telemetry must avoid exposing sensitive diagram content unnecessarily.
+
+## 26.5 Privacy
+
+Users must retain control over stored diagram data.
+
+Document content should not be exposed to external AI or analytics services without appropriate authorization.
+
+## 26.6 Extensibility
+
+The platform must support adding new:
+
+- Diagram modules
+- Object types
+- Component libraries
+- Templates
+- Export adapters
+- Storage adapters
+- AI providers
+- Integration modules
+
+Core changes should be minimized when introducing new modules.
+
+---
+
+# 27. User experience acceptance scenarios
+
+## Scenario A: Create a flowchart in under two minutes
+
+**Given** a new user opens Project Canvas
+
+**When** the user selects Flowchart
+
+**Then** the user can create a start node, process, decision, and two branches through contextual insertion controls.
+
+**And** all connectors are positioned automatically.
+
+**And** the user can export a polished image.
+
+## Scenario B: Create a software call flow
+
+**Given** a user opens a sequence diagram
+
+**When** the user drags User, UI, API, and Database onto the header
+
+**Then** four aligned participant lifelines appear.
+
+**When** the user draws messages between lifelines
+
+**Then** the system automatically assigns sequence rows.
+
+**When** the user inserts a message between two existing messages
+
+**Then** subsequent messages shift downward without manual repositioning.
+
+## Scenario C: Rearrange an architecture
+
+**Given** a diagram contains a frontend, API, service, and database
+
+**When** the user moves the database to a different location
+
+**Then** attached connectors reroute automatically.
+
+**And** metadata and references remain unchanged.
+
+## Scenario D: Change sequence participant order
+
+**Given** a sequence diagram has five participants and 20 messages
+
+**When** the user drags the Database participant before the API participant
+
+**Then** participant positions change.
+
+**And** all messages remain attached to their correct source and destination.
+
+**And** the diagram reflows without corrupting sequence order.
+
+## Scenario E: Build a floor plan
+
+**Given** a user creates a floor plan
+
+**When** the user draws four connected walls
+
+**Then** the editor detects an enclosed room.
+
+**When** the user modifies wall lengths
+
+**Then** displayed measurements and room area update.
+
+## Scenario F: Recover a saved diagram
+
+**Given** a user has created a diagram with multiple objects
+
+**When** the browser is refreshed after the save completes
+
+**Then** the diagram can be reopened with its objects, relationships, and styles intact.
+
+## Scenario G: Replace a shape
+
+**Given** a user has an existing process node with multiple connectors
+
+**When** the user changes its type to Decision
+
+**Then** the application preserves valid connectors and compatible metadata.
+
+**And** the user can configure branch labels without rebuilding the node.
+
+---
+
+# 28. Product success metrics
+
+## 28.1 Activation
+
+Measure:
+
+- Percentage of users who create their first diagram
+- Time to first object
+- Time to first complete diagram
+- Percentage using templates
+- First-session save rate
+
+## 28.2 Editing efficiency
+
+Measure:
+
+- Average actions required to create a basic flowchart
+- Average time to add a sequence message
+- Frequency of undo operations
+- Successful drag-and-drop rate
+- Connector correction rate
+- Average time spent manually aligning objects
+
+## 28.3 User experience
+
+Measure:
+
+- Task completion rate
+- Usability test success
+- User-reported ease of use
+- Accessibility task completion
+- Diagram export success
+- User satisfaction
+
+## 28.4 Retention
+
+Measure:
+
+- Returning creators
+- Diagrams created per active user
+- Reopened and edited documents
+- Template reuse
+- Shared diagrams
+- Cross-editor adoption
+
+## 28.5 Initial product targets
+
+Proposed validation targets:
+
+- At least 90% success for basic flowchart creation in moderated usability testing.
+- At least 85% success for basic sequence diagram creation without instruction.
+- At least 95% successful document save/reopen tests across supported browsers.
+- At least 95% successful exports of supported standard test fixtures.
+- No critical data-loss defects at release.
+
+These targets must be validated during product testing and refined using actual baseline results.
+
+---
+
+# 29. Design and engineering guardrails
+
+The following requirements are mandatory throughout implementation.
+
+1. **No static-image shortcuts.** Diagrams must remain semantically editable.
+2. **No brittle coordinate-based relationships.** Connections reference stable object identities.
+3. **No destructive automatic layout.** Users can undo or reject layout changes.
+4. **No permanent panel dependency.** Common actions work directly on the canvas.
+5. **No mandatory AI dependency.** Manual editing is a complete experience.
+6. **No diagram-specific rewriting of core primitives.** Shared canvas infrastructure remains authoritative.
+7. **No implicit cloud dependency during development.** Local testing must work independently.
+8. **No silent loss of data.** Unsupported imports and migrations require clear handling.
+9. **No inaccessible interaction-only workflows.** Core actions need keyboard alternatives.
+10. **No inconsistent interactions between diagram modules.** Shared behaviors must remain predictable.
+11. **No unversioned document formats.** Stored files must support controlled evolution.
+12. **No release without automated tests and documented functionality.**
+
+---
+
+# 30. Definition of done
+
+A feature is complete only when:
+
+- Its functional requirements are implemented.
+- Its interaction behavior matches the approved design.
+- It supports required keyboard and accessibility workflows.
+- Its document changes are undoable where applicable.
+- Its data persists correctly.
+- Its error states are handled.
+- Its automated tests pass.
+- Its visual appearance is consistent with the design system.
+- Its performance is measured against the relevant targets.
+- Its APIs and data structures are documented.
+- Its module README is updated.
+- Its user-facing workflow documentation is updated.
+
+---
+
+# 31. Final product objective
+
+Project Canvas should establish a higher standard for visual diagram creation.
+
+Its success depends on combining professional capability with an interaction model that makes sophisticated diagramming feel effortless.
+
+A first-time user should be able to create a polished flowchart without training.
+
+A software engineer should be able to create and modify a complex sequence diagram without drawing individual lines or manually rearranging lifelines.
+
+An architect should be able to model layered systems and update their relationships without rebuilding diagrams.
+
+An office planner should be able to create accurate layouts without learning professional CAD software.
+
+Across every use case, the platform should maintain the same promise:
+
+**Create visually. Connect intelligently. Modify effortlessly. Communicate clearly.**
+
+The finished application should provide the functionality expected from a professional diagramming platform while delivering the speed, precision, and visual quality associated with modern design software.
