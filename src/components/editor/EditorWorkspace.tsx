@@ -75,6 +75,7 @@ import { FloatingToolbar } from './FloatingToolbar';
 import { CommandPalette } from './CommandPalette';
 import { ExportImportModal } from './ExportImportModal';
 import { AiStudioModal } from './AiStudioModal';
+import { Tooltip } from '../ui/Tooltip';
 
 // Fallback brick/wall icon helper using standard SVG since lucide doesn't export WallIcon
 const BrickWallSvg: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
@@ -113,6 +114,8 @@ interface EditorWorkspaceProps {
   onStartNewDesign: (type: DiagramType) => void;
   onUseTemplate: (doc: DiagramDocument) => void;
   onOpenWorkspaceSettings: () => void;
+  onOpenHelp: () => void;
+  onExportAiSchema: () => void;
   onBackHome: () => void;
   onDiscardAndBackHome: (id: string) => Promise<void>;
 }
@@ -137,6 +140,8 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   onStartNewDesign,
   onUseTemplate,
   onOpenWorkspaceSettings,
+  onOpenHelp,
+  onExportAiSchema,
   onBackHome,
   onDiscardAndBackHome,
 }) => {
@@ -948,15 +953,25 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               onOpenHistory={() => setHistoryDrawerOpen(true)}
               onSaveAsTemplate={handlePromptSaveAsTemplate}
               onOpenSettings={onOpenWorkspaceSettings}
+              onExportAiSchema={() => {
+                onExportAiSchema();
+                showToast('Downloaded nexora-ai-design-schema.md for AI chat engines');
+              }}
+              onOpenHelp={onOpenHelp}
             />
-            <button
-              type="button"
-              onClick={handleRequestLeaveDesign}
-              className="shrink-0 rounded-md hover:opacity-90 transition-opacity"
-              title="Back to Nexora Home"
+            <Tooltip
+              label="Return to Nexora Home"
+              description="Save, download, or discard this design and go back to your workspace dashboard"
             >
-              <NexoraBrandLogo className="w-6 h-6" />
-            </button>
+              <button
+                type="button"
+                onClick={handleRequestLeaveDesign}
+                className="shrink-0 rounded-md hover:opacity-90 transition-opacity"
+                aria-label="Back to Nexora Home"
+              >
+                <NexoraBrandLogo className="w-6 h-6" />
+              </button>
+            </Tooltip>
             <div className="w-px h-5 bg-slate-200 dark:bg-slate-800 shrink-0" />
             <input
               type="text"
@@ -976,66 +991,95 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
 
           {/* Center Zone: Primary Canvas Mode Tools + Undo/Redo */}
           <div className="flex items-center gap-1 shrink-0">
-            <button
-              type="button"
-              onClick={handleUndo}
-              disabled={historyPast.length === 0 || readOnly}
-              className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] disabled:opacity-35 transition-colors"
-              title="Undo (Cmd+Z)"
+            <Tooltip
+              label="Undo"
+              description="Revert the last change on the canvas"
+              shortcut="⌘Z"
             >
-              <Undo2 className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={handleRedo}
-              disabled={historyFuture.length === 0 || readOnly}
-              className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] disabled:opacity-35 transition-colors"
-              title="Redo (Cmd+Shift+Z)"
+              <button
+                type="button"
+                onClick={handleUndo}
+                disabled={historyPast.length === 0 || readOnly}
+                className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] disabled:opacity-35 transition-colors"
+                aria-label="Undo"
+              >
+                <Undo2 className="w-4 h-4" />
+              </button>
+            </Tooltip>
+            <Tooltip
+              label="Redo"
+              description="Reapply the most recently undone change"
+              shortcut="⌘⇧Z"
             >
-              <Redo2 className="w-4 h-4" />
-            </button>
+              <button
+                type="button"
+                onClick={handleRedo}
+                disabled={historyFuture.length === 0 || readOnly}
+                className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] disabled:opacity-35 transition-colors"
+                aria-label="Redo"
+              >
+                <Redo2 className="w-4 h-4" />
+              </button>
+            </Tooltip>
 
             <div className="w-px h-5 bg-slate-200 dark:bg-slate-800 mx-1.5" />
 
             {doc.type === 'floorplan' && doc.floorplan ? (
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-100 dark:bg-[#070B12] border border-slate-200/70 dark:border-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setFloorTool('select')}
-                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
-                      floorTool === 'select'
-                        ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400'
-                    }`}
+                  <Tooltip
+                    label="Select & Resize Tool"
+                    description="Click walls to resize enclosed spaces, double-click for a single wall, or move furniture"
+                    shortcut="V"
                   >
-                    <MousePointer2 className="w-3.5 h-3.5" />
-                    <span>Select</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFloorTool('wall')}
-                    className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
-                      floorTool === 'wall'
-                        ? 'bg-teal-700 text-white shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400'
-                    }`}
+                    <button
+                      type="button"
+                      onClick={() => setFloorTool('select')}
+                      className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
+                        floorTool === 'select'
+                          ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      <MousePointer2 className="w-3.5 h-3.5" />
+                      <span>Select</span>
+                    </button>
+                  </Tooltip>
+                  <Tooltip
+                    label="Draw Connected Walls"
+                    description="Click corner points to chain exterior or interior walls; press Esc to finish"
                   >
-                    <BrickWallSvg className="w-3.5 h-3.5" />
-                    <span>Draw Wall</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFloorTool('pan')}
-                    className={`p-1.5 rounded-md transition-colors ${
-                      floorTool === 'pan'
-                        ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400'
-                    }`}
-                    title="Pan Canvas"
+                    <button
+                      type="button"
+                      onClick={() => setFloorTool('wall')}
+                      className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
+                        floorTool === 'wall'
+                          ? 'bg-teal-700 text-white shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      <BrickWallSvg className="w-3.5 h-3.5" />
+                      <span>Draw Wall</span>
+                    </button>
+                  </Tooltip>
+                  <Tooltip
+                    label="Pan Canvas"
+                    description="Drag anywhere to move across the floor plan without selecting items"
+                    shortcut="Space"
                   >
-                    <Hand className="w-3.5 h-3.5" />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setFloorTool('pan')}
+                      className={`p-1.5 rounded-md transition-colors ${
+                        floorTool === 'pan'
+                          ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                      aria-label="Pan Canvas"
+                    >
+                      <Hand className="w-3.5 h-3.5" />
+                    </button>
+                  </Tooltip>
                 </div>
 
                 {/* Quick US / Metric Measurement Switcher */}
@@ -1043,118 +1087,150 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                   className="flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-100 dark:bg-[#070B12] border border-slate-200/70 dark:border-slate-800"
                   role="group"
                   aria-label="Floor plan measurement system"
-                  title="Switch between US (Imperial) and Metric measurements"
                 >
                   <span className="pl-1.5 pr-1 text-slate-400 dark:text-slate-500 hidden sm:inline-flex items-center">
                     <Ruler className="w-3.5 h-3.5" />
                   </span>
-                  <button
-                    type="button"
-                    disabled={readOnly}
-                    onClick={() => {
-                      if (!isUSUnit(doc.floorplan!.unit)) {
-                        updateDoc(
-                          {
-                            ...doc,
-                            floorplan: { ...doc.floorplan!, unit: 'ft-in' },
-                          },
-                          true
-                        );
-                        showToast('Measurements switched to US (ft & in)');
-                      }
-                    }}
-                    className={`px-2 py-1 text-xs font-semibold rounded-md whitespace-nowrap transition-colors ${
-                      isUSUnit(doc.floorplan.unit)
-                        ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                    }`}
+                  <Tooltip
+                    label="US Imperial Units"
+                    description="Display dimensions in feet & inches and room areas in sq ft"
                   >
-                    US
-                  </button>
-                  <button
-                    type="button"
-                    disabled={readOnly}
-                    onClick={() => {
-                      if (isUSUnit(doc.floorplan!.unit)) {
-                        updateDoc(
-                          {
-                            ...doc,
-                            floorplan: { ...doc.floorplan!, unit: 'm' },
-                          },
-                          true
-                        );
-                        showToast('Measurements switched to Metric (m)');
-                      }
-                    }}
-                    className={`px-2 py-1 text-xs font-semibold rounded-md whitespace-nowrap transition-colors ${
-                      !isUSUnit(doc.floorplan.unit)
-                        ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                    }`}
+                    <button
+                      type="button"
+                      disabled={readOnly}
+                      onClick={() => {
+                        if (!isUSUnit(doc.floorplan!.unit)) {
+                          updateDoc(
+                            {
+                              ...doc,
+                              floorplan: { ...doc.floorplan!, unit: 'ft-in' },
+                            },
+                            true
+                          );
+                          showToast('Measurements switched to US (ft & in)');
+                        }
+                      }}
+                      className={`px-2 py-1 text-xs font-semibold rounded-md whitespace-nowrap transition-colors ${
+                        isUSUnit(doc.floorplan.unit)
+                          ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      }`}
+                    >
+                      US
+                    </button>
+                  </Tooltip>
+                  <Tooltip
+                    label="Metric Units"
+                    description="Display dimensions in meters/cm/mm and room areas in m²"
                   >
-                    Metric
-                  </button>
+                    <button
+                      type="button"
+                      disabled={readOnly}
+                      onClick={() => {
+                        if (isUSUnit(doc.floorplan!.unit)) {
+                          updateDoc(
+                            {
+                              ...doc,
+                              floorplan: { ...doc.floorplan!, unit: 'm' },
+                            },
+                            true
+                          );
+                          showToast('Measurements switched to Metric (m)');
+                        }
+                      }}
+                      className={`px-2 py-1 text-xs font-semibold rounded-md whitespace-nowrap transition-colors ${
+                        !isUSUnit(doc.floorplan.unit)
+                          ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      }`}
+                    >
+                      Metric
+                    </button>
+                  </Tooltip>
                 </div>
               </div>
             ) : doc.type !== 'sequence' ? (
               <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-100 dark:bg-[#070B12] border border-slate-200/70 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setStandardTool('select')}
-                  className={`p-1.5 rounded-md transition-colors ${
-                    standardTool === 'select'
-                      ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400'
-                  }`}
-                  title="Select Tool (V)"
+                <Tooltip
+                  label="Select Tool"
+                  description="Click or drag a marquee box to select, move, resize, and connect nodes"
+                  shortcut="V"
                 >
-                  <MousePointer2 className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStandardTool('pan')}
-                  className={`p-1.5 rounded-md transition-colors ${
-                    standardTool === 'pan'
-                      ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400'
-                  }`}
-                  title="Pan Tool (Space+Drag)"
-                >
-                  <Hand className="w-3.5 h-3.5" />
-                </button>
-                {doc.type === 'whiteboard' && (
                   <button
                     type="button"
-                    onClick={() => setStandardTool('pen')}
+                    onClick={() => setStandardTool('select')}
                     className={`p-1.5 rounded-md transition-colors ${
-                      standardTool === 'pen'
+                      standardTool === 'select'
                         ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                         : 'text-slate-600 dark:text-slate-400'
                     }`}
-                    title="Freehand Sketch Pen"
+                    aria-label="Select Tool"
                   >
-                    <PenTool className="w-3.5 h-3.5" />
+                    <MousePointer2 className="w-3.5 h-3.5" />
                   </button>
+                </Tooltip>
+                <Tooltip
+                  label="Pan Canvas Tool"
+                  description="Click and drag to scroll freely across the canvas"
+                  shortcut="Space"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setStandardTool('pan')}
+                    className={`p-1.5 rounded-md transition-colors ${
+                      standardTool === 'pan'
+                        ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400'
+                    }`}
+                    aria-label="Pan Tool"
+                  >
+                    <Hand className="w-3.5 h-3.5" />
+                  </button>
+                </Tooltip>
+                {doc.type === 'whiteboard' && (
+                  <Tooltip
+                    label="Freehand Sketch Pen"
+                    description="Draw smooth freehand strokes and annotations on the whiteboard"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setStandardTool('pen')}
+                      className={`p-1.5 rounded-md transition-colors ${
+                        standardTool === 'pen'
+                          ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                      aria-label="Freehand Sketch Pen"
+                    >
+                      <PenTool className="w-3.5 h-3.5" />
+                    </button>
+                  </Tooltip>
                 )}
               </div>
             ) : (
               <div className="hidden lg:flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-[#070B12] border border-slate-200/70 dark:border-slate-800">
-                {(['modern', 'classic'] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() =>
-                      doc.sequence &&
-                      updateDoc({ ...doc, sequence: { ...doc.sequence, viewMode: m } }, true)
-                    }
-                    className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize whitespace-nowrap transition-colors ${
-                      doc.sequence?.viewMode === m
-                        ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
-                        : 'text-slate-600 dark:text-slate-400'
-                    }`}
-                  >
-                    {m} View
-                  </button>
+                {(
+                  [
+                    ['modern', 'Modern Card View', 'Render participants with modern icon cards and HTTP endpoint tags'],
+                    ['classic', 'Classic UML View', 'Render traditional UML stick actors, cylinders, and concise boxes'],
+                  ] as const
+                ).map(([m, label, desc]) => (
+                  <Tooltip key={m} label={label} description={desc}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        doc.sequence &&
+                        updateDoc({ ...doc, sequence: { ...doc.sequence, viewMode: m } }, true)
+                      }
+                      className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize whitespace-nowrap transition-colors ${
+                        doc.sequence?.viewMode === m
+                          ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      {m} View
+                    </button>
+                  </Tooltip>
                 ))}
               </div>
             )}
@@ -1162,81 +1238,117 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
 
           {/* Right Zone: Clean, Focused Primary Actions (Full File/PWA/Settings in Hamburger Menu) */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              type="button"
-              onClick={() => void handleSaveToDesktop(false)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
-                hasUndownloadedChanges
-                  ? 'border-teal-500/60 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/60'
-                  : 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:border-teal-500/60 hover:text-teal-700 dark:hover:text-teal-300'
-              }`}
-              title="Download design to desktop as .nexora (Cmd+S)"
+            <Tooltip
+              label="Save .nexora to Local Drive"
+              description="Download or update your portable .nexora backup file on disk"
+              shortcut="⌘S"
             >
-              <Save className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Save .nexora</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setCmdOpen(true)}
-              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#141F32] whitespace-nowrap shrink-0 transition-colors"
-              title="Universal Command Palette (Cmd+K)"
-            >
-              <Command className="w-3.5 h-3.5" />
-              <span className="font-mono text-[10px] opacity-80">⌘K</span>
-            </button>
-
-            {!readOnly && doc.type !== 'floorplan' && (
               <button
                 type="button"
-                onClick={() => setAiOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-teal-500/60 hover:text-teal-700 dark:hover:text-teal-300 transition-colors whitespace-nowrap shrink-0"
-                title="AI Diagram Assistant (Optional)"
+                onClick={() => void handleSaveToDesktop(false)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
+                  hasUndownloadedChanges
+                    ? 'border-teal-500/60 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/60'
+                    : 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:border-teal-500/60 hover:text-teal-700 dark:hover:text-teal-300'
+                }`}
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span className="hidden lg:inline">AI Assist</span>
+                <Save className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Save .nexora</span>
               </button>
+            </Tooltip>
+
+            <Tooltip
+              label="Command Palette"
+              description="Quickly search commands, insert components, switch themes, or export"
+              shortcut="⌘K"
+            >
+              <button
+                type="button"
+                onClick={() => setCmdOpen(true)}
+                className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#141F32] whitespace-nowrap shrink-0 transition-colors"
+                aria-label="Open Command Palette"
+              >
+                <Command className="w-3.5 h-3.5" />
+                <span className="font-mono text-[10px] opacity-80">⌘K</span>
+              </button>
+            </Tooltip>
+
+            {!readOnly && doc.type !== 'floorplan' && (
+              <Tooltip
+                label="AI Diagram Assistant"
+                description="Generate an editable diagram from a prompt or analyze your current design"
+              >
+                <button
+                  type="button"
+                  onClick={() => setAiOpen(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-teal-500/60 hover:text-teal-700 dark:hover:text-teal-300 transition-colors whitespace-nowrap shrink-0"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span className="hidden lg:inline">AI Assist</span>
+                </button>
+              </Tooltip>
             )}
 
-            <button
-              type="button"
-              onClick={() => setHistoryDrawerOpen((v) => !v)}
-              className={`p-1.5 rounded-lg shrink-0 transition-colors ${
-                historyDrawerOpen
-                  ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32]'
-              }`}
-              title="History & Snapshots"
+            <Tooltip
+              label="History & Snapshots"
+              description="Create named version checkpoints and restore earlier states"
             >
-              <History className="w-4 h-4" />
-            </button>
+              <button
+                type="button"
+                onClick={() => setHistoryDrawerOpen((v) => !v)}
+                className={`p-1.5 rounded-lg shrink-0 transition-colors ${
+                  historyDrawerOpen
+                    ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32]'
+                }`}
+                aria-label="History and Snapshots"
+              >
+                <History className="w-4 h-4" />
+              </button>
+            </Tooltip>
 
-            <button
-              type="button"
-              onClick={() => setPresentationMode(true)}
-              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] shrink-0 transition-colors"
-              title="Presentation Preview"
+            <Tooltip
+              label="Presentation Mode"
+              description="Hide sidebars and toolbars for a clean full-screen review"
             >
-              <Play className="w-4 h-4" />
-            </button>
+              <button
+                type="button"
+                onClick={() => setPresentationMode(true)}
+                className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] shrink-0 transition-colors"
+                aria-label="Presentation Preview"
+              >
+                <Play className="w-4 h-4" />
+              </button>
+            </Tooltip>
 
-            <button
-              type="button"
-              onClick={onToggleDarkMode}
-              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] shrink-0 transition-colors"
-              title="Toggle Light / Obsidian Dark Mode"
+            <Tooltip
+              label={darkMode ? 'Switch to Light Studio' : 'Switch to Obsidian Dark'}
+              description="Toggle between Crisp Light Studio and Obsidian Dark color themes"
             >
-              {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
-            </button>
+              <button
+                type="button"
+                onClick={onToggleDarkMode}
+                className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] shrink-0 transition-colors"
+                aria-label="Toggle dark mode"
+              >
+                {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+              </button>
+            </Tooltip>
 
-            <button
-              type="button"
-              onClick={() => setExportOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-700 hover:bg-teal-600 text-white text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
+            <Tooltip
+              label="Export & Import"
+              description="Download crisp SVG, PNG, JSON, Mermaid, or .nexora deliverables"
+              shortcut="⌘E"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => setExportOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-700 hover:bg-teal-600 text-white text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export</span>
+              </button>
+            </Tooltip>
           </div>
         </header>
       )}
@@ -1589,132 +1701,186 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           {/* Bottom Canvas Toolbar */}
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 px-2 py-1 rounded-xl bg-white/95 dark:bg-[#0C121E]/95 backdrop-blur border border-slate-200/90 dark:border-slate-800 shadow-lg">
             {!presentationMode && (
-              <button
-                type="button"
-                onClick={() => setLeftOpen((v) => !v)}
-                className={`p-1.5 rounded-md ${
-                  leftOpen
-                    ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
-                    : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-                title="Toggle Left Library"
+              <Tooltip
+                label={leftOpen ? 'Hide Component Library' : 'Show Component Library'}
+                description="Toggle the left stencil library and outline drawer"
+                side="top"
               >
-                <PanelLeft className="w-3.5 h-3.5" />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setLeftOpen((v) => !v)}
+                  className={`p-1.5 rounded-md ${
+                    leftOpen
+                      ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
+                      : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <PanelLeft className="w-3.5 h-3.5" />
+                </button>
+              </Tooltip>
             )}
 
-            <button
-              type="button"
-              onClick={() =>
-                setViewport((vp) => ({ ...vp, zoom: Math.max(0.25, vp.zoom - 0.12) }))
-              }
-              className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-              title="Zoom Out"
+            <Tooltip
+              label="Zoom Out"
+              description="Decrease canvas magnification"
+              shortcut="Ctrl −"
+              side="top"
             >
-              <ZoomOut className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewport({ x: 48, y: 36, zoom: 1 })}
-              className="px-2 py-1 text-xs font-mono tabular-nums text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md min-w-[48px]"
-              title="Reset Viewport (100%)"
+              <button
+                type="button"
+                onClick={() =>
+                  setViewport((vp) => ({ ...vp, zoom: Math.max(0.25, vp.zoom - 0.12) }))
+                }
+                className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <ZoomOut className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
+            <Tooltip
+              label="Reset Zoom to 100%"
+              description="Return viewport to 1:1 scale"
+              shortcut="Ctrl 0"
+              side="top"
             >
-              {Math.round(viewport.zoom * 100)}%
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setViewport((vp) => ({ ...vp, zoom: Math.min(2.8, vp.zoom + 0.12) }))
-              }
-              className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-              title="Zoom In"
+              <button
+                type="button"
+                onClick={() => setViewport({ x: 48, y: 36, zoom: 1 })}
+                className="px-2 py-1 text-xs font-mono tabular-nums text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md min-w-[48px]"
+              >
+                {Math.round(viewport.zoom * 100)}%
+              </button>
+            </Tooltip>
+            <Tooltip
+              label="Zoom In"
+              description="Increase canvas magnification"
+              shortcut="Ctrl +"
+              side="top"
             >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleFitToScreen}
-              className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-              title="Fit Diagram to Screen"
+              <button
+                type="button"
+                onClick={() =>
+                  setViewport((vp) => ({ ...vp, zoom: Math.min(2.8, vp.zoom + 0.12) }))
+                }
+                className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <ZoomIn className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
+            <Tooltip
+              label="Fit to Screen"
+              description="Auto-center and scale the full design to fit the viewport"
+              side="top"
             >
-              <Maximize2 className="w-3.5 h-3.5" />
-            </button>
+              <button
+                type="button"
+                onClick={handleFitToScreen}
+                className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
 
             <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
 
-            <button
-              type="button"
-              onClick={() =>
-                updateDoc(
-                  { ...doc, settings: { ...doc.settings, showGrid: !doc.settings.showGrid } },
-                  false
-                )
-              }
-              className={`p-1.5 rounded-md ${
-                doc.settings.showGrid
-                  ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
-                  : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-              title="Toggle Grid"
+            <Tooltip
+              label={doc.settings.showGrid ? 'Hide Grid' : 'Show Grid'}
+              description="Toggle the visual alignment grid background"
+              side="top"
             >
-              <Grid className="w-3.5 h-3.5" />
-            </button>
+              <button
+                type="button"
+                onClick={() =>
+                  updateDoc(
+                    { ...doc, settings: { ...doc.settings, showGrid: !doc.settings.showGrid } },
+                    false
+                  )
+                }
+                className={`p-1.5 rounded-md ${
+                  doc.settings.showGrid
+                    ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
+                    : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Grid className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
 
-            <button
-              type="button"
-              onClick={() =>
-                updateDoc(
-                  { ...doc, settings: { ...doc.settings, snapToGrid: !doc.settings.snapToGrid } },
-                  false
-                )
-              }
-              className={`p-1.5 rounded-md ${
-                doc.settings.snapToGrid
-                  ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
-                  : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-              title="Toggle Snap to Grid"
+            <Tooltip
+              label={doc.settings.snapToGrid ? 'Disable Snap to Grid' : 'Enable Snap to Grid'}
+              description="Magnetically align dragged elements to grid increments"
+              side="top"
             >
-              <Magnet className="w-3.5 h-3.5" />
-            </button>
+              <button
+                type="button"
+                onClick={() =>
+                  updateDoc(
+                    { ...doc, settings: { ...doc.settings, snapToGrid: !doc.settings.snapToGrid } },
+                    false
+                  )
+                }
+                className={`p-1.5 rounded-md ${
+                  doc.settings.snapToGrid
+                    ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
+                    : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Magnet className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
 
             {doc.type !== 'sequence' && doc.type !== 'floorplan' && (
-              <button
-                type="button"
-                onClick={() => setShowMinimap((m) => !m)}
-                className={`p-1.5 rounded-md ${
-                  showMinimap
-                    ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
-                    : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-                title="Toggle Mini-Map"
+              <Tooltip
+                label={showMinimap ? 'Hide Mini-Map' : 'Show Mini-Map'}
+                description="Toggle the corner overview map for large diagrams"
+                side="top"
               >
-                <MapIcon className="w-3.5 h-3.5" />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setShowMinimap((m) => !m)}
+                  className={`p-1.5 rounded-md ${
+                    showMinimap
+                      ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
+                      : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <MapIcon className="w-3.5 h-3.5" />
+                </button>
+              </Tooltip>
             )}
 
-            <button
-              type="button"
-              onClick={() => setShortcutsOpen(true)}
-              className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-              title="Keyboard Shortcuts"
+            <Tooltip
+              label="Keyboard Shortcuts"
+              description="View all editor hotkeys and navigation controls"
+              shortcut="?"
+              side="top"
             >
-              <Keyboard className="w-3.5 h-3.5" />
-            </button>
-
-            {!presentationMode && (
               <button
                 type="button"
-                onClick={() => setRightOpen((v) => !v)}
-                className={`p-1.5 rounded-md ${
-                  rightOpen
-                    ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
-                    : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-                title="Toggle Properties Panel"
+                onClick={() => setShortcutsOpen(true)}
+                className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                <PanelRight className="w-3.5 h-3.5" />
+                <Keyboard className="w-3.5 h-3.5" />
               </button>
+            </Tooltip>
+
+            {!presentationMode && (
+              <Tooltip
+                label={rightOpen ? 'Hide Inspector Panel' : 'Show Inspector Panel'}
+                description="Toggle the right properties, styling, and auto-layout inspector"
+                side="top"
+              >
+                <button
+                  type="button"
+                  onClick={() => setRightOpen((v) => !v)}
+                  className={`p-1.5 rounded-md ${
+                    rightOpen
+                      ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
+                      : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <PanelRight className="w-3.5 h-3.5" />
+                </button>
+              </Tooltip>
             )}
           </div>
 

@@ -36,6 +36,7 @@ import {
 } from '../icons/ShapeIcons';
 import { NexoraHamburgerMenu } from '../navigation/NexoraHamburgerMenu';
 import { NewDesignModal } from '../modals/NewDesignModal';
+import { Tooltip } from '../ui/Tooltip';
 import { importFromMermaid, importFromNativeJson } from '../../engine/exportImport';
 import {
   DesktopFileHandle,
@@ -67,6 +68,8 @@ interface HomeDashboardProps {
   onDeleteCustomComponent: (id: string) => void;
   onDeleteCustomTemplate: (id: string) => void;
   onOpenWorkspaceSettings: () => void;
+  onOpenHelp: () => void;
+  onExportAiSchema: () => void;
 }
 
 function formatRelativeDate(iso: string): string {
@@ -98,6 +101,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   onDeleteCustomComponent,
   onDeleteCustomTemplate,
   onOpenWorkspaceSettings,
+  onOpenHelp,
+  onExportAiSchema,
 }) => {
   const [section, setSection] = useState<HomeSection>('home');
   const [activeModule, setActiveModule] = useState<NexoraModuleId | 'all'>('all');
@@ -308,6 +313,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               }}
               onOpenFile={() => void handleOpenPCanvasPicker()}
               onOpenSettings={onOpenWorkspaceSettings}
+              onExportAiSchema={onExportAiSchema}
+              onOpenHelp={onOpenHelp}
             />
             <button
               type="button"
@@ -353,25 +360,29 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
           {/* Zone 3: Theme Switcher */}
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={onToggleDarkMode}
-              className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg border border-slate-300/80 dark:border-slate-800 bg-slate-50/80 dark:bg-[#111928] text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-teal-500/60 hover:bg-white dark:hover:bg-[#172338] transition-colors shrink-0"
-              title={darkMode ? 'Switch to Light Studio' : 'Switch to Obsidian Dark'}
-              aria-label={darkMode ? 'Switch to Light Studio' : 'Switch to Obsidian Dark'}
+            <Tooltip
+              label={darkMode ? 'Switch to Light Studio' : 'Switch to Obsidian Dark'}
+              description="Toggle the application color theme"
             >
-              {darkMode ? (
-                <>
-                  <Sun className="w-4 h-4 text-amber-400" />
-                  <span className="hidden sm:inline">Light</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-4 h-4 text-teal-700" />
-                  <span className="hidden sm:inline">Dark</span>
-                </>
-              )}
-            </button>
+              <button
+                type="button"
+                onClick={onToggleDarkMode}
+                className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg border border-slate-300/80 dark:border-slate-800 bg-slate-50/80 dark:bg-[#111928] text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-teal-500/60 hover:bg-white dark:hover:bg-[#172338] transition-colors shrink-0"
+                aria-label={darkMode ? 'Switch to Light Studio' : 'Switch to Obsidian Dark'}
+              >
+                {darkMode ? (
+                  <>
+                    <Sun className="w-4 h-4 text-amber-400" />
+                    <span className="hidden sm:inline">Light</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="w-4 h-4 text-teal-700" />
+                    <span className="hidden sm:inline">Dark</span>
+                  </>
+                )}
+              </button>
+            </Tooltip>
           </div>
         </div>
       </header>
@@ -738,43 +749,63 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                             </button>
 
                             <div className="flex items-center gap-1.5 shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => handleSaveRowToDesktop(d)}
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-teal-600/35 dark:border-teal-500/45 bg-teal-50/75 dark:bg-teal-950/45 text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-xs font-medium transition-colors whitespace-nowrap"
-                                title="Download .nexora backup to your desktop"
+                              <Tooltip
+                                label="Download .nexora"
+                                description="Save a permanent local backup file to your computer"
+                                side="top"
                               >
-                                <HardDriveDownload className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Download .nexora</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => onToggleStarDiagram(d.id)}
-                                className={`p-1.5 rounded-md transition-colors ${
-                                  d.starred
-                                    ? 'text-amber-500'
-                                    : 'text-slate-400 opacity-0 group-hover:opacity-100 hover:text-amber-500'
-                                }`}
-                                title={d.starred ? 'Unstar' : 'Star diagram'}
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveRowToDesktop(d)}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-teal-600/35 dark:border-teal-500/45 bg-teal-50/75 dark:bg-teal-950/45 text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-xs font-medium transition-colors whitespace-nowrap"
+                                >
+                                  <HardDriveDownload className="w-3.5 h-3.5" />
+                                  <span className="hidden sm:inline">Download .nexora</span>
+                                </button>
+                              </Tooltip>
+                              <Tooltip
+                                label={d.starred ? 'Remove Star' : 'Star Creation'}
+                                description="Pin favorite designs for quick recognition"
+                                side="top"
                               >
-                                <Star className="w-4 h-4" fill={d.starred ? 'currentColor' : 'none'} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => onDuplicateDiagram(d)}
-                                className="p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-800 dark:hover:text-slate-100"
-                                title="Duplicate diagram"
+                                <button
+                                  type="button"
+                                  onClick={() => onToggleStarDiagram(d.id)}
+                                  className={`p-1.5 rounded-md transition-colors ${
+                                    d.starred
+                                      ? 'text-amber-500'
+                                      : 'text-slate-400 opacity-0 group-hover:opacity-100 hover:text-amber-500'
+                                  }`}
+                                >
+                                  <Star className="w-4 h-4" fill={d.starred ? 'currentColor' : 'none'} />
+                                </button>
+                              </Tooltip>
+                              <Tooltip
+                                label="Duplicate Creation"
+                                description="Create an editable copy in IndexedDB"
+                                side="top"
                               >
-                                <Copy className="w-4 h-4" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => onDeleteDiagram(d.id)}
-                                className="p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-600"
-                                title="Delete diagram"
+                                <button
+                                  type="button"
+                                  onClick={() => onDuplicateDiagram(d)}
+                                  className="p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-800 dark:hover:text-slate-100"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                </button>
+                              </Tooltip>
+                              <Tooltip
+                                label="Delete Creation"
+                                description="Permanently remove this design from IndexedDB"
+                                side="top"
                               >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                                <button
+                                  type="button"
+                                  onClick={() => onDeleteDiagram(d.id)}
+                                  className="p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 hover:text-red-600"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </Tooltip>
                             </div>
                           </div>
                         );

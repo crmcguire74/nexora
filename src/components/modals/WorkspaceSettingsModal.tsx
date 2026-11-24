@@ -1,6 +1,8 @@
 import React from 'react';
 import {
   Database,
+  Download,
+  FileCode2,
   MonitorDown,
   MonitorX,
   Moon,
@@ -24,6 +26,7 @@ interface WorkspaceSettingsModalProps {
   showSplashOnStartup?: boolean;
   onToggleShowSplashOnStartup?: (show: boolean) => void;
   onPreviewSplash?: () => void;
+  onExportAiSchema?: () => void;
 }
 
 export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
@@ -39,6 +42,7 @@ export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
   showSplashOnStartup = true,
   onToggleShowSplashOnStartup,
   onPreviewSplash,
+  onExportAiSchema,
 }) => {
   const { isInstalled, triggerInstall, openUninstall } = usePWAInstall();
 
@@ -243,6 +247,29 @@ export const WorkspaceSettingsModal: React.FC<WorkspaceSettingsModalProps> = ({
               Nexora automatically persists every change in IndexedDB. Remember to periodically download important projects as <code className="font-mono text-teal-700 dark:text-teal-400">.nexora</code> files to keep permanent copies on your local drive.
             </p>
           </div>
+
+          {/* AI Chat Engine Schema Export */}
+          {onExportAiSchema && (
+            <div className="pt-4 border-t border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-900 dark:text-slate-100">
+                  <FileCode2 className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                  <span>AI Chat Engine Design Schema Guide</span>
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Download a complete specification with extensive <code className="font-mono">.nexora</code> examples for all 9 design types so ChatGPT, Claude, or Gemini can generate files ready to import into Nexora.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onExportAiSchema}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-teal-500/50 bg-teal-50/70 dark:bg-teal-950/40 text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/50 text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Schema (.md)</span>
+              </button>
+            </div>
+          )}
 
           {/* Desktop App (PWA) Controls */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">

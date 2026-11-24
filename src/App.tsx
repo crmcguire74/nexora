@@ -22,7 +22,9 @@ import { OfflineIndicator } from './components/pwa/OfflineIndicator';
 import { PWAInstallModal, PWAUninstallModal } from './components/pwa/PWAInstallButton';
 import { WorkspaceSettingsModal } from './components/modals/WorkspaceSettingsModal';
 import { SplashScreen } from './components/modals/SplashScreen';
+import { HelpModal } from './components/modals/HelpModal';
 import { NexoraBrandLogo } from './components/icons/ShapeIcons';
+import { downloadNexoraAiSchemaGuide } from './engine/aiSchemaExport';
 
 const SPLASH_HIDE_KEY = 'nexora_hide_splash';
 
@@ -50,6 +52,7 @@ export default function App() {
   const [activeIsNewDesign, setActiveIsNewDesign] = useState(false);
   const [editorSession, setEditorSession] = useState(0);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
   const [hideSplashOnStartup, setHideSplashOnStartup] = useState<boolean>(() => {
     try {
       return localStorage.getItem(SPLASH_HIDE_KEY) === 'true';
@@ -200,6 +203,10 @@ export default function App() {
     }
   };
 
+  const handleExportAiSchema = useCallback(() => {
+    downloadNexoraAiSchemaGuide();
+  }, []);
+
   if (loading) {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center gap-3 bg-[#E8EEF4] dark:bg-[#050810]">
@@ -250,6 +257,8 @@ export default function App() {
           onStartNewDesign={handleCreateBlank}
           onUseTemplate={handleUseTemplate}
           onOpenWorkspaceSettings={() => setSettingsModalOpen(true)}
+          onOpenHelp={() => setHelpModalOpen(true)}
+          onExportAiSchema={handleExportAiSchema}
           onBackHome={async () => {
             setActiveDiagram(null);
             setActiveDesktopFile({ handle: null, fileName: null });
@@ -290,6 +299,8 @@ export default function App() {
           }}
           onDeleteCustomTemplate={handleDeleteCustomTemplate}
           onOpenWorkspaceSettings={() => setSettingsModalOpen(true)}
+          onOpenHelp={() => setHelpModalOpen(true)}
+          onExportAiSchema={handleExportAiSchema}
         />
       )}
       <OfflineIndicator />
@@ -311,6 +322,12 @@ export default function App() {
           setSettingsModalOpen(false);
           setSplashOpen(true);
         }}
+        onExportAiSchema={handleExportAiSchema}
+      />
+      <HelpModal
+        open={helpModalOpen}
+        onClose={() => setHelpModalOpen(false)}
+        onDownloadAiSchema={handleExportAiSchema}
       />
       <SplashScreen
         open={splashOpen}

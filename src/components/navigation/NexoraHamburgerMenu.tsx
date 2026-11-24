@@ -2,9 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   BookmarkPlus,
   Check,
+  FileCode2,
   FilePlus2,
   FolderOpen,
   HardDriveDownload,
+  HelpCircle,
   History,
   LayoutTemplate,
   Menu,
@@ -14,6 +16,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
+import { Tooltip } from '../ui/Tooltip';
 
 export interface NexoraHamburgerMenuProps {
   hasActiveDoc?: boolean;
@@ -28,6 +31,8 @@ export interface NexoraHamburgerMenuProps {
   onOpenHistory?: () => void;
   onSaveAsTemplate?: () => void;
   onOpenSettings: () => void;
+  onExportAiSchema?: () => void;
+  onOpenHelp?: () => void;
 }
 
 export const NexoraHamburgerMenu: React.FC<NexoraHamburgerMenuProps> = ({
@@ -43,6 +48,8 @@ export const NexoraHamburgerMenu: React.FC<NexoraHamburgerMenuProps> = ({
   onOpenHistory,
   onSaveAsTemplate,
   onOpenSettings,
+  onExportAiSchema,
+  onOpenHelp,
 }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -73,21 +80,26 @@ export const NexoraHamburgerMenu: React.FC<NexoraHamburgerMenuProps> = ({
 
   return (
     <div ref={containerRef} className="relative shrink-0">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-label="Open Nexora menu"
-        title="Nexora Menu (File, Templates, Snapshots, PWA, Settings)"
-        className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-colors ${
-          open
-            ? 'border-teal-500/60 bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300'
-            : 'border-slate-200/80 dark:border-slate-800 bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] hover:text-slate-900 dark:hover:text-white'
-        }`}
+      <Tooltip
+        label="Nexora Menu"
+        description="File actions, templates, snapshots, AI schema export, Help, PWA, and settings"
+        disabled={open}
       >
-        <Menu className="w-4 h-4" />
-      </button>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          aria-label="Open Nexora menu"
+          className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border transition-colors ${
+            open
+              ? 'border-teal-500/60 bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300'
+              : 'border-slate-200/80 dark:border-slate-800 bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <Menu className="w-4 h-4" />
+        </button>
+      </Tooltip>
 
       {open && (
         <div
@@ -219,6 +231,20 @@ export const NexoraHamburgerMenu: React.FC<NexoraHamburgerMenuProps> = ({
             </span>
           </button>
 
+          {onExportAiSchema && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => run(onExportAiSchema)}
+              className="w-full px-3 py-2 flex items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-teal-50/70 dark:hover:bg-teal-950/45 hover:text-teal-800 dark:hover:text-teal-200 transition-colors text-left"
+            >
+              <span className="flex items-center gap-2.5 min-w-0">
+                <FileCode2 className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+                <span className="font-medium truncate">Export AI Design Schema Guide (.md)</span>
+              </span>
+            </button>
+          )}
+
           <div className="my-1.5 border-t border-slate-100 dark:border-slate-800/80" />
 
           {/* Desktop App (PWA) Section */}
@@ -258,6 +284,23 @@ export const NexoraHamburgerMenu: React.FC<NexoraHamburgerMenuProps> = ({
               <span className="font-medium truncate">Uninstall PWA&hellip;</span>
             </span>
           </button>
+
+          {onOpenHelp && (
+            <>
+              <div className="my-1.5 border-t border-slate-100 dark:border-slate-800/80" />
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => run(onOpenHelp)}
+                className="w-full px-3 py-2 flex items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-200 hover:bg-teal-50/70 dark:hover:bg-teal-950/45 hover:text-teal-800 dark:hover:text-teal-200 transition-colors text-left"
+              >
+                <span className="flex items-center gap-2.5 min-w-0">
+                  <HelpCircle className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+                  <span className="font-medium truncate">Help &amp; User Guide</span>
+                </span>
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
