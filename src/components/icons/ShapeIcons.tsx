@@ -1,6 +1,59 @@
 import React from 'react';
 import { DiagramType, SequenceParticipantRole } from '../../types/diagram';
-import { LibraryItem } from '../../engine/libraries';
+import { LibraryItem, NexoraModuleId } from '../../engine/libraries';
+
+export const NexoraBrandLogo: React.FC<{ className?: string }> = ({ className = 'w-7 h-7' }) => (
+  <img
+    src="/assets/aistudio/image_db9637f7.png"
+    alt="Nexora"
+    className={`${className} rounded-lg object-contain shrink-0`}
+    draggable={false}
+  />
+);
+
+/**
+ * Exact module icons matching the Nexora brand architecture:
+ * Flow (connected squares), Space (house outline), Sequence (opposing arrows), Architect (node hierarchy).
+ */
+export const NexoraModuleIcon: React.FC<{
+  module: NexoraModuleId;
+  className?: string;
+}> = ({ module, className = 'w-5 h-5' }) => {
+  switch (module) {
+    case 'flow':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="4" y="4" width="7" height="7" rx="1.8" />
+          <rect x="13" y="13" width="7" height="7" rx="1.8" />
+          <path d="M7.5 11 V15.2 C7.5 16 8.1 16.5 9 16.5 H13" />
+        </svg>
+      );
+    case 'space':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M3.5 10.5 L12 3.5 L20.5 10.5" />
+          <path d="M5.5 9.2 V19.5 C5.5 20.1 6 20.5 6.6 20.5 H17.4 C18 20.5 18.5 20.1 18.5 19.5 V9.2" />
+          <path d="M9.8 20.5 V14.5 C9.8 14 10.2 13.6 10.7 13.6 H13.3 C13.8 13.6 14.2 14 14.2 14.5 V20.5" />
+        </svg>
+      );
+    case 'sequence':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M19 8 H5 M8.5 4.5 L5 8 L8.5 11.5" />
+          <path d="M5 16 H19 M15.5 12.5 L19 16 L15.5 19.5" />
+        </svg>
+      );
+    case 'architect':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="5.5" r="2.5" />
+          <circle cx="6" cy="18.5" r="2.5" />
+          <circle cx="18" cy="18.5" r="2.5" />
+          <path d="M12 8 V12.5 M12 12.5 H6 V16 M12 12.5 H18 V16" />
+        </svg>
+      );
+  }
+};
 
 interface DiagramPreviewProps {
   type: DiagramType;
@@ -304,19 +357,131 @@ export const LibraryItemMiniIcon: React.FC<{
             <line x1="19" y1="18" x2="19" y2="11" strokeWidth="1.8" />
             <path d="M5 11 A7 7 0 0 1 12 18 M19 11 A7 7 0 0 0 12 18" strokeDasharray="2 2" strokeWidth="1.3" />
           </>
-        ) : item.floorItemKind === 'window' || item.type === 'fp-window' ? (
+        ) : item.floorItemKind === 'sliding-door' || item.type === 'fp-sliding-door' || item.type === 'fp-garage-door' ? (
+          <>
+            <line x1="3" y1="10" x2="14" y2="10" strokeWidth="2.2" />
+            <line x1="10" y1="14" x2="21" y2="14" strokeWidth="2.2" />
+            <line x1="3" y1="7.5" x2="3" y2="16.5" strokeWidth="1.4" />
+            <line x1="21" y1="7.5" x2="21" y2="16.5" strokeWidth="1.4" />
+          </>
+        ) : item.floorItemKind === 'window' || item.type === 'fp-window' || item.type === 'fp-wide-window' ? (
           <>
             <rect x="3" y="9" width="18" height="6" fill={fill} strokeWidth="1.6" />
             <line x1="3" y1="12" x2="21" y2="12" strokeWidth="1.2" />
             <line x1="12" y1="9" x2="12" y2="15" strokeWidth="1.2" />
           </>
-        ) : item.type === 'desk' ? (
+        ) : item.type === 'stairs' ? (
+          <>
+            <rect x="5" y="3.5" width="14" height="17" fill={fill} />
+            <line x1="5" y1="8" x2="19" y2="8" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <line x1="5" y1="16" x2="19" y2="16" />
+            <path d="M12 18 V6 M9.5 8.5 L12 6 L14.5 8.5" strokeWidth="1.4" />
+          </>
+        ) : item.type === 'spiral-stairs' ? (
+          <>
+            <circle cx="12" cy="12" r="8" fill={fill} />
+            <path d="M12 4 V20 M4 12 H20 M6.4 6.4 L17.6 17.6 M17.6 6.4 L6.4 17.6" strokeWidth="1.1" />
+            <circle cx="12" cy="12" r="2" fill={stroke} />
+          </>
+        ) : item.type === 'elevator' ? (
+          <>
+            <rect x="4" y="4" width="16" height="16" rx="1.5" fill={fill} />
+            <line x1="4" y1="4" x2="20" y2="20" strokeWidth="1.2" />
+            <line x1="20" y1="4" x2="4" y2="20" strokeWidth="1.2" />
+          </>
+        ) : item.type === 'column' ? (
+          <>
+            <rect x="6" y="6" width="12" height="12" fill={fill} strokeWidth="2" />
+            <line x1="6" y1="6" x2="18" y2="18" stroke="#FFFFFF" strokeWidth="1.2" />
+          </>
+        ) : item.type === 'fireplace' ? (
+          <>
+            <rect x="3.5" y="7" width="17" height="11" rx="1.5" fill={fill} />
+            <path d="M12 15.5 C10 15.5 9.2 14 10.2 12.2 C10.8 11.2 12 10 12 9.5 C12.5 10.6 14.5 11.8 14.2 13.7 C14 14.8 13.2 15.5 12 15.5 Z" />
+          </>
+        ) : item.type === 'car-sedan' || item.type === 'car-suv' ? (
+          <>
+            <rect x="6" y="3" width="12" height="18" rx="3.5" fill={fill} />
+            <rect x="8" y="6.5" width="8" height="3.5" rx="1" />
+            <rect x="8" y="14" width="8" height="3" rx="1" />
+          </>
+        ) : item.type === 'ev-charger' || item.type === 'elec-panel' ? (
+          <>
+            <rect x="5" y="4" width="14" height="16" rx="2" fill={fill} />
+            <polygon points="13,7 9,12.5 12,12.5 11,17 15,11.5 12,11.5" fill={stroke} stroke="none" />
+          </>
+        ) : item.type === 'bathtub' ? (
+          <>
+            <rect x="3" y="6.5" width="18" height="11" rx="2" fill={fill} />
+            <rect x="5.5" y="8.5" width="13" height="7" rx="3.5" />
+          </>
+        ) : item.type === 'shower' ? (
+          <>
+            <rect x="4" y="4" width="16" height="16" rx="1.5" fill={fill} />
+            <line x1="4" y1="4" x2="20" y2="20" strokeWidth="1.1" />
+            <line x1="20" y1="4" x2="4" y2="20" strokeWidth="1.1" />
+            <circle cx="12" cy="12" r="2" />
+          </>
+        ) : item.type === 'toilet' || item.type === 'restroom-stall' ? (
+          <>
+            <rect x="7" y="4" width="10" height="4.5" rx="1" fill={fill} />
+            <ellipse cx="12" cy="14" rx="4.8" ry="5.5" fill={fill} />
+          </>
+        ) : item.type === 'vanity' ? (
+          <>
+            <rect x="3.5" y="6.5" width="17" height="11" rx="1.5" fill={fill} />
+            <ellipse cx="12" cy="12" rx="4.5" ry="3.2" />
+          </>
+        ) : item.type === 'stove' || item.type === 'bbq-grill' ? (
+          <>
+            <rect x="4" y="5" width="16" height="14" rx="1.5" fill={fill} />
+            <circle cx="8.5" cy="9.5" r="2" />
+            <circle cx="15.5" cy="9.5" r="2" />
+            <circle cx="8.5" cy="14.5" r="2" />
+            <circle cx="15.5" cy="14.5" r="2" />
+          </>
+        ) : item.type === 'fridge' || item.type === 'washer-dryer' ? (
+          <>
+            <rect x="4.5" y="5" width="15" height="14" rx="1.5" fill={fill} />
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <circle cx="8.5" cy="12" r="1.8" />
+            <circle cx="15.5" cy="12" r="1.8" />
+          </>
+        ) : item.type === 'swimming-pool' || item.type === 'hot-tub' ? (
+          <>
+            <rect x="3" y="5.5" width="18" height="13" rx="3" fill={fill} />
+            <path d="M6.5 10.5 Q9 8.5 11.5 10.5 T17 10.5 M6.5 14.2 Q9 12.2 11.5 14.2 T17 14.2" strokeWidth="1.3" />
+          </>
+        ) : item.type === 'patio-deck' || item.type === 'pergola' || item.type === 'walkway' || item.type === 'driveway' ? (
+          <>
+            <rect x="3.5" y="5" width="17" height="14" rx="1.5" fill={fill} />
+            <line x1="3.5" y1="9.5" x2="20.5" y2="9.5" strokeWidth="1.1" />
+            <line x1="3.5" y1="14.5" x2="20.5" y2="14.5" strokeWidth="1.1" />
+          </>
+        ) : item.type === 'tree' || item.type === 'hedge' || item.type === 'garden-bed' ? (
+          <>
+            <circle cx="12" cy="12" r="7.5" fill={fill} />
+            <circle cx="10" cy="10.5" r="3" strokeWidth="1.1" />
+            <circle cx="14" cy="13.5" r="2.6" strokeWidth="1.1" />
+          </>
+        ) : item.type === 'sectional-sofa' || item.type === 'exec-desk' ? (
+          <>
+            <path d="M4 5 H20 V19 H13 V11.5 H4 Z" fill={fill} />
+          </>
+        ) : item.type === 'round-table' || item.type === 'cafe-table' ? (
+          <>
+            <circle cx="12" cy="12" r="6" fill={fill} />
+            <circle cx="12" cy="3.8" r="1.2" />
+            <circle cx="12" cy="20.2" r="1.2" />
+          </>
+        ) : item.type === 'desk' || item.type === 'cubicle' || item.type === 'reception-desk' || item.type === 'workbench' || item.type === 'pos-counter' ? (
           <>
             <rect x="3" y="6" width="18" height="10" rx="1.5" fill={fill} />
             <rect x="8.5" y="8" width="7" height="3.5" rx="0.8" />
             <circle cx="12" cy="19" r="2" />
           </>
-        ) : item.type === 'chair' ? (
+        ) : item.type === 'chair' || item.type === 'armchair' || item.type === 'lounger' ? (
           <>
             <rect x="6" y="7" width="12" height="11" rx="3" fill={fill} />
             <path d="M7 6 C7 4.5 17 4.5 17 6" strokeWidth="2.2" />
@@ -329,7 +494,7 @@ export const LibraryItemMiniIcon: React.FC<{
             <line x1="8" y1="19.5" x2="10.5" y2="19.5" strokeWidth="2" />
             <line x1="13.5" y1="19.5" x2="16" y2="19.5" strokeWidth="2" />
           </>
-        ) : item.type === 'cabinet' ? (
+        ) : item.type === 'cabinet' || item.type === 'wardrobe' || item.type === 'bookshelf' || item.type === 'tool-chest' || item.type === 'garage-rack' || item.type === 'retail-shelf' || item.type === 'server-rack' ? (
           <>
             <rect x="4" y="6" width="16" height="12" rx="1.5" fill={fill} />
             <line x1="12" y1="6" x2="12" y2="18" />
@@ -343,14 +508,14 @@ export const LibraryItemMiniIcon: React.FC<{
             <line x1="15" y1="8" x2="15" y2="17" strokeWidth="1.2" />
             <path d="M4 8 V6.5 C4 5.5 20 5.5 20 6.5 V8" />
           </>
-        ) : item.type === 'bed' ? (
+        ) : item.type === 'bed' || item.type === 'king-bed' || item.type === 'twin-bed' ? (
           <>
             <rect x="5" y="4" width="14" height="16" rx="2" fill={fill} />
             <rect x="7" y="6" width="4" height="3" rx="1" />
             <rect x="13" y="6" width="4" height="3" rx="1" />
             <line x1="5" y1="11.5" x2="19" y2="11.5" />
           </>
-        ) : item.type === 'dining-table' ? (
+        ) : item.type === 'dining-table' || item.type === 'coffee-table' || item.type === 'kitchen-island' ? (
           <>
             <rect x="6" y="7" width="12" height="10" rx="1.5" fill={fill} />
             <circle cx="12" cy="4.2" r="1.3" />
@@ -365,11 +530,15 @@ export const LibraryItemMiniIcon: React.FC<{
             <circle cx="16.5" cy="10" r="1.4" />
             <circle cx="16.5" cy="14" r="1.4" />
           </>
-        ) : (
-          // plant
+        ) : item.type === 'plant' ? (
           <>
             <circle cx="12" cy="12" r="7" fill={fill} />
             <path d="M12 7 V17 M7 12 H17 M8.8 8.8 L15.2 15.2 M15.2 8.8 L8.8 15.2" strokeWidth="1.3" />
+          </>
+        ) : (
+          <>
+            <rect x="4" y="6" width="16" height="12" rx="2" fill={fill} />
+            <line x1="7.5" y1="12" x2="16.5" y2="12" strokeWidth="1.4" />
           </>
         )}
       </svg>
@@ -666,6 +835,225 @@ export const LibraryItemMiniIcon: React.FC<{
         </svg>
       );
 
+    case 'end':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+          <rect x="3" y="7" width="18" height="10" rx="5" fill={fill} stroke={stroke} strokeWidth="2.1" />
+          <circle cx="12" cy="12" r="2.2" fill={stroke} />
+        </svg>
+      );
+    case 'manual-op':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+          <polygon points="3.5,6.5 20.5,6.5 18,17.5 6,17.5" fill={fill} stroke={stroke} strokeWidth="1.8" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'approval':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3.5" y="5" width="17" height="14" rx="2.5" fill={fill} />
+          <path d="M8.5 12.2 L11 14.7 L16 9.5" />
+        </svg>
+      );
+    case 'loop':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M17 6.5 H8.5 C6 6.5 4.5 8 4.5 10.5 V11.5 M14.5 4 L17 6.5 L14.5 9" />
+          <path d="M7 17.5 H15.5 C18 17.5 19.5 16 19.5 13.5 V12.5 M9.5 15 L7 17.5 L9.5 20" />
+        </svg>
+      );
+    case 'merge':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+          <polygon points="4,6 20,6 12,19" fill={fill} stroke={stroke} strokeWidth="1.8" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'connector-circle':
+    case 'wb-dot-vote':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="7.5" fill={fill} stroke={stroke} strokeWidth="1.8" />
+        </svg>
+      );
+    case 'error-handler':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polygon points="12,3.5 21,19 3,19" fill={fill} />
+          <line x1="12" y1="9.5" x2="12" y2="13.5" />
+          <circle cx="12" cy="16.2" r="0.8" fill={stroke} stroke="none" />
+        </svg>
+      );
+    case 'multi-doc':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="6" y="4" width="13.5" height="12" rx="1.5" fill={fill} />
+          <rect x="4" y="7" width="13.5" height="12" rx="1.5" fill={fill} />
+          <line x1="7" y1="11.5" x2="14.5" y2="11.5" />
+          <line x1="7" y1="14.8" x2="12" y2="14.8" />
+        </svg>
+      );
+    case 'cloud-sync':
+      return <SequenceRoleMiniIcon role="cloud" color={stroke} className={className} />;
+    case 'email-notify':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3.5" y="5.5" width="17" height="13" rx="2" fill={fill} />
+          <path d="M4.5 7 L12 13 L19.5 7" />
+        </svg>
+      );
+    case 'arch-waf':
+    case 'net-ids':
+      return <SequenceRoleMiniIcon role="auth" color={stroke} className={className} />;
+    case 'arch-secrets':
+    case 'net-vpn':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="5" y="10.5" width="14" height="9.5" rx="2" fill={fill} />
+          <path d="M8.5 10.5 V7.5 C8.5 5.3 10 4 12 4 C14 4 15.5 5.3 15.5 7.5 V10.5" />
+          <circle cx="12" cy="15" r="1.2" fill={stroke} stroke="none" />
+        </svg>
+      );
+    case 'arch-ml':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" fill={fill} />
+          <path d="M12 3.5 V9 M12 15 V20.5 M3.5 12 H9 M15 12 H20.5 M6 6 L9.8 9.8 M14.2 14.2 L18 18 M18 6 L14.2 9.8 M9.8 14.2 L6 18" />
+        </svg>
+      );
+    case 'arch-monitoring':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3.5" y="5" width="17" height="14" rx="2" fill={fill} />
+          <path d="M6.5 14 L9.5 11 L12 13.5 L15 9.5 L17.5 12" />
+        </svg>
+      );
+    case 'arch-search':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6" fill={fill} />
+          <line x1="15" y1="15" x2="20" y2="20" />
+        </svg>
+      );
+    case 'arch-nosql':
+    case 'arch-warehouse':
+    case 'net-nas':
+      return <SequenceRoleMiniIcon role="database" color={stroke} className={className} />;
+    case 'arch-worker':
+      return <SequenceRoleMiniIcon role="microservice" color={stroke} className={className} />;
+    case 'arch-region':
+    case 'arch-subnet-pub':
+    case 'arch-subnet-priv':
+    case 'net-dmz':
+    case 'net-datacenter':
+    case 'org-squad':
+    case 'wb-kanban-col':
+    case 'wb-quadrant':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" fill={fill} strokeDasharray={item.dashed ? '3 2' : undefined} />
+          <line x1="12" y1="4.5" x2="12" y2="19.5" strokeOpacity="0.45" />
+          <line x1="3.5" y1="12" x2="20.5" y2="12" strokeOpacity="0.45" />
+        </svg>
+      );
+    case 'net-lb':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="6" cy="12" r="2.5" />
+          <path d="M8.5 12 H13 L18 7 M13 12 H19 M13 12 L18 17" />
+        </svg>
+      );
+    case 'net-dns':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="8" fill={fill} />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <ellipse cx="12" cy="12" rx="3.5" ry="8" />
+        </svg>
+      );
+    case 'net-camera':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3.5" y="7" width="12.5" height="10" rx="2" fill={fill} />
+          <polygon points="16,10 20.5,7.5 20.5,16.5 16,14" />
+        </svg>
+      );
+    case 'net-printer':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="6.5" y="4" width="11" height="5" />
+          <rect x="3.5" y="9" width="17" height="8" rx="1.5" fill={fill} />
+          <rect x="7" y="14" width="10" height="6" fill="#FFFFFF" />
+        </svg>
+      );
+    case 'net-phone':
+      return <SequenceRoleMiniIcon role="mobile" color={stroke} className={className} />;
+    case 'erd-view':
+    case 'erd-enum':
+    case 'erd-index':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="4" y="4.5" width="16" height="15" rx="2" fill={fill} strokeDasharray={item.dashed ? '3 2' : undefined} />
+          <line x1="4" y1="9.5" x2="20" y2="9.5" />
+          <line x1="7.5" y1="13.5" x2="16.5" y2="13.5" />
+          <line x1="7.5" y1="16.5" x2="13.5" y2="16.5" />
+        </svg>
+      );
+    case 'org-board':
+    case 'org-vp':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={item.fill === '#0F172A' ? '#5EEAD4' : stroke} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 17 L6 8 L12 12 L18 8 L20 17 Z" />
+          <line x1="4" y1="20" x2="20" y2="20" />
+        </svg>
+      );
+    case 'org-assistant':
+    case 'org-contractor':
+    case 'org-open-role':
+    case 'journey-persona':
+      return <SequenceRoleMiniIcon role="user" color={stroke} className={className} />;
+    case 'journey-channel-web':
+      return <SequenceRoleMiniIcon role="browser" color={stroke} className={className} />;
+    case 'journey-channel-support':
+    case 'wb-callout':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 6 C4 5 5 4 6 4 H18 C19 4 20 5 20 6 V14 C20 15 19 16 18 16 H10 L6 20 V16 H6 C5 16 4 15 4 14 Z" fill={fill} />
+        </svg>
+      );
+    case 'journey-emotion-high':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="8" fill={fill} />
+          <path d="M8.5 14 C9.5 16 14.5 16 15.5 14" />
+          <circle cx="9.2" cy="10" r="0.8" fill={stroke} stroke="none" />
+          <circle cx="14.8" cy="10" r="0.8" fill={stroke} stroke="none" />
+        </svg>
+      );
+    case 'journey-emotion-low':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="8" fill={fill} />
+          <path d="M8.5 16 C9.5 14 14.5 14 15.5 16" />
+          <circle cx="9.2" cy="10" r="0.8" fill={stroke} stroke="none" />
+          <circle cx="14.8" cy="10" r="0.8" fill={stroke} stroke="none" />
+        </svg>
+      );
+    case 'journey-metric':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <line x1="4" y1="19" x2="20" y2="19" />
+          <rect x="6" y="12" width="3" height="7" fill={fill} />
+          <rect x="10.5" y="8" width="3" height="11" fill={fill} />
+          <rect x="15" y="5" width="3" height="14" fill={fill} />
+        </svg>
+      );
+    case 'wb-checklist':
+      return (
+        <svg viewBox="0 0 24 24" className={className} fill="none" stroke={stroke} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="4" y="4" width="16" height="16" rx="2" fill={fill} />
+          <path d="M7.5 9.5 L9 11 L11.5 8.5 M13.5 9.5 H17 M7.5 14.5 L9 16 L11.5 13.5 M13.5 14.5 H17" />
+        </svg>
+      );
     default:
       return (
         <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">

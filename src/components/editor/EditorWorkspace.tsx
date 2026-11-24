@@ -1,13 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
+  CheckCircle2,
   Command,
+  Database,
   Download,
   Eraser,
   FilePlus2,
   FolderOpen,
   Grid,
   Hand,
+  HardDriveDownload,
   History,
   Keyboard,
   Magnet,
@@ -47,6 +50,8 @@ import {
   DIAGRAM_TYPES,
   getLibraryForType,
   LibraryItem,
+  NEXORA_MODULE_MAP,
+  NEXORA_MODULES,
 } from '../../engine/libraries';
 import { applyAutoLayout, LayoutDirection } from '../../engine/layout';
 import { detectRoomsFromWalls } from '../../engine/geometry';
@@ -57,7 +62,12 @@ import {
   readDroppedPCanvasFile,
   saveDesignToDesktop,
 } from '../../engine/pcanvasFile';
-import { DiagramTypeIllustration } from '../icons/ShapeIcons';
+import {
+  DiagramTypeIllustration,
+  NexoraBrandLogo,
+  NexoraModuleIcon,
+} from '../icons/ShapeIcons';
+import { PWAInstallButton } from '../pwa/PWAInstallButton';
 import { StandardCanvas } from '../canvas/StandardCanvas';
 import { SequenceCanvas } from '../canvas/SequenceCanvas';
 import { FloorPlanCanvas, FloorSelectionItem } from '../canvas/FloorPlanCanvas';
@@ -127,6 +137,10 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   const [toast, setToast] = useState<string | null>(null);
   const [fileHandle, setFileHandle] = useState<DesktopFileHandle | null>(initialFileHandle);
   const [linkedFileName, setLinkedFileName] = useState<string | null>(initialFileName);
+  const [hasUndownloadedChanges, setHasUndownloadedChanges] = useState(false);
+  const [lastDownloadedAt, setLastDownloadedAt] = useState<string | null>(
+    initialFileName ? 'Opened from file' : null
+  );
   const [fileDropActive, setFileDropActive] = useState(false);
 
   // Viewport & Panel states
@@ -189,6 +203,8 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
     setDoc(initialDoc);
     setFileHandle(initialFileHandle ?? null);
     setLinkedFileName(initialFileName ?? null);
+    setHasUndownloadedChanges(false);
+    setLastDownloadedAt(initialFileName ? 'Opened from file' : null);
     setHistoryPast([]);
     setHistoryFuture([]);
     setSelectedIds([]);
@@ -222,6 +238,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
       }
       const stamped = { ...next, updatedAt: new Date().toISOString() };
       setDoc(stamped);
+      setHasUndownloadedChanges(true);
       scheduleSave(stamped);
     },
     [scheduleSave]
@@ -249,7 +266,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
     });
   }, [scheduleSave]);
 
-  // Save current design to desktop (.pcanvas)
+  // Save current design to desktop (.nexora)
   const handleSaveToDesktop = useCallback(
     async (saveAs = false) => {
       try {
@@ -261,16 +278,20 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
         if (res.saved) {
           if (res.handle) setFileHandle(res.handle);
           setLinkedFileName(res.fileName);
-          showToast(`Saved "${res.fileName}"`);
+          setHasUndownloadedChanges(false);
+          setLastDownloadedAt(
+            new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          );
+          showToast(`Downloaded "${res.fileName}"`);
         }
       } catch (err) {
-        showToast(err instanceof Error ? err.message : 'Unable to save .pcanvas file');
+        showToast(err instanceof Error ? err.message : 'Unable to save .nexora file');
       }
     },
     [fileHandle, onSaveDiagram, showToast]
   );
 
-  // Open a .pcanvas file from desktop for viewing & editing
+  // Open a .nexora / .pcanvas file from desktop for viewing & editing
   const handleOpenDesktopFile = useCallback(async () => {
     try {
       const opened = await openDesignFromDesktop();
@@ -278,7 +299,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
       onOpenDesktopDesign(opened.doc, opened.handle, opened.fileName);
       showToast(`Opened "${opened.fileName}"`);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Could not open .pcanvas file');
+      showToast(err instanceof Error ? err.message : 'Could not open .nexora file');
     }
   }, [onOpenDesktopDesign, showToast]);
 
@@ -626,7 +647,10 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
         return;
       }
       if (
-        (item.floorItemKind === 'door' || item.floorItemKind === 'double-door' || item.floorItemKind === 'window') &&
+        (item.floorItemKind === 'door' ||
+          item.floorItemKind === 'double-door' ||
+          item.floorItemKind === 'sliding-door' ||
+          item.floorItemKind === 'window') &&
         fp.walls.length > 0
       ) {
         const targetWall = fp.walls[0];
@@ -747,6 +771,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   );
 
   const typeMeta = DIAGRAM_TYPE_MAP[doc.type];
+  const moduleMeta = NEXORA_MODULE_MAP[typeMeta.module];
 
   const singleFloorItem = selectedFloorItems.length === 1 ? selectedFloorItems[0] : null;
   const singleParticipantId =
@@ -780,15 +805,15 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
         }
       }}
     >
-      {/* Drag-and-drop .pcanvas file overlay */}
+      {/* Drag-and-drop .nexora / .pcanvas file overlay */}
       {fileDropActive && (
-        <div className="pointer-events-none absolute inset-0 z-50 bg-blue-600/12 backdrop-blur-[2px] border-2 border-dashed border-blue-600 flex items-center justify-center">
+        <div className="pointer-events-none absolute inset-0 z-50 bg-teal-600/12 backdrop-blur-[2px] border-2 border-dashed border-teal-600 flex items-center justify-center">
           <div className="px-6 py-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl text-center space-y-1">
             <div className="text-sm font-semibold text-slate-900 dark:text-white">
-              Drop .pcanvas file to view & edit
+              Drop .nexora or .pcanvas file to view &amp; edit
             </div>
             <div className="text-xs text-slate-500">
-              Loads the design directly into Project Canvas
+              Loads the design directly into Nexora
             </div>
           </div>
         </div>
@@ -797,15 +822,23 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
       {/* Top Application Bar (Hidden in Presentation Mode) */}
       {!presentationMode && (
         <header className="h-13 shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 flex items-center justify-between gap-3 z-30">
-          {/* Left Zone: Back + Title + Type + Save status + linked .pcanvas file */}
+          {/* Left Zone: Back + Nexora Mark + Title + Module + Save status */}
           <div className="flex items-center gap-2 min-w-0">
             <button
               type="button"
               onClick={onBackHome}
               className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
-              title="Back to Home Dashboard"
+              title="Back to Nexora Home"
             >
               <ArrowLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onBackHome}
+              className="shrink-0 rounded-md hover:opacity-90 transition-opacity"
+              title="Nexora — The Visual Workspace"
+            >
+              <NexoraBrandLogo className="w-6 h-6" />
             </button>
             <div className="w-px h-5 bg-slate-200 dark:bg-slate-800 shrink-0" />
             <input
@@ -814,15 +847,15 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               disabled={readOnly}
               onChange={(e) => updateDoc({ ...doc, title: e.target.value }, false)}
               aria-label="Diagram title"
-              className="font-display text-sm font-semibold bg-transparent text-slate-900 dark:text-slate-100 px-1.5 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-slate-100 dark:focus:bg-slate-800 outline-none truncate max-w-[200px]"
+              className="font-display text-sm font-semibold bg-transparent text-slate-900 dark:text-slate-100 px-1.5 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-slate-100 dark:focus:bg-slate-800 outline-none truncate max-w-[190px]"
             />
-            <span className="hidden lg:inline text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap shrink-0">
-              {typeMeta.shortName} · {saveState}
-              {linkedFileName && (
-                <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                  {' '}· {linkedFileName}
-                </span>
-              )}
+            <span className="hidden lg:inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
+                <NexoraModuleIcon module={moduleMeta.id} className="w-3 h-3 text-teal-700 dark:text-teal-400" />
+                <span>{moduleMeta.name}</span>
+              </span>
+              <span aria-hidden="true">·</span>
+              <span>{typeMeta.shortName}</span>
             </span>
           </div>
 
@@ -868,7 +901,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                   onClick={() => setFloorTool('wall')}
                   className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap ${
                     floorTool === 'wall'
-                      ? 'bg-blue-600 text-white shadow-sm'
+                      ? 'bg-teal-700 text-white shadow-sm'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                 >
@@ -952,7 +985,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             )}
           </div>
 
-          {/* Right Zone: New/Clear, Open/Save .pcanvas, Command Palette, AI Studio, Snapshots, Present, Export, Theme */}
+          {/* Right Zone: New/Clear, Open/Save .nexora, PWA, Command Palette, AI Studio, Snapshots, Present, Export, Theme */}
           <div className="flex items-center gap-1 shrink-0">
             {!readOnly && (
               <button
@@ -970,7 +1003,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               type="button"
               onClick={() => void handleOpenDesktopFile()}
               className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0"
-              title="Open .pcanvas file from computer (Cmd+O)"
+              title="Open .nexora or .pcanvas file from computer (Cmd+O)"
             >
               <FolderOpen className="w-3.5 h-3.5" />
               <span className="hidden xl:inline">Open</span>
@@ -979,12 +1012,18 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             <button
               type="button"
               onClick={() => void handleSaveToDesktop(false)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap shrink-0"
-              title="Save design to desktop as .pcanvas (Cmd+S)"
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
+                hasUndownloadedChanges
+                  ? 'border-teal-600 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/60'
+                  : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400'
+              }`}
+              title="Download design to desktop as .nexora (Cmd+S)"
             >
               <Save className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Save .pcanvas</span>
+              <span className="hidden sm:inline">Save .nexora</span>
             </button>
+
+            <PWAInstallButton compact className="hidden md:inline-flex" />
 
             <button
               type="button"
@@ -1000,7 +1039,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               <button
                 type="button"
                 onClick={() => setAiOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap shrink-0"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400 transition-colors whitespace-nowrap shrink-0"
                 title="AI Diagram Assistant (Optional)"
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -1038,13 +1077,54 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             <button
               type="button"
               onClick={() => setExportOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-700 text-white text-xs font-medium hover:bg-teal-800 transition-colors whitespace-nowrap shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export</span>
             </button>
           </div>
         </header>
+      )}
+
+      {/* Persistent IndexedDB Auto-Save & Desktop Download Reminder Bar */}
+      {!presentationMode && (
+        <div className="shrink-0 px-3 py-1.5 bg-teal-50/75 dark:bg-teal-950/35 border-b border-teal-200/70 dark:border-teal-900/60 flex items-center justify-between gap-3 text-[11px] z-20">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="inline-flex items-center gap-1.5 font-medium text-teal-800 dark:text-teal-300 shrink-0">
+              <Database className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
+              <span>IndexedDB: {saveState === 'Saving...' ? 'Saving...' : 'Auto-saved'}</span>
+            </span>
+            <span className="text-teal-400 dark:text-teal-700 shrink-0" aria-hidden="true">|</span>
+            {hasUndownloadedChanges ? (
+              <span className="text-amber-800 dark:text-amber-300 font-medium truncate">
+                Changes are only in browser IndexedDB — remember to download a <code className="font-mono">.nexora</code> backup to your computer.
+              </span>
+            ) : lastDownloadedAt ? (
+              <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300 truncate">
+                <CheckCircle2 className="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
+                <span className="truncate">
+                  Backed up ({linkedFileName ?? lastDownloadedAt}). Always download a fresh <code className="font-mono">.nexora</code> copy after major edits.
+                </span>
+              </span>
+            ) : (
+              <span className="text-slate-600 dark:text-slate-300 truncate">
+                Auto-stored locally in IndexedDB. Remember to download your creation as a <code className="font-mono">.nexora</code> file for permanent desktop backup.
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => void handleSaveToDesktop(false)}
+            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors whitespace-nowrap shrink-0 ${
+              hasUndownloadedChanges
+                ? 'bg-teal-700 text-white hover:bg-teal-800 shadow-xs'
+                : 'border border-teal-600/35 dark:border-teal-500/40 bg-white dark:bg-slate-900 text-teal-800 dark:text-teal-200 hover:bg-teal-50 dark:hover:bg-teal-900/40'
+            }`}
+          >
+            <HardDriveDownload className="w-3 h-3" />
+            <span>Download .nexora</span>
+          </button>
+        </div>
       )}
 
       {/* Main Workspace Area */}
@@ -1357,7 +1437,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 onClick={() => setLeftOpen((v) => !v)}
                 className={`p-1.5 rounded-md ${
                   leftOpen
-                    ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/60'
+                    ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
                     : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
                 title="Toggle Left Library"
@@ -1415,7 +1495,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               }
               className={`p-1.5 rounded-md ${
                 doc.settings.showGrid
-                  ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/60'
+                  ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
                   : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
               title="Toggle Grid"
@@ -1433,7 +1513,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               }
               className={`p-1.5 rounded-md ${
                 doc.settings.snapToGrid
-                  ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/60'
+                  ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
                   : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
               title="Toggle Snap to Grid"
@@ -1447,7 +1527,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 onClick={() => setShowMinimap((m) => !m)}
                 className={`p-1.5 rounded-md ${
                   showMinimap
-                    ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/60'
+                    ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
                     : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
                 title="Toggle Mini-Map"
@@ -1471,7 +1551,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 onClick={() => setRightOpen((v) => !v)}
                 className={`p-1.5 rounded-md ${
                   rightOpen
-                    ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/60'
+                    ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60'
                     : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
                 title="Toggle Properties Panel"
@@ -1548,7 +1628,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 type="button"
                 disabled={readOnly}
                 onClick={handleCreateSnapshot}
-                className="w-full py-2 px-3 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 disabled:opacity-50"
+                className="w-full py-2 px-3 rounded-lg bg-teal-700 text-white text-xs font-medium hover:bg-teal-800 disabled:opacity-50"
               >
                 Create Named Snapshot
               </button>
@@ -1678,6 +1758,28 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             </div>
 
             <div className="p-5 space-y-5 max-h-[75vh] overflow-y-auto">
+              {/* Backup reminder if changes haven't been downloaded */}
+              {hasUndownloadedChanges && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/70">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-semibold text-teal-900 dark:text-teal-200">
+                      Download a .nexora backup before clearing or switching?
+                    </div>
+                    <div className="text-xs text-teal-800/80 dark:text-teal-300/80">
+                      Your work is auto-saved in IndexedDB, but keeping a desktop copy ensures you can always reopen it later.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleSaveToDesktop(false)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-700 text-white text-xs font-medium hover:bg-teal-800 transition-colors whitespace-nowrap shrink-0"
+                  >
+                    <HardDriveDownload className="w-3.5 h-3.5" />
+                    <span>Download .nexora</span>
+                  </button>
+                </div>
+              )}
+
               {/* Clear current canvas bar */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
                 <div className="space-y-0.5">
@@ -1685,7 +1787,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                     Clear Current {typeMeta.name}
                   </div>
                   <div className="text-xs text-slate-500 dark:text-slate-400">
-                    Removes all elements on "{doc.title}" while keeping your title and settings (undoable with Cmd+Z).
+                    Removes all elements on &quot;{doc.title}&quot; while keeping your title and settings (undoable with Cmd+Z).
                   </div>
                 </div>
                 <button
@@ -1698,36 +1800,50 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 </button>
               </div>
 
-              {/* Start new design of ANY type */}
-              <div className="space-y-3">
+              {/* Start new design grouped by Nexora's 4 Modules */}
+              <div className="space-y-4">
                 <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Start Fresh Blank Design
+                  Start Fresh Blank Design by Nexora Module
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                  {DIAGRAM_TYPES.map((dt) => (
-                    <button
-                      key={dt.type}
-                      type="button"
-                      onClick={() => {
-                        setNewClearOpen(false);
-                        onStartNewDesign(dt.type);
-                      }}
-                      className="group flex flex-col text-left rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-blue-500 dark:hover:border-blue-500 transition-colors overflow-hidden"
-                    >
-                      <div className="px-3 pt-2.5 pb-1.5 bg-slate-50/70 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800/80">
-                        <DiagramTypeIllustration type={dt.type} className="w-full h-14" />
+                {NEXORA_MODULES.map((mod) => {
+                  const modTypes = DIAGRAM_TYPES.filter((dt) => dt.module === mod.id);
+                  return (
+                    <div key={mod.id} className="space-y-2">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                        <NexoraModuleIcon module={mod.id} className="w-4 h-4 text-teal-700 dark:text-teal-400" />
+                        <span>{mod.name}</span>
+                        <span className="text-[11px] font-normal text-slate-400">
+                          — {mod.subtitle}
+                        </span>
                       </div>
-                      <div className="p-2.5">
-                        <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                          {dt.name}
-                        </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
-                          {dt.shortName} studio
-                        </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {modTypes.map((dt) => (
+                          <button
+                            key={dt.type}
+                            type="button"
+                            onClick={() => {
+                              setNewClearOpen(false);
+                              onStartNewDesign(dt.type);
+                            }}
+                            className="group flex flex-col text-left rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-600 dark:hover:border-teal-500 transition-colors overflow-hidden"
+                          >
+                            <div className="px-3 pt-2.5 pb-1.5 bg-slate-50/70 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800/80">
+                              <DiagramTypeIllustration type={dt.type} className="w-full h-14" />
+                            </div>
+                            <div className="p-2.5">
+                              <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">
+                                {dt.name}
+                              </div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
+                                {dt.shortName} studio
+                              </div>
+                            </div>
+                          </button>
+                        ))}
                       </div>
-                    </button>
-                  ))}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1746,7 +1862,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
           >
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                Keyboard Shortcuts
+                Nexora Keyboard Shortcuts
               </h3>
               <button
                 type="button"
@@ -1758,8 +1874,8 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             </div>
             <div className="space-y-2 text-xs">
               {[
-                ['Save Design to Desktop (.pcanvas)', '⌘ / Ctrl + S'],
-                ['Open Design File (.pcanvas)', '⌘ / Ctrl + O'],
+                ['Download Design to Desktop (.nexora)', '⌘ / Ctrl + S'],
+                ['Open Design File (.nexora / .pcanvas)', '⌘ / Ctrl + O'],
                 ['Universal Command Palette', '⌘ / Ctrl + K'],
                 ['Undo / Redo', '⌘Z / ⌘⇧Z'],
                 ['Marquee Multi-Select', 'Drag on Canvas'],

@@ -1,13 +1,13 @@
 import { DiagramDocument } from '../types/diagram';
 import { makeId } from './templates';
 
-export const PCANVAS_EXTENSION = '.pcanvas';
-export const PCANVAS_MIME = 'application/vnd.project-canvas+json';
+export const PCANVAS_EXTENSION = '.nexora';
+export const PCANVAS_MIME = 'application/vnd.nexora+json';
 
 export interface PCanvasFileEnvelope {
-  format: 'project-canvas';
+  format: 'nexora' | 'project-canvas';
   formatVersion: 1;
-  extension: '.pcanvas';
+  extension: '.nexora' | '.pcanvas';
   savedAt: string;
   document: DiagramDocument;
 }
@@ -51,7 +51,7 @@ export function sanitizePCanvasFilename(title: string): string {
 
 export function serializePCanvasFile(doc: DiagramDocument): string {
   const envelope: PCanvasFileEnvelope = {
-    format: 'project-canvas',
+    format: 'nexora',
     formatVersion: 1,
     extension: PCANVAS_EXTENSION,
     savedAt: new Date().toISOString(),
@@ -68,26 +68,28 @@ export function parsePCanvasFile(rawText: string, fallbackFileName?: string): Di
   try {
     parsed = JSON.parse(rawText);
   } catch {
-    throw new Error('This file is not valid Project Canvas (.pcanvas) data.');
+    throw new Error('This file is not valid Nexora (.nexora / .pcanvas) design data.');
   }
 
   if (!parsed || typeof parsed !== 'object') {
-    throw new Error('Invalid .pcanvas file structure.');
+    throw new Error('Invalid Nexora design file structure.');
   }
 
   const obj = parsed as Record<string, unknown>;
   const docCandidate =
-    obj.format === 'project-canvas' && obj.document && typeof obj.document === 'object'
+    (obj.format === 'nexora' || obj.format === 'project-canvas') &&
+    obj.document &&
+    typeof obj.document === 'object'
       ? (obj.document as Partial<DiagramDocument>)
       : (obj as Partial<DiagramDocument>);
 
   if (!docCandidate.type) {
-    throw new Error('Unrecognized .pcanvas file: missing diagram type.');
+    throw new Error('Unrecognized Nexora file: missing diagram type.');
   }
 
   const now = new Date().toISOString();
   const baseTitle = fallbackFileName
-    ? fallbackFileName.replace(/\.(pcanvas|canvas\.json|json)$/i, '')
+    ? fallbackFileName.replace(/\.(nexora|pcanvas|canvas\.json|json)$/i, '')
     : 'Opened Design';
 
   return {
@@ -178,7 +180,7 @@ export async function saveDesignToDesktop(
         suggestedName,
         types: [
           {
-            description: 'Project Canvas Design File',
+            description: 'Nexora Design File',
             accept: {
               [PCANVAS_MIME]: [PCANVAS_EXTENSION],
             },
@@ -203,7 +205,7 @@ export async function saveDesignToDesktop(
     }
   }
 
-  // 3. Universal browser download preserving exact `.pcanvas` extension
+  // 3. Universal browser download preserving exact `.nexora` extension
   triggerBrowserDownload(suggestedName, serialized);
   return {
     saved: true,
@@ -214,7 +216,7 @@ export async function saveDesignToDesktop(
 }
 
 /**
- * Opens a `.pcanvas` (or compatible `.json`) design file from the user's computer.
+ * Opens a `.nexora`, `.pcanvas`, or compatible `.json` design file from the user's computer.
  * Uses File System Access API when permitted (keeping a writable handle for Cmd+S in-place saves),
  * and seamlessly falls back to a native file input dialog when inside an iframe or other browsers.
  */
@@ -231,9 +233,9 @@ export async function openDesignFromDesktop(): Promise<{
         multiple: false,
         types: [
           {
-            description: 'Project Canvas Design File',
+            description: 'Nexora Design File',
             accept: {
-              [PCANVAS_MIME]: [PCANVAS_EXTENSION],
+              [PCANVAS_MIME]: [PCANVAS_EXTENSION, '.pcanvas'],
               'application/json': ['.json'],
             },
           },
@@ -256,7 +258,7 @@ export async function openDesignFromDesktop(): Promise<{
   return new Promise((resolve, reject) => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = `${PCANVAS_EXTENSION},.json,application/json`;
+    input.accept = `${PCANVAS_EXTENSION},.pcanvas,.json,application/json`;
     input.style.display = 'none';
     document.body.appendChild(input);
 

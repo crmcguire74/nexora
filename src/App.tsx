@@ -18,6 +18,9 @@ import {
 import { DesktopFileHandle } from './engine/pcanvasFile';
 import { HomeDashboard } from './components/home/HomeDashboard';
 import { EditorWorkspace } from './components/editor/EditorWorkspace';
+import { OfflineIndicator } from './components/pwa/OfflineIndicator';
+import { PWAInstallModal } from './components/pwa/PWAInstallButton';
+import { NexoraBrandLogo } from './components/icons/ShapeIcons';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(() => {
@@ -159,83 +162,86 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="h-screen w-screen flex flex-col items-center justify-center gap-3 bg-slate-50 dark:bg-slate-950">
+        <NexoraBrandLogo className="w-10 h-10" />
         <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
-          Loading Project Canvas workspace...
+          Loading Nexora workspace...
         </div>
       </div>
     );
   }
 
-  if (activeDiagram) {
-    return (
-      <EditorWorkspace
-        key={`${activeDiagram.id}_${editorSession}`}
-        initialDoc={activeDiagram}
-        initialFileHandle={activeDesktopFile.handle}
-        initialFileName={activeDesktopFile.fileName}
-        darkMode={darkMode}
-        onToggleDarkMode={() => setDarkMode((d) => !d)}
-        profile={profile}
-        customComponents={customComponents}
-        onSaveDiagram={handleSaveDiagram}
-        onSaveCustomComponent={async (comp) => {
-          await diagramRepo.saveCustomComponent(comp);
-          await refreshLists();
-        }}
-        onDeleteCustomComponent={async (id) => {
-          await diagramRepo.deleteCustomComponent(id);
-          await refreshLists();
-        }}
-        onSaveCustomTemplate={async (doc) => {
-          await diagramRepo.saveCustomTemplate(doc);
-          await refreshLists();
-        }}
-        onImportNewDiagram={async (imported) => {
-          await handleSaveDiagram(imported);
-          setActiveDesktopFile({ handle: null, fileName: null });
-          setEditorSession((s) => s + 1);
-          setActiveDiagram(imported);
-        }}
-        onOpenDesktopDesign={handleOpenDesktopDesign}
-        onStartNewDesign={handleCreateBlank}
-        onBackHome={async () => {
-          setActiveDiagram(null);
-          setActiveDesktopFile({ handle: null, fileName: null });
-          await refreshLists();
-        }}
-      />
-    );
-  }
-
   return (
-    <HomeDashboard
-      diagrams={diagrams}
-      customTemplates={customTemplates}
-      customComponents={customComponents}
-      darkMode={darkMode}
-      onToggleDarkMode={() => setDarkMode((d) => !d)}
-      profile={profile}
-      onUpdateProfile={handleUpdateProfile}
-      onOpenDiagram={(doc) => {
-        setActiveDesktopFile({ handle: null, fileName: null });
-        setEditorSession((s) => s + 1);
-        setActiveDiagram(doc);
-      }}
-      onOpenDesktopFile={handleOpenDesktopDesign}
-      onCreateBlank={handleCreateBlank}
-      onUseTemplate={handleUseTemplate}
-      onDuplicateDiagram={handleDuplicateDiagram}
-      onDeleteDiagram={handleDeleteDiagram}
-      onToggleStarDiagram={handleToggleStar}
-      onDeleteCustomComponent={async (id) => {
-        await diagramRepo.deleteCustomComponent(id);
-        await refreshLists();
-      }}
-      onDeleteCustomTemplate={async (id) => {
-        await diagramRepo.deleteCustomTemplate(id);
-        await refreshLists();
-      }}
-    />
+    <>
+      {activeDiagram ? (
+        <EditorWorkspace
+          key={`${activeDiagram.id}_${editorSession}`}
+          initialDoc={activeDiagram}
+          initialFileHandle={activeDesktopFile.handle}
+          initialFileName={activeDesktopFile.fileName}
+          darkMode={darkMode}
+          onToggleDarkMode={() => setDarkMode((d) => !d)}
+          profile={profile}
+          customComponents={customComponents}
+          onSaveDiagram={handleSaveDiagram}
+          onSaveCustomComponent={async (comp) => {
+            await diagramRepo.saveCustomComponent(comp);
+            await refreshLists();
+          }}
+          onDeleteCustomComponent={async (id) => {
+            await diagramRepo.deleteCustomComponent(id);
+            await refreshLists();
+          }}
+          onSaveCustomTemplate={async (doc) => {
+            await diagramRepo.saveCustomTemplate(doc);
+            await refreshLists();
+          }}
+          onImportNewDiagram={async (imported) => {
+            await handleSaveDiagram(imported);
+            setActiveDesktopFile({ handle: null, fileName: null });
+            setEditorSession((s) => s + 1);
+            setActiveDiagram(imported);
+          }}
+          onOpenDesktopDesign={handleOpenDesktopDesign}
+          onStartNewDesign={handleCreateBlank}
+          onBackHome={async () => {
+            setActiveDiagram(null);
+            setActiveDesktopFile({ handle: null, fileName: null });
+            await refreshLists();
+          }}
+        />
+      ) : (
+        <HomeDashboard
+          diagrams={diagrams}
+          customTemplates={customTemplates}
+          customComponents={customComponents}
+          darkMode={darkMode}
+          onToggleDarkMode={() => setDarkMode((d) => !d)}
+          profile={profile}
+          onUpdateProfile={handleUpdateProfile}
+          onOpenDiagram={(doc) => {
+            setActiveDesktopFile({ handle: null, fileName: null });
+            setEditorSession((s) => s + 1);
+            setActiveDiagram(doc);
+          }}
+          onOpenDesktopFile={handleOpenDesktopDesign}
+          onCreateBlank={handleCreateBlank}
+          onUseTemplate={handleUseTemplate}
+          onDuplicateDiagram={handleDuplicateDiagram}
+          onDeleteDiagram={handleDeleteDiagram}
+          onToggleStarDiagram={handleToggleStar}
+          onDeleteCustomComponent={async (id) => {
+            await diagramRepo.deleteCustomComponent(id);
+            await refreshLists();
+          }}
+          onDeleteCustomTemplate={async (id) => {
+            await diagramRepo.deleteCustomTemplate(id);
+            await refreshLists();
+          }}
+        />
+      )}
+      <OfflineIndicator />
+      <PWAInstallModal />
+    </>
   );
 }

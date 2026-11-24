@@ -414,12 +414,15 @@ export function importFromMermaid(source: string, title = 'Imported Mermaid Diag
 export function importFromNativeJson(raw: string): DiagramDocument {
   const root = JSON.parse(raw) as Record<string, unknown>;
   const parsed = (
-    root && root.format === 'project-canvas' && root.document && typeof root.document === 'object'
+    root &&
+    (root.format === 'nexora' || root.format === 'project-canvas') &&
+    root.document &&
+    typeof root.document === 'object'
       ? root.document
       : root
   ) as Partial<DiagramDocument>;
   if (!parsed || typeof parsed !== 'object' || !parsed.type) {
-    throw new Error('Invalid Project Canvas (.pcanvas / JSON) file: missing required diagram type.');
+    throw new Error('Invalid Nexora (.nexora / .pcanvas / JSON) file: missing required diagram type.');
   }
   const now = new Date().toISOString();
   return {

@@ -193,9 +193,9 @@ export const diagramRepo: DiagramRepository = new IndexedDBDiagramRepository();
 
 export const DEFAULT_LOCAL_PROFILE: LocalProfile = {
   name: 'Alex Morgan',
-  email: 'alex.morgan@studio.local',
+  email: 'alex.morgan@nexora.local',
   role: 'owner',
-  workspaceName: 'Architecture & Systems Studio',
+  workspaceName: 'Nexora Visual Workspace',
 };
 
 export function loadLocalProfile(): LocalProfile {

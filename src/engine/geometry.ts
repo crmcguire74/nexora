@@ -537,3 +537,406 @@ export function detectRoomsFromWalls(walls: FloorWall[], existingRooms: FloorRoo
 
   return result;
 }
+
+// ==========================================
+// Floor Plan Connected Wall & Space Resizing
+// ==========================================
+
+export interface FloorBounds {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  width: number;
+  height: number;
+}
+
+export function pointInPolygon(pt: Point, poly: Point[], edgeTolerance = 0.16): boolean {
+  if (poly.length < 3) return false;
+  // Check proximity to polygon edges first so items flush against walls count as inside
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i];
+    const b = poly[(i + 1) % poly.length];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lenSq = dx * dx + dy * dy;
+    if (lenSq < 1e-6) continue;
+    const t = Math.max(0, Math.min(1, ((pt.x - a.x) * dx + (pt.y - a.y) * dy) / lenSq));
+    const px = a.x + t * dx;
+    const py = a.y + t * dy;
+    if (Math.hypot(pt.x - px, pt.y - py) <= edgeTolerance) return true;
+  }
+
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i].x;
+    const yi = poly[i].y;
+    const xj = poly[j].x;
+    const yj = poly[j].y;
+    const intersect =
+      yi > pt.y !== yj > pt.y &&
+      pt.x < ((xj - xi) * (pt.y - yi)) / (yj - yi + 1e-12) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+function pointOnSegmentDist(px: number, py: number, w: FloorWall): { dist: number; t: number } {
+  const dx = w.x2 - w.x1;
+  const dy = w.y2 - w.y1;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-6) {
+    return { dist: Math.hypot(px - w.x1, py - w.y1), t: 0 };
+  }
+  const t = Math.max(0, Math.min(1, ((px - w.x1) * dx + (py - w.y1) * dy) / lenSq));
+  return {
+    dist: Math.hypot(px - (w.x1 + t * dx), py - (w.y1 + t * dy)),
+    t,
+  };
+}
+
+export function areWallsConnected(a: FloorWall, b: FloorWall, tol = 0.16): boolean {
+  if (a.id === b.id) return false;
+  const aPts = [
+    { x: a.x1, y: a.y1 },
+    { x: a.x2, y: a.y2 },
+  ];
+  const bPts = [
+    { x: b.x1, y: b.y1 },
+    { x: b.x2, y: b.y2 },
+  ];
+  for (const ap of aPts) {
+    if (pointOnSegmentDist(ap.x, ap.y, b).dist <= tol) return true;
+  }
+  for (const bp of bPts) {
+    if (pointOnSegmentDist(bp.x, bp.y, a).dist <= tol) return true;
+  }
+  return false;
+}
+
+export function getConnectedWallCluster(
+  startWallId: string,
+  walls: FloorWall[],
+  tol = 0.16
+): FloorWall[] {
+  const start = walls.find((w) => w.id === startWallId);
+  if (!start) return [];
+  const visited = new Set<string>([start.id]);
+  const queue: FloorWall[] = [start];
+
+  while (queue.length > 0) {
+    const curr = queue.shift()!;
+    for (const candidate of walls) {
+      if (visited.has(candidate.id)) continue;
+      if (areWallsConnected(curr, candidate, tol)) {
+        visited.add(candidate.id);
+        queue.push(candidate);
+      }
+    }
+  }
+  return walls.filter((w) => visited.has(w.id));
+}
+
+export function isWallInEnclosedSpace(
+  wallId: string,
+  walls: FloorWall[],
+  rooms: FloorRoom[],
+  tol = 0.18
+): boolean {
+  const cluster = getConnectedWallCluster(wallId, walls, tol);
+  if (cluster.length < 3) return false;
+
+  // If any detected room has a vertex lying on any wall in this cluster, it's enclosed
+  for (const room of rooms) {
+    for (const pt of room.polygon) {
+      if (cluster.some((w) => pointOnSegmentDist(pt.x, pt.y, w).dist <= tol)) {
+        return true;
+      }
+    }
+  }
+
+  // Fallback check: detect if the cluster itself contains a cycle (degree >= 2 loop)
+  const clusterRooms = detectRoomsFromWalls(cluster, []);
+  return clusterRooms.length > 0;
+}
+
+export function getWallsBounds(walls: FloorWall[]): FloorBounds | null {
+  if (walls.length === 0) return null;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const w of walls) {
+    minX = Math.min(minX, w.x1, w.x2);
+    minY = Math.min(minY, w.y1, w.y2);
+    maxX = Math.max(maxX, w.x1, w.x2);
+    maxY = Math.max(maxY, w.y1, w.y2);
+  }
+  return {
+    minX,
+    minY,
+    maxX,
+    maxY,
+    width: Math.max(0.01, maxX - minX),
+    height: Math.max(0.01, maxY - minY),
+  };
+}
+
+export function getPolygonBounds(poly: Point[]): FloorBounds | null {
+  if (poly.length === 0) return null;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const p of poly) {
+    minX = Math.min(minX, p.x);
+    minY = Math.min(minY, p.y);
+    maxX = Math.max(maxX, p.x);
+    maxY = Math.max(maxY, p.y);
+  }
+  return {
+    minX,
+    minY,
+    maxX,
+    maxY,
+    width: Math.max(0.01, maxX - minX),
+    height: Math.max(0.01, maxY - minY),
+  };
+}
+
+export function clampOpeningRatioForWall(
+  offsetRatio: number,
+  openingWidth: number,
+  wall: FloorWall
+): number {
+  const len = Math.hypot(wall.x2 - wall.x1, wall.y2 - wall.y1);
+  if (len <= 0.25) return 0.5;
+  const halfFrac = (openingWidth / 2 + 0.05) / len;
+  const minR = Math.min(0.45, Math.max(0.05, halfFrac));
+  return Number(Math.max(minR, Math.min(1 - minR, offsetRatio)).toFixed(3));
+}
+
+function areWallsCollinear(a: FloorWall, b: FloorWall, tol = 0.16): boolean {
+  const ax = a.x2 - a.x1;
+  const ay = a.y2 - a.y1;
+  const aLen = Math.hypot(ax, ay);
+  const bx = b.x2 - b.x1;
+  const by = b.y2 - b.y1;
+  const bLen = Math.hypot(bx, by);
+  if (aLen < 1e-4 || bLen < 1e-4) return false;
+  const cross = Math.abs((ax * by - ay * bx) / (aLen * bLen));
+  if (cross > 0.08) return false;
+  // Check distance of b's midpoint to line a
+  const bmx = (b.x1 + b.x2) / 2;
+  const bmy = (b.y1 + b.y2) / 2;
+  const perpDist = Math.abs(((bmx - a.x1) * -ay + (bmy - a.y1) * ax) / aLen);
+  return perpDist <= tol;
+}
+
+/**
+ * Computes updated walls, openings, rooms, and furniture when pushing/pulling a wall
+ * in a connected space along its perpendicular normal. Keeps all corners, T-junctions,
+ * collinear divider segments, windows, doors, and interior elements moving cleanly.
+ */
+export function resizeConnectedWall(params: {
+  targetWallId: string;
+  rawDx: number;
+  rawDy: number;
+  origWalls: FloorWall[];
+  origOpenings: Array<{ id: string; wallId: string; offsetRatio: number; width: number }>;
+  origRooms: FloorRoom[];
+  origFurniture: Array<{ id: string; x: number; y: number }>;
+  snapStep?: number;
+}): {
+  walls: FloorWall[];
+  openingRatios: Record<string, number>;
+  rooms: FloorRoom[];
+  furniturePos: Record<string, { x: number; y: number }>;
+} | null {
+  const { targetWallId, rawDx, rawDy, origWalls, origOpenings, origRooms, origFurniture } = params;
+  const snapStep = params.snapStep ?? 0.1;
+  const target = origWalls.find((w) => w.id === targetWallId);
+  if (!target) return null;
+
+  const wLen = Math.hypot(target.x2 - target.x1, target.y2 - target.y1);
+  if (wLen < 1e-4) return null;
+
+  // Unit normal perpendicular to target wall
+  const nx = -(target.y2 - target.y1) / wLen;
+  const ny = (target.x2 - target.x1) / wLen;
+  const rawNormalMove = rawDx * nx + rawDy * ny;
+  const snappedNormalMove = Math.round(rawNormalMove / snapStep) * snapStep;
+  const dx = Number((snappedNormalMove * nx).toFixed(3));
+  const dy = Number((snappedNormalMove * ny).toFixed(3));
+
+  // Collect target wall + any directly connected collinear continuation walls so straight
+  // multi-segment partitions stay straight and watertight
+  const movingWallIds = new Set<string>([target.id]);
+  let expanded = true;
+  while (expanded) {
+    expanded = false;
+    for (const w of origWalls) {
+      if (movingWallIds.has(w.id)) continue;
+      for (const mId of movingWallIds) {
+        const mw = origWalls.find((item) => item.id === mId)!;
+        if (areWallsConnected(mw, w, 0.16) && areWallsCollinear(mw, w, 0.16)) {
+          movingWallIds.add(w.id);
+          expanded = true;
+          break;
+        }
+      }
+    }
+  }
+
+  const movingWalls = origWalls.filter((w) => movingWallIds.has(w.id));
+  const touchesMovingWalls = (px: number, py: number): boolean =>
+    movingWalls.some((mw) => pointOnSegmentDist(px, py, mw).dist <= 0.16);
+
+  const nextWalls = origWalls.map((w) => {
+    if (movingWallIds.has(w.id)) {
+      return {
+        ...w,
+        x1: Number((w.x1 + dx).toFixed(2)),
+        y1: Number((w.y1 + dy).toFixed(2)),
+        x2: Number((w.x2 + dx).toFixed(2)),
+        y2: Number((w.y2 + dy).toFixed(2)),
+      };
+    }
+    const moveEnd1 = touchesMovingWalls(w.x1, w.y1);
+    const moveEnd2 = touchesMovingWalls(w.x2, w.y2);
+    if (!moveEnd1 && !moveEnd2) return w;
+    return {
+      ...w,
+      x1: moveEnd1 ? Number((w.x1 + dx).toFixed(2)) : w.x1,
+      y1: moveEnd1 ? Number((w.y1 + dy).toFixed(2)) : w.y1,
+      x2: moveEnd2 ? Number((w.x2 + dx).toFixed(2)) : w.x2,
+      y2: moveEnd2 ? Number((w.y2 + dy).toFixed(2)) : w.y2,
+    };
+  });
+
+  // Prevent collapsing any wall shorter than 0.45m
+  for (const w of nextWalls) {
+    if (Math.hypot(w.x2 - w.x1, w.y2 - w.y1) < 0.45) {
+      return null;
+    }
+  }
+
+  // Clamp openings on resized walls so doors & windows stay cleanly seated
+  const openingRatios: Record<string, number> = {};
+  for (const op of origOpenings) {
+    const w = nextWalls.find((item) => item.id === op.wallId);
+    if (w) {
+      openingRatios[op.id] = clampOpeningRatioForWall(op.offsetRatio, op.width, w);
+    }
+  }
+
+  // Recompute rooms & proportionally remap furniture inside rooms touched by the moved wall(s)
+  const nextRooms = detectRoomsFromWalls(nextWalls, origRooms);
+  const furniturePos: Record<string, { x: number; y: number }> = {};
+
+  const touchedRoomIds = new Set<string>();
+  for (const r of origRooms) {
+    const touches = r.polygon.some((pt) => touchesMovingWalls(pt.x, pt.y));
+    if (touches) touchedRoomIds.add(r.id);
+  }
+
+  for (const origRoom of origRooms) {
+    if (!touchedRoomIds.has(origRoom.id)) continue;
+    const nextRoom = nextRooms.find((nr) => nr.id === origRoom.id);
+    if (!nextRoom) continue;
+    const ob = getPolygonBounds(origRoom.polygon);
+    const nb = getPolygonBounds(nextRoom.polygon);
+    if (!ob || !nb || ob.width < 0.2 || ob.height < 0.2) continue;
+
+    for (const f of origFurniture) {
+      if (furniturePos[f.id]) continue;
+      if (pointInPolygon({ x: f.x, y: f.y }, origRoom.polygon, 0.16)) {
+        const rx = (f.x - ob.minX) / ob.width;
+        const ry = (f.y - ob.minY) / ob.height;
+        furniturePos[f.id] = {
+          x: Number((nb.minX + rx * nb.width).toFixed(2)),
+          y: Number((nb.minY + ry * nb.height).toFixed(2)),
+        };
+      }
+    }
+  }
+
+  return { walls: nextWalls, openingRatios, rooms: nextRooms, furniturePos };
+}
+
+/**
+ * Scales an entire enclosed connected space (walls + doors/windows + interior furniture)
+ * smoothly from origBounds to nextBounds when dragging any of the 8 resize handles.
+ */
+export function scaleConnectedSpace(params: {
+  spaceWallIds: Set<string>;
+  origBounds: FloorBounds;
+  nextBounds: FloorBounds;
+  origWalls: FloorWall[];
+  origOpenings: Array<{ id: string; wallId: string; offsetRatio: number; width: number }>;
+  origRooms: FloorRoom[];
+  origFurniture: Array<{ id: string; x: number; y: number }>;
+  interiorFurnitureIds: Set<string>;
+}): {
+  walls: FloorWall[];
+  openingRatios: Record<string, number>;
+  rooms: FloorRoom[];
+  furniturePos: Record<string, { x: number; y: number }>;
+} | null {
+  const {
+    spaceWallIds,
+    origBounds,
+    nextBounds,
+    origWalls,
+    origOpenings,
+    origRooms,
+    origFurniture,
+    interiorFurnitureIds,
+  } = params;
+
+  if (nextBounds.width < 0.9 || nextBounds.height < 0.9) return null;
+
+  const mapX = (x: number) =>
+    Number((nextBounds.minX + ((x - origBounds.minX) / origBounds.width) * nextBounds.width).toFixed(2));
+  const mapY = (y: number) =>
+    Number((nextBounds.minY + ((y - origBounds.minY) / origBounds.height) * nextBounds.height).toFixed(2));
+
+  const nextWalls = origWalls.map((w) => {
+    if (!spaceWallIds.has(w.id)) return w;
+    return {
+      ...w,
+      x1: mapX(w.x1),
+      y1: mapY(w.y1),
+      x2: mapX(w.x2),
+      y2: mapY(w.y2),
+    };
+  });
+
+  for (const w of nextWalls) {
+    if (spaceWallIds.has(w.id) && Math.hypot(w.x2 - w.x1, w.y2 - w.y1) < 0.45) {
+      return null;
+    }
+  }
+
+  const openingRatios: Record<string, number> = {};
+  for (const op of origOpenings) {
+    if (!spaceWallIds.has(op.wallId)) continue;
+    const w = nextWalls.find((item) => item.id === op.wallId);
+    if (w) {
+      openingRatios[op.id] = clampOpeningRatioForWall(op.offsetRatio, op.width, w);
+    }
+  }
+
+  const furniturePos: Record<string, { x: number; y: number }> = {};
+  for (const f of origFurniture) {
+    if (!interiorFurnitureIds.has(f.id)) continue;
+    furniturePos[f.id] = {
+      x: mapX(f.x),
+      y: mapY(f.y),
+    };
+  }
+
+  const nextRooms = detectRoomsFromWalls(nextWalls, origRooms);
+  return { walls: nextWalls, openingRatios, rooms: nextRooms, furniturePos };
+}
+

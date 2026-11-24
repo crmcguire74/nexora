@@ -260,7 +260,7 @@ async function startServer() {
   }
 
   httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`Project Canvas server running on http://0.0.0.0:${PORT}`);
+    console.log(`Nexora server running on http://0.0.0.0:${PORT}`);
   });
 
   const shutdown = async () => {
@@ -282,6 +282,6 @@ async function startServer() {
 }
 
 startServer().catch((err) => {
-  console.error('Failed to start Project Canvas server:', err);
+  console.error('Failed to start Nexora server:', err);
   process.exit(1);
 });

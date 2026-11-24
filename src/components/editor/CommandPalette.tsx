@@ -5,6 +5,7 @@ import {
   Download,
   FilePlus2,
   FolderOpen,
+  MonitorDown,
   Moon,
   Plus,
   Save,
@@ -16,6 +17,7 @@ import {
 import { DiagramDocument, DiagramThemeId } from '../../types/diagram';
 import { getLibraryForType, LibraryItem } from '../../engine/libraries';
 import { LayoutDirection } from '../../engine/layout';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 interface CommandAction {
   id: string;
@@ -61,6 +63,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   onFocusObject,
 }) => {
   const [query, setQuery] = useState('');
+  const { isInstalled, triggerInstall } = usePWAInstall();
 
   useEffect(() => {
     if (open) setQuery('');
@@ -125,14 +128,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       },
       {
         id: 'save-pcanvas',
-        label: 'Save Design to Desktop (.pcanvas)',
+        label: 'Download / Save Design to Desktop (.nexora)',
         group: 'File',
         shortcut: 'Cmd+S',
         run: onSaveToDesktop,
       },
       {
         id: 'open-pcanvas',
-        label: 'Open Design File (.pcanvas)',
+        label: 'Open Design File (.nexora / .pcanvas)',
         group: 'File',
         shortcut: 'Cmd+O',
         run: onOpenDesktopFile,
@@ -145,7 +148,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       },
       {
         id: 'export-modal',
-        label: 'Export Diagram (SVG, PNG, .pcanvas, Mermaid)',
+        label: 'Export Diagram (SVG, PNG, .nexora, Mermaid)',
         group: 'File',
         shortcut: 'Cmd+E',
         run: onOpenExport,
@@ -157,6 +160,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         run: onToggleDarkMode,
       }
     );
+
+    if (!isInstalled) {
+      list.push({
+        id: 'install-pwa',
+        label: 'Install Nexora Locally as Desktop App (PWA)',
+        group: 'App',
+        run: () => {
+          void triggerInstall();
+        },
+      });
+    }
 
     // Search objects in current diagram
     doc.objects.forEach((o) => {
@@ -183,6 +197,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
     onOpenAi,
     onToggleDarkMode,
     onFocusObject,
+    isInstalled,
+    triggerInstall,
   ]);
 
   const filtered = useMemo(() => {
@@ -258,6 +274,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                   <Download className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 ) : act.id === 'ai-assist' ? (
                   <Sparkles className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                ) : act.id === 'install-pwa' ? (
+                  <MonitorDown className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
                 ) : act.id === 'toggle-dark' ? (
                   darkMode ? (
                     <Sun className="w-3.5 h-3.5 text-slate-400 shrink-0" />

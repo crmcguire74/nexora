@@ -89,7 +89,7 @@ export const ExportImportModal: React.FC<ExportImportModalProps> = ({
     setImportError(null);
     const trimmed = importText.trim();
     if (!trimmed) {
-      setImportError('Paste valid Project Canvas JSON or Mermaid diagram code.');
+      setImportError('Paste valid Nexora (.nexora / JSON) or Mermaid diagram code.');
       return;
     }
     try {
@@ -229,13 +229,13 @@ export const ExportImportModal: React.FC<ExportImportModalProps> = ({
               <button
                 type="button"
                 onClick={handleExportPCanvas}
-                className="flex flex-col items-start gap-1.5 p-3.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/30 transition-colors text-left"
+                className="flex flex-col items-start gap-1.5 p-3.5 rounded-lg border border-teal-500/40 bg-teal-50/40 dark:bg-teal-950/30 hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/50 transition-colors text-left"
               >
-                <Download className="w-4 h-4 text-blue-600" />
+                <Download className="w-4 h-4 text-teal-700 dark:text-teal-400" />
                 <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                  Design File (.pcanvas)
+                  Nexora File (.nexora)
                 </div>
-                <div className="text-[11px] text-slate-500">Save to desktop & reopen</div>
+                <div className="text-[11px] text-slate-500">Desktop backup &amp; reopen</div>
               </button>
             </div>
 
@@ -271,14 +271,14 @@ export const ExportImportModal: React.FC<ExportImportModalProps> = ({
           <div className="p-5 space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Load a <span className="font-mono">.pcanvas</span> design file or paste Project Canvas / Mermaid syntax.
+                Load a <span className="font-mono">.nexora</span> / <span className="font-mono">.pcanvas</span> file or paste Nexora JSON / Mermaid syntax.
               </p>
               <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer whitespace-nowrap">
                 <Upload className="w-3.5 h-3.5" />
-                <span>Open .pcanvas File</span>
+                <span>Open .nexora File</span>
                 <input
                   type="file"
-                  accept=".pcanvas,.json,.mmd,.txt"
+                  accept=".nexora,.pcanvas,.json,.mmd,.txt"
                   onChange={handleFileUpload}
                   className="hidden"
                 />

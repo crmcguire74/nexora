@@ -2,10 +2,11 @@ import React, { useMemo, useState } from 'react';
 import {
   ArrowRight,
   Copy,
+  Database,
   FolderOpen,
+  HardDriveDownload,
   Moon,
   Plus,
-  Save,
   Search,
   Star,
   Sun,
@@ -19,9 +20,20 @@ import {
   LocalProfile,
   LocalUserRole,
 } from '../../types/diagram';
-import { DIAGRAM_TYPE_MAP, DIAGRAM_TYPES } from '../../engine/libraries';
+import {
+  DIAGRAM_TYPE_MAP,
+  DIAGRAM_TYPES,
+  NEXORA_MODULE_MAP,
+  NEXORA_MODULES,
+  NexoraModuleId,
+} from '../../engine/libraries';
 import { BUILTIN_TEMPLATES } from '../../engine/templates';
-import { DiagramTypeIllustration } from '../icons/ShapeIcons';
+import {
+  DiagramTypeIllustration,
+  NexoraBrandLogo,
+  NexoraModuleIcon,
+} from '../icons/ShapeIcons';
+import { PWAInstallButton } from '../pwa/PWAInstallButton';
 import { importFromMermaid, importFromNativeJson } from '../../engine/exportImport';
 import {
   DesktopFileHandle,
@@ -86,8 +98,10 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   onDeleteCustomTemplate,
 }) => {
   const [section, setSection] = useState<HomeSection>('home');
+  const [activeModule, setActiveModule] = useState<NexoraModuleId | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [folderFilter, setFolderFilter] = useState<string>('All');
+  const [templateModuleFilter, setTemplateModuleFilter] = useState<NexoraModuleId | 'all'>('all');
   const [templateFilter, setTemplateFilter] = useState<DiagramType | 'all'>('all');
   const [importError, setImportError] = useState<string | null>(null);
   const [statusNotice, setStatusNotice] = useState<string | null>(null);
@@ -136,6 +150,9 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   const filteredTemplates = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return allTemplates.filter((t) => {
+      if (templateModuleFilter !== 'all' && DIAGRAM_TYPE_MAP[t.category].module !== templateModuleFilter) {
+        return false;
+      }
       if (templateFilter !== 'all' && t.category !== templateFilter) return false;
       if (!q) return true;
       return (
@@ -144,7 +161,12 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         t.category.toLowerCase().includes(q)
       );
     });
-  }, [allTemplates, templateFilter, searchQuery]);
+  }, [allTemplates, templateModuleFilter, templateFilter, searchQuery]);
+
+  const visibleStudios = useMemo(() => {
+    if (activeModule === 'all') return DIAGRAM_TYPES;
+    return DIAGRAM_TYPES.filter((dt) => dt.module === activeModule);
+  }, [activeModule]);
 
   const showNotice = (msg: string) => {
     setStatusNotice(msg);
@@ -162,7 +184,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       }
     } catch (err) {
       setImportError(
-        err instanceof Error ? err.message : 'Unable to open .pcanvas design file.'
+        err instanceof Error ? err.message : 'Unable to open .nexora design file.'
       );
     }
   };
@@ -172,11 +194,11 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
     try {
       const result = await saveDesignToDesktop(doc, { saveAs: true });
       if (result.saved) {
-        showNotice(`Saved ${result.fileName}`);
+        showNotice(`Downloaded ${result.fileName} to your computer`);
       }
     } catch (err) {
       setImportError(
-        err instanceof Error ? err.message : 'Unable to save design file.'
+        err instanceof Error ? err.message : 'Unable to download design file.'
       );
     }
   };
@@ -203,7 +225,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
     setImportError(null);
     try {
       const lower = file.name.toLowerCase();
-      if (lower.endsWith('.pcanvas') || lower.endsWith('.json')) {
+      if (lower.endsWith('.nexora') || lower.endsWith('.pcanvas') || lower.endsWith('.json')) {
         const opened = await readDroppedPCanvasFile(file);
         onOpenDesktopFile(opened.doc, null, opened.fileName);
       } else {
@@ -226,7 +248,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
     reader.onload = () => {
       try {
         const text = String(reader.result || '').trim();
-        if (file.name.toLowerCase().endsWith('.pcanvas')) {
+        const lower = file.name.toLowerCase();
+        if (lower.endsWith('.nexora') || lower.endsWith('.pcanvas')) {
           const doc = importFromNativeJson(text);
           onOpenDesktopFile(doc, null, file.name);
         } else {
@@ -251,14 +274,14 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       onDrop={handleDropRoot}
     >
       {fileDropActive && (
-        <div className="fixed inset-0 z-50 bg-blue-600/15 dark:bg-blue-500/20 backdrop-blur-[2px] flex items-center justify-center p-6 pointer-events-none">
-          <div className="px-8 py-6 rounded-2xl bg-white dark:bg-slate-900 border-2 border-dashed border-blue-500 shadow-2xl text-center space-y-2">
-            <FolderOpen className="w-8 h-8 text-blue-600 dark:text-blue-400 mx-auto" />
+        <div className="fixed inset-0 z-50 bg-teal-600/15 dark:bg-teal-500/20 backdrop-blur-[2px] flex items-center justify-center p-6 pointer-events-none">
+          <div className="px-8 py-6 rounded-2xl bg-white dark:bg-slate-900 border-2 border-dashed border-teal-600 shadow-2xl text-center space-y-2">
+            <FolderOpen className="w-8 h-8 text-teal-700 dark:text-teal-400 mx-auto" />
             <div className="font-display text-base font-semibold text-slate-900 dark:text-white">
-              Drop .pcanvas file to view &amp; edit
+              Drop .nexora file to view &amp; edit
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Supports Project Canvas (.pcanvas), JSON, and Mermaid files
+              Supports Nexora (.nexora), legacy .pcanvas, JSON, and Mermaid files
             </p>
           </div>
         </div>
@@ -266,13 +289,19 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       {/* Clean 3-Zone Top Bar Contract */}
       <header className="sticky top-0 z-30 h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between gap-8">
-          {/* Zone 1: Single-line Brand Wordmark */}
+          {/* Zone 1: Nexora Brand Logo & Wordmark */}
           <button
             type="button"
-            onClick={() => setSection('home')}
-            className="font-display text-lg font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0"
+            onClick={() => {
+              setSection('home');
+              setActiveModule('all');
+            }}
+            className="inline-flex items-center gap-2.5 whitespace-nowrap shrink-0 group"
           >
-            Project Canvas
+            <NexoraBrandLogo className="w-7 h-7 transition-transform group-hover:scale-105" />
+            <span className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+              nexora
+            </span>
           </button>
 
           {/* Zone 2: 4 Clean Text Nav Links */}
@@ -294,7 +323,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 }}
                 className={`py-1 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
                   section === key
-                    ? 'text-slate-900 dark:text-white border-blue-600'
+                    ? 'text-slate-900 dark:text-white border-teal-700 dark:border-teal-400'
                     : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
@@ -303,15 +332,16 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             ))}
           </nav>
 
-          {/* Zone 3: 1 Primary Action */}
-          <div className="shrink-0">
+          {/* Zone 3: Install App (auto-hides when installed) & New Creation */}
+          <div className="flex items-center gap-2 shrink-0">
+            <PWAInstallButton compact className="hidden sm:inline-flex" />
             <button
               type="button"
               onClick={() => onCreateBlank('flowchart')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-teal-700 text-white text-xs font-semibold hover:bg-teal-800 transition-colors whitespace-nowrap shrink-0"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>New Diagram</span>
+              <span>New Creation</span>
             </button>
           </div>
         </div>
@@ -332,7 +362,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             type="button"
             onClick={() => setSection(key)}
             className={`whitespace-nowrap shrink-0 pb-0.5 ${
-              section === key ? 'text-blue-600 font-semibold' : 'text-slate-500'
+              section === key ? 'text-teal-700 dark:text-teal-400 font-semibold' : 'text-slate-500'
             }`}
           >
             {label}
@@ -341,93 +371,207 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       </div>
 
       {/* Main Content Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 space-y-12">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-10">
         {section === 'home' && (
           <>
-            {/* Section 1: First-Launch Welcome — "What would you like to create?" */}
+            {/* Section 1: Nexora Suite Brand Hero & 4-Module Hierarchy */}
             <section className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div className="space-y-1.5 max-w-2xl">
-                  <h1
-                    className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white"
-                    style={{ textWrap: 'balance' }}
-                  >
-                    What would you like to create?
-                  </h1>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Start with a specialized visual studio built on one fluid canvas engine. Everything saves locally in your browser automatically.
-                  </p>
+              <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6 shadow-xs">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                  <div className="flex items-center gap-4">
+                    <NexoraBrandLogo className="w-12 h-12 shrink-0" />
+                    <div className="space-y-0.5">
+                      <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+                        nexora
+                      </h1>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                        The visual workspace
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleOpenPCanvasPicker}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400 transition-colors whitespace-nowrap shrink-0"
+                      title="Open a .nexora or .pcanvas design file from your computer"
+                    >
+                      <FolderOpen className="w-3.5 h-3.5" />
+                      <span>Open .nexora</span>
+                    </button>
+                    <PWAInstallButton />
+                    <button
+                      type="button"
+                      onClick={onToggleDarkMode}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 whitespace-nowrap shrink-0"
+                    >
+                      {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+                      <span>{darkMode ? 'Light' : 'Dark'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSection('templates')}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400 transition-colors whitespace-nowrap shrink-0"
+                    >
+                      <span>Templates</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={handleOpenPCanvasPicker}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap shrink-0"
-                    title="Open a .pcanvas design file from your computer"
-                  >
-                    <FolderOpen className="w-3.5 h-3.5" />
-                    <span>Open .pcanvas</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onToggleDarkMode}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap shrink-0"
-                  >
-                    {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-                    <span>{darkMode ? 'Light Theme' : 'Dark Theme'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSection('templates')}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap shrink-0"
-                  >
-                    <span>Browse Templates</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                {/* Subtle architectural connector bracket mirroring the Nexora brand system */}
+                <div className="hidden sm:block relative h-5 -mb-2" aria-hidden="true">
+                  <div className="absolute left-1/2 top-0 w-px h-2.5 bg-slate-300 dark:bg-slate-700" />
+                  <div className="absolute left-[12.5%] right-[12.5%] top-2.5 h-px bg-slate-300 dark:bg-slate-700" />
+                  <div className="absolute left-[12.5%] top-2.5 w-px h-2.5 bg-slate-300 dark:bg-slate-700" />
+                  <div className="absolute left-[37.5%] top-2.5 w-px h-2.5 bg-slate-300 dark:bg-slate-700" />
+                  <div className="absolute left-[62.5%] top-2.5 w-px h-2.5 bg-slate-300 dark:bg-slate-700" />
+                  <div className="absolute left-[87.5%] top-2.5 w-px h-2.5 bg-slate-300 dark:bg-slate-700" />
+                </div>
+
+                {/* 4 Nexora Module Suite Cards: Flow, Space, Sequence, Architect */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {NEXORA_MODULES.map((mod) => {
+                    const isSelected = activeModule === mod.id;
+                    const count = DIAGRAM_TYPES.filter((dt) => dt.module === mod.id).length;
+                    return (
+                      <button
+                        key={mod.id}
+                        type="button"
+                        onClick={() =>
+                          setActiveModule((cur) => (cur === mod.id ? 'all' : mod.id))
+                        }
+                        className={`group flex flex-col items-center text-center p-5 rounded-xl border transition-all ${
+                          isSelected
+                            ? 'bg-teal-50/80 dark:bg-teal-950/50 border-teal-600 dark:border-teal-500 ring-1 ring-teal-600/30'
+                            : 'bg-slate-50/70 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 hover:border-teal-600/60 dark:hover:border-teal-500/60'
+                        }`}
+                      >
+                        <div
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-colors ${
+                            isSelected
+                              ? 'bg-teal-700 text-white'
+                              : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400'
+                          }`}
+                        >
+                          <NexoraModuleIcon module={mod.id} className="w-5 h-5" />
+                        </div>
+                        <div className="font-display text-sm font-bold text-slate-900 dark:text-white">
+                          {mod.name}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          {mod.subtitle}
+                        </div>
+                        <div className="mt-2.5 text-[11px] font-medium text-teal-700 dark:text-teal-400">
+                          {count} {count === 1 ? 'studio' : 'studios'}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Visually Distinct Creation Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {DIAGRAM_TYPES.map((item) => (
-                  <button
-                    key={item.type}
-                    type="button"
-                    onClick={() => onCreateBlank(item.type)}
-                    className="group flex flex-col text-left rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500/70 dark:hover:border-blue-500/70 transition-colors overflow-hidden focus-visible:outline-2 focus-visible:outline-blue-600"
-                  >
-                    <div className="w-full px-5 pt-4 pb-2 bg-slate-50/70 dark:bg-slate-950/40 border-b border-slate-100 dark:border-slate-800/80">
-                      <DiagramTypeIllustration
-                        type={item.type}
-                        className="w-full h-22 transition-transform duration-200 group-hover:scale-[1.03]"
-                      />
-                    </div>
-                    <div className="p-4 space-y-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-display text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                          {item.name}
-                        </span>
-                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                      </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
-                        {item.description}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+              {/* Studio Filter Header & Creation Cards */}
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-base font-semibold text-slate-900 dark:text-white">
+                      {activeModule === 'all'
+                        ? 'All Nexora Studios'
+                        : `Nexora ${NEXORA_MODULE_MAP[activeModule].name} Studios`}
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {activeModule === 'all'
+                        ? 'Select any module above to filter, or launch a blank studio below.'
+                        : NEXORA_MODULE_MAP[activeModule].description}
+                    </p>
+                  </div>
+                  {activeModule !== 'all' && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveModule('all')}
+                      className="text-xs font-medium text-teal-700 dark:text-teal-400 hover:underline"
+                    >
+                      Show all 9 studios
+                    </button>
+                  )}
+                </div>
+
+                {/* Visually Distinct Creation Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {visibleStudios.map((item) => {
+                    const mod = NEXORA_MODULE_MAP[item.module];
+                    return (
+                      <button
+                        key={item.type}
+                        type="button"
+                        onClick={() => onCreateBlank(item.type)}
+                        className="group flex flex-col text-left rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-600/70 dark:hover:border-teal-500/70 transition-colors overflow-hidden focus-visible:outline-2 focus-visible:outline-teal-700"
+                      >
+                        <div className="w-full px-5 pt-4 pb-2 bg-slate-50/70 dark:bg-slate-950/40 border-b border-slate-100 dark:border-slate-800/80">
+                          <DiagramTypeIllustration
+                            type={item.type}
+                            className="w-full h-22 transition-transform duration-200 group-hover:scale-[1.03]"
+                          />
+                        </div>
+                        <div className="p-4 space-y-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="font-display text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors truncate">
+                                {item.name}
+                              </span>
+                            </div>
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-medium text-slate-600 dark:text-slate-300 shrink-0">
+                              <NexoraModuleIcon module={mod.id} className="w-2.5 h-2.5 text-teal-700 dark:text-teal-400" />
+                              <span>{mod.name}</span>
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
+                            {item.description}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </section>
 
+            {/* Always-Visible IndexedDB & Desktop Download Reminder */}
+            <section className="rounded-xl bg-teal-50/80 dark:bg-teal-950/35 border border-teal-200/80 dark:border-teal-900/60 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-teal-700/10 dark:bg-teal-400/10 text-teal-700 dark:text-teal-400 shrink-0 mt-0.5">
+                  <Database className="w-4 h-4" />
+                </div>
+                <div className="space-y-0.5">
+                  <div className="text-xs font-semibold text-teal-950 dark:text-teal-100">
+                    Auto-saved in Browser IndexedDB — Always Remember to Download Your Creations
+                  </div>
+                  <p className="text-xs text-teal-900/80 dark:text-teal-200/80 leading-relaxed">
+                    Every edit is automatically stored locally in IndexedDB so you can work offline anytime. Because clearing browser data can erase local storage, click <strong>Download .nexora</strong> on any project to keep a permanent backup on your desktop.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleOpenPCanvasPicker}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-teal-600/35 dark:border-teal-500/40 bg-white dark:bg-slate-900 text-xs font-semibold text-teal-800 dark:text-teal-200 hover:bg-teal-50 dark:hover:bg-teal-900/40 whitespace-nowrap shrink-0"
+              >
+                <FolderOpen className="w-3.5 h-3.5" />
+                <span>Open Saved .nexora</span>
+              </button>
+            </section>
+
             {/* Section 2: Recent Diagrams */}
-            <section className="space-y-5 pt-4 border-t border-slate-200/80 dark:border-slate-800">
+            <section className="space-y-5 pt-2">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <h2 className="font-display text-lg font-semibold text-slate-900 dark:text-white">
-                    Recent Diagrams
+                    Recent Creations
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">
-                    {profile.workspaceName} · {diagrams.length} saved locally
+                    {profile.workspaceName} · {diagrams.length} stored in IndexedDB
                   </p>
                 </div>
 
@@ -439,8 +583,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search diagrams..."
-                      className="pl-8 pr-3 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 w-52 focus:outline-none focus:border-blue-500"
+                      placeholder="Search creations..."
+                      className="pl-8 pr-3 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 w-52 focus:outline-none focus:border-teal-600"
                     />
                   </div>
 
@@ -463,12 +607,12 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   </div>
 
                   {/* Import File Action */}
-                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-blue-500 cursor-pointer whitespace-nowrap shrink-0">
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-teal-600 cursor-pointer whitespace-nowrap shrink-0">
                     <Upload className="w-3.5 h-3.5" />
-                    <span>Import .pcanvas / Mermaid</span>
+                    <span>Import .nexora / Mermaid</span>
                     <input
                       type="file"
-                      accept=".pcanvas,.json,.mmd,.txt"
+                      accept=".nexora,.pcanvas,.json,.mmd,.txt"
                       onChange={handleImportFile}
                       className="hidden"
                     />
@@ -477,7 +621,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               </div>
 
               {statusNotice && (
-                <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-xs text-emerald-700 dark:text-emerald-300">
+                <div className="p-3 rounded-lg bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 text-xs text-teal-800 dark:text-teal-300">
                   {statusNotice}
                 </div>
               )}
@@ -502,6 +646,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredDiagrams.map((d) => {
                     const meta = DIAGRAM_TYPE_MAP[d.type];
+                    const mod = NEXORA_MODULE_MAP[meta.module];
                     const itemCount =
                       d.type === 'sequence'
                         ? `${d.sequence?.participants.length ?? 0} participants · ${d.sequence?.messages.length ?? 0} calls`
@@ -523,13 +668,16 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                             <DiagramTypeIllustration type={d.type} className="w-full h-full" />
                           </div>
                           <div className="min-w-0">
-                            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate transition-colors">
+                            <div className="text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400 truncate transition-colors">
                               {d.title}
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">
-                              <span>{meta.shortName}</span>
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">
+                              <span className="inline-flex items-center gap-1 font-medium text-teal-700 dark:text-teal-400">
+                                <NexoraModuleIcon module={mod.id} className="w-3 h-3" />
+                                <span>{mod.name}</span>
+                              </span>
                               <span aria-hidden="true">·</span>
-                              <span>{d.folder}</span>
+                              <span>{meta.shortName}</span>
                               <span aria-hidden="true">·</span>
                               <span>{itemCount}</span>
                               <span aria-hidden="true">·</span>
@@ -538,14 +686,15 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                           </div>
                         </button>
 
-                        <div className="flex items-center gap-1 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             type="button"
                             onClick={() => handleSaveRowToDesktop(d)}
-                            className="p-1.5 rounded-md text-slate-400 opacity-0 group-hover:opacity-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                            title="Save as .pcanvas file to desktop"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-teal-600/30 dark:border-teal-500/40 bg-teal-50/60 dark:bg-teal-950/40 text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/50 text-xs font-medium transition-colors whitespace-nowrap"
+                            title="Download .nexora backup to your desktop"
                           >
-                            <Save className="w-4 h-4" />
+                            <HardDriveDownload className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Download .nexora</span>
                           </button>
                           <button
                             type="button"
@@ -609,79 +758,95 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               </div>
             </div>
 
-            {/* Category Filter Bar */}
-            <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 w-fit">
-              <button
-                type="button"
-                onClick={() => setTemplateFilter('all')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
-                  templateFilter === 'all'
-                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400'
-                }`}
-              >
-                All Templates
-              </button>
-              {DIAGRAM_TYPES.map((dt) => (
+            {/* Nexora Module Filter Bar */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
                 <button
-                  key={dt.type}
                   type="button"
-                  onClick={() => setTemplateFilter(dt.type)}
+                  onClick={() => {
+                    setTemplateModuleFilter('all');
+                    setTemplateFilter('all');
+                  }}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
-                    templateFilter === dt.type
+                    templateModuleFilter === 'all' && templateFilter === 'all'
                       ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                 >
-                  {dt.shortName}
+                  All Modules
                 </button>
-              ))}
+                {NEXORA_MODULES.map((mod) => (
+                  <button
+                    key={mod.id}
+                    type="button"
+                    onClick={() => {
+                      setTemplateModuleFilter(mod.id);
+                      setTemplateFilter('all');
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+                      templateModuleFilter === mod.id
+                        ? 'bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-300 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400'
+                    }`}
+                  >
+                    <NexoraModuleIcon module={mod.id} className="w-3.5 h-3.5" />
+                    <span>{mod.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredTemplates.map((tpl) => (
-                <div
-                  key={tpl.id}
-                  className="flex flex-col rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden"
-                >
-                  <div className="px-6 py-5 bg-slate-50/70 dark:bg-slate-950/40 border-b border-slate-100 dark:border-slate-800">
-                    <DiagramTypeIllustration type={tpl.category} className="w-full h-24" />
-                  </div>
-                  <div className="p-4 flex-1 flex flex-col justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {DIAGRAM_TYPE_MAP[tpl.category].name}
-                        {tpl.isCustom ? ' · Custom Template' : tpl.popular ? ' · Featured' : ''}
-                      </div>
-                      <h3 className="font-display text-sm font-semibold text-slate-900 dark:text-slate-100">
-                        {tpl.name}
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                        {tpl.description}
-                      </p>
+              {filteredTemplates.map((tpl) => {
+                const tplType = DIAGRAM_TYPE_MAP[tpl.category];
+                const tplMod = NEXORA_MODULE_MAP[tplType.module];
+                return (
+                  <div
+                    key={tpl.id}
+                    className="flex flex-col rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden"
+                  >
+                    <div className="px-6 py-5 bg-slate-50/70 dark:bg-slate-950/40 border-b border-slate-100 dark:border-slate-800">
+                      <DiagramTypeIllustration type={tpl.category} className="w-full h-24" />
                     </div>
-                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <button
-                        type="button"
-                        onClick={() => onUseTemplate(tpl.createDocument())}
-                        className="px-3.5 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
-                      >
-                        Use Template
-                      </button>
-                      {tpl.isCustom && (
+                    <div className="p-4 flex-1 flex flex-col justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                          <NexoraModuleIcon module={tplMod.id} className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
+                          <span className="font-medium text-teal-700 dark:text-teal-400">{tplMod.name}</span>
+                          <span>·</span>
+                          <span>{tplType.name}</span>
+                          {tpl.isCustom ? ' · Custom' : tpl.popular ? ' · Featured' : ''}
+                        </div>
+                        <h3 className="font-display text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          {tpl.name}
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                          {tpl.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                         <button
                           type="button"
-                          onClick={() => onDeleteCustomTemplate(tpl.id)}
-                          className="p-1.5 rounded-md text-slate-400 hover:text-red-600"
-                          title="Delete custom template"
+                          onClick={() => onUseTemplate(tpl.createDocument())}
+                          className="px-3.5 py-1.5 rounded-lg bg-teal-700 text-white text-xs font-medium hover:bg-teal-800 transition-colors"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          Use Template
                         </button>
-                      )}
+                        {tpl.isCustom && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteCustomTemplate(tpl.id)}
+                            className="p-1.5 rounded-md text-slate-400 hover:text-red-600"
+                            title="Delete custom template"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
@@ -709,9 +874,9 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 <button
                   type="button"
                   onClick={() => onCreateBlank('architecture')}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-teal-700 text-white text-xs font-medium hover:bg-teal-800"
                 >
-                  Open Architecture Editor
+                  Open Nexora Architect
                 </button>
               </div>
             ) : (
@@ -818,10 +983,22 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 </button>
               </div>
 
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                    Install Nexora Desktop App (PWA)
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    Run Nexora as a standalone offline-ready desktop window on macOS, Windows, or ChromeOS.
+                  </div>
+                </div>
+                <PWAInstallButton />
+              </div>
+
               <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 tabular-nums">
-                <span>Persistence Engine</span>
+                <span>Local Auto-Save Engine</span>
                 <span className="font-mono text-slate-700 dark:text-slate-300">
-                  IndexedDB · {diagrams.length} documents · Schema v1
+                  Nexora IndexedDB · {diagrams.length} creations · Export .nexora backups anytime
                 </span>
               </div>
             </div>
