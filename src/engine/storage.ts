@@ -192,8 +192,8 @@ export class IndexedDBDiagramRepository implements DiagramRepository {
 export const diagramRepo: DiagramRepository = new IndexedDBDiagramRepository();
 
 export const DEFAULT_LOCAL_PROFILE: LocalProfile = {
-  name: 'Alex Morgan',
-  email: 'alex.morgan@nexora.local',
+  name: 'Christopher R McGuire',
+  email: 'christopher.mcguire@nexora.local',
   role: 'owner',
   workspaceName: 'Nexora Visual Workspace',
 };
