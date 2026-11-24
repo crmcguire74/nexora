@@ -15,6 +15,7 @@ interface PWAInstallSnapshot {
   swReady: boolean;
   manifestReady: boolean;
   guideOpen: boolean;
+  uninstallOpen: boolean;
 }
 
 function detectStandalone(): boolean {
@@ -69,6 +70,7 @@ let state: PWAInstallSnapshot = {
   swReady: false,
   manifestReady: false,
   guideOpen: false,
+  uninstallOpen: false,
 };
 
 const listeners = new Set<() => void>();
@@ -146,7 +148,6 @@ export function initPWAInstallListener() {
   }
 }
 
-// Attach listeners immediately at module evaluation so early beforeinstallprompt events are never missed.
 initPWAInstallListener();
 
 export async function promptNativePWAInstall(): Promise<boolean> {
@@ -172,11 +173,19 @@ export async function promptNativePWAInstall(): Promise<boolean> {
 }
 
 export function openPWAInstallGuide() {
-  setState({ guideOpen: true });
+  setState({ guideOpen: true, uninstallOpen: false });
 }
 
 export function closePWAInstallGuide() {
   setState({ guideOpen: false });
+}
+
+export function openPWAUninstallGuide() {
+  setState({ uninstallOpen: true, guideOpen: false });
+}
+
+export function closePWAUninstallGuide() {
+  setState({ uninstallOpen: false });
 }
 
 export async function triggerPWAInstall(): Promise<boolean> {
@@ -185,6 +194,45 @@ export async function triggerPWAInstall(): Promise<boolean> {
   }
   openPWAInstallGuide();
   return false;
+}
+
+/**
+ * Cleanly unregisters active Nexora service workers and clears offline Cache Storage
+ * while leaving the user's IndexedDB diagrams untouched.
+ */
+export async function unregisterPWAServiceWorkerAndCaches(): Promise<{
+  unregisteredCount: number;
+  clearedCachesCount: number;
+}> {
+  let unregisteredCount = 0;
+  let clearedCachesCount = 0;
+
+  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+    try {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) {
+        const ok = await reg.unregister();
+        if (ok) unregisteredCount += 1;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (typeof window !== 'undefined' && 'caches' in window) {
+    try {
+      const keys = await window.caches.keys();
+      for (const key of keys) {
+        const ok = await window.caches.delete(key);
+        if (ok) clearedCachesCount += 1;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  setState({ swReady: false });
+  return { unregisteredCount, clearedCachesCount };
 }
 
 export function usePWAInstall() {
@@ -210,10 +258,14 @@ export function usePWAInstall() {
     swReady: snapshot.swReady,
     manifestReady: snapshot.manifestReady,
     guideOpen: snapshot.guideOpen,
+    uninstallOpen: snapshot.uninstallOpen,
     install: promptNativePWAInstall,
     triggerInstall: triggerPWAInstall,
     openGuide: openPWAInstallGuide,
     closeGuide: closePWAInstallGuide,
+    openUninstall: openPWAUninstallGuide,
+    closeUninstall: closePWAUninstallGuide,
+    unregisterOfflineEngine: unregisterPWAServiceWorkerAndCaches,
   };
 }
 

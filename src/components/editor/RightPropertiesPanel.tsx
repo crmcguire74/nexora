@@ -110,7 +110,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
 
     if (participant) {
       return (
-        <aside className="w-72 h-full shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-5">
+        <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-5">
           <div>
             <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
               Participant
@@ -141,7 +141,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   )
                 }
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
               />
             </label>
 
@@ -166,7 +166,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                   )
                 }
                 placeholder="e.g. REST Gateway"
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
               />
             </label>
 
@@ -195,7 +195,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                       )
                     }
                     className={`w-6 h-6 rounded-md border ${
-                      participant.color === sw.stroke ? 'ring-2 ring-blue-600 ring-offset-1' : ''
+                      participant.color === sw.stroke ? 'ring-2 ring-teal-500 ring-offset-1 dark:ring-offset-[#0C121E]' : ''
                     }`}
                     style={{ backgroundColor: sw.stroke, borderColor: sw.stroke }}
                     title={sw.name}
@@ -231,7 +231,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
 
     if (message) {
       return (
-        <aside className="w-72 h-full shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-4">
+        <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
           <div>
             <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
               Sequence Call #{message.order + 1}
@@ -262,7 +262,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   )
                 }
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
               />
             </label>
 
@@ -287,7 +287,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   )
                 }
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
               >
                 <option value="sync">Synchronous Call</option>
                 <option value="async">Asynchronous Call</option>
@@ -319,7 +319,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                       true
                     )
                   }
-                  className="mt-1 w-full px-1.5 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                  className="mt-1 w-full px-1.5 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
                 >
                   <option value="">—</option>
                   <option value="GET">GET</option>
@@ -351,7 +351,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                       true
                     )
                   }
-                  className="mt-1 w-full px-2 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                  className="mt-1 w-full px-2 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
                 />
               </label>
             </div>
@@ -377,7 +377,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   )
                 }
-                className="mt-1 w-full px-2.5 py-1.5 text-[11px] font-mono rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                className="mt-1 w-full px-2.5 py-1.5 text-[11px] font-mono rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
               />
             </label>
 
@@ -402,7 +402,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   )
                 }
-                className="mt-1 w-full px-2.5 py-1.5 text-[11px] font-mono rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                className="mt-1 w-full px-2.5 py-1.5 text-[11px] font-mono rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
               />
             </label>
           </div>
@@ -412,7 +412,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
 
     if (fragment) {
       return (
-        <aside className="w-72 h-full shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-4">
+        <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
           <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
             Combined Fragment
           </h3>
@@ -435,7 +435,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                   true
                 )
               }
-              className="mt-1 w-full px-2.5 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+              className="mt-1 w-full px-2.5 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
             >
               <option value="alt">alt (Alternative)</option>
               <option value="opt">opt (Optional)</option>
@@ -465,7 +465,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                   true
                 )
               }
-              className="mt-1 w-full px-2.5 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+              className="mt-1 w-full px-2.5 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
             />
           </label>
           <label className="block">
@@ -489,7 +489,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                   true
                 )
               }
-              className="mt-1 w-full px-2.5 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+              className="mt-1 w-full px-2.5 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
             />
           </label>
         </aside>
@@ -507,7 +507,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
       const room = fp.rooms.find((r) => r.id === selectedFloorItem.id);
       if (room) {
         return (
-          <aside className="w-72 h-full shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-4">
+          <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
             <div>
               <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">Room</h3>
               <p className="text-xs font-mono text-slate-500 dark:text-slate-400 tabular-nums mt-0.5">
@@ -534,7 +534,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   )
                 }
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
               />
             </label>
             <label className="block">
@@ -558,7 +558,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   )
                 }
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
               >
                 <option value="hardwood">Hardwood</option>
                 <option value="carpet">Carpet</option>
@@ -588,7 +588,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                         true
                       )
                     }
-                    className={`w-6 h-6 rounded border border-slate-300 ${room.color === col ? 'ring-2 ring-blue-600' : ''}`}
+                    className={`w-6 h-6 rounded border border-slate-300 dark:border-slate-700 ${room.color === col ? 'ring-2 ring-teal-500' : ''}`}
                     style={{ backgroundColor: col }}
                   />
                 ))}
@@ -603,7 +603,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
       const f = fp.furniture.find((item) => item.id === selectedFloorItem.id);
       if (f) {
         return (
-          <aside className="w-72 h-full shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-4">
+          <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
             <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">Furniture</h3>
             <label className="block">
               <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Label</span>
@@ -625,7 +625,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   )
                 }
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
               />
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -651,7 +651,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                       true
                     )
                   }
-                  className="mt-1 w-full px-2 py-1.5 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                  className="mt-1 w-full px-2 py-1.5 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
                 />
               </label>
               <label>
@@ -676,7 +676,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                       true
                     )
                   }
-                  className="mt-1 w-full px-2 py-1.5 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                  className="mt-1 w-full px-2 py-1.5 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
                 />
               </label>
             </div>
@@ -717,7 +717,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
       if (w) {
         const len = Math.hypot(w.x2 - w.x1, w.y2 - w.y1);
         return (
-          <aside className="w-72 h-full shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-4">
+          <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
             <div>
               <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">Wall Segment</h3>
               <p className="text-xs font-mono text-slate-500 tabular-nums mt-0.5">
@@ -746,7 +746,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   );
                 }}
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
               >
                 <option value="exterior">Exterior Wall (22 cm)</option>
                 <option value="interior">Interior Partition (14 cm)</option>
@@ -763,7 +763,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
   // ==========================================
   if (selectedObject) {
     return (
-      <aside className="w-72 h-full shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-5">
+      <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-5">
         <div>
           <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
             Selected Object
@@ -782,7 +782,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
               value={selectedObject.label}
               disabled={readOnly}
               onChange={(e) => updateObj({ label: e.target.value })}
-              className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+              className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
             />
           </label>
 
@@ -795,7 +795,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 disabled={readOnly}
                 placeholder="Optional descriptor"
                 onChange={(e) => updateObjMeta({ subtitle: e.target.value || undefined })}
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
               />
             </label>
           )}
@@ -813,7 +813,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 ['H', 'height'],
               ] as const
             ).map(([lbl, key]) => (
-              <label key={key} className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1">
+              <label key={key} className="flex items-center gap-1.5 bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none rounded-md px-2 py-1">
                 <span className="text-[10.5px] font-mono text-slate-400">{lbl}</span>
                 <input
                   type="number"
@@ -855,7 +855,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 value={selectedObject.style.borderRadius}
                 disabled={readOnly}
                 onChange={(e) => updateObjStyle({ borderRadius: Number(e.target.value) })}
-                className="mt-1 w-full px-2 py-1 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="mt-1 w-full px-2 py-1 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
               />
             </label>
             <label>
@@ -868,7 +868,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 value={selectedObject.style.opacity}
                 disabled={readOnly}
                 onChange={(e) => updateObjStyle({ opacity: Number(e.target.value) })}
-                className="mt-1 w-full px-2 py-1 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="mt-1 w-full px-2 py-1 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
               />
             </label>
           </div>
@@ -888,7 +888,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 disabled={readOnly}
                 placeholder="e.g. PostgreSQL 16"
                 onChange={(e) => updateObjMeta({ technology: e.target.value || undefined })}
-                className="mt-1 w-full px-2 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="mt-1 w-full px-2 py-1.5 text-xs font-mono rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
               />
             </label>
             <label className="block">
@@ -901,7 +901,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     environment: e.target.value as DiagramObject['metadata']['environment'],
                   })
                 }
-                className="mt-1 w-full px-2 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="mt-1 w-full px-2 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
               >
                 <option value="production">Production</option>
                 <option value="staging">Staging</option>
@@ -917,7 +917,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 disabled={readOnly}
                 placeholder="e.g. Platform Core"
                 onChange={(e) => updateObjMeta({ owner: e.target.value || undefined })}
-                className="mt-1 w-full px-2 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="mt-1 w-full px-2 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
               />
             </label>
           </div>
@@ -943,7 +943,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                       metadata: { ...selectedObject.metadata, fields: nextFields },
                     });
                   }}
-                  className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-0.5 font-medium"
+                  className="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 flex items-center gap-0.5 font-medium"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add</span>
@@ -962,7 +962,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                       );
                       updateObjMeta({ fields: next });
                     }}
-                    className="w-12 px-1 py-1 text-[10.5px] font-mono rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    className="w-12 px-1 py-1 text-[10.5px] font-mono rounded bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
                   >
                     <option value="">—</option>
                     <option value="PK">PK</option>
@@ -978,7 +978,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                       );
                       updateObjMeta({ fields: next });
                     }}
-                    className="flex-1 min-w-0 px-1.5 py-1 text-[11px] font-mono rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    className="flex-1 min-w-0 px-1.5 py-1 text-[11px] font-mono rounded bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
                   />
                   <input
                     type="text"
@@ -990,7 +990,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                       );
                       updateObjMeta({ fields: next });
                     }}
-                    className="w-16 px-1.5 py-1 text-[10.5px] font-mono rounded bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    className="w-16 px-1.5 py-1 text-[10.5px] font-mono rounded bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
                   />
                   {!readOnly && (
                     <button
@@ -1018,7 +1018,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
   // ==========================================
   if (selectedConnection) {
     return (
-      <aside className="w-72 h-full shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-4">
+      <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
         <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">Connector</h3>
         <label className="block">
           <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Label</span>
@@ -1028,7 +1028,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
             disabled={readOnly}
             placeholder="e.g. Yes, HTTPS, 1:N"
             onChange={(e) => updateConn({ label: e.target.value || undefined })}
-            className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+            className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
           />
         </label>
 
@@ -1054,7 +1054,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                   updateConn({ protocol: undefined });
                 }
               }}
-              className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+              className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
             >
               <option value="">Custom</option>
               {Object.entries(PROTOCOL_STYLES).map(([k, v]) => (
@@ -1073,7 +1073,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
               value={selectedConnection.routing}
               disabled={readOnly}
               onChange={(e) => updateConn({ routing: e.target.value as ConnectorRouting })}
-              className="mt-1 w-full px-2 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+              className="mt-1 w-full px-2 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
             >
               <option value="orthogonal">Orthogonal</option>
               <option value="curved">Curved</option>
@@ -1086,7 +1086,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
               value={selectedConnection.lineStyle}
               disabled={readOnly}
               onChange={(e) => updateConn({ lineStyle: e.target.value as ConnectorLineStyle })}
-              className="mt-1 w-full px-2 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+              className="mt-1 w-full px-2 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
             >
               <option value="solid">Solid</option>
               <option value="dashed">Dashed</option>
@@ -1103,7 +1103,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
             onChange={(e) =>
               updateConn({ arrowEnd: e.target.value as DiagramConnection['arrowEnd'] })
             }
-            className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+            className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
           >
             <option value="arrow">Solid Arrow</option>
             <option value="open">Open Arrow</option>
@@ -1119,7 +1119,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
   // 5. Diagram-Level Settings (Nothing Selected)
   // ==========================================
   return (
-    <aside className="w-72 h-full shrink-0 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-y-auto p-4 space-y-5">
+    <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-5">
       <div>
         <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
           Diagram Settings
@@ -1147,7 +1147,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 }
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg border text-left transition-colors ${
                   active
-                    ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40'
+                    ? 'border-teal-500 bg-teal-50/70 dark:bg-teal-950/45'
                     : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60'
                 }`}
               >
@@ -1175,7 +1175,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
             Sequence Mode
           </div>
-          <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-slate-100 dark:bg-[#080D16] border border-transparent dark:border-slate-800/80">
             {(['modern', 'classic'] as const).map((mode) => (
               <button
                 key={mode}
@@ -1188,8 +1188,8 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 }
                 className={`py-1.5 text-xs font-medium rounded-md capitalize transition-colors ${
                   doc.sequence!.viewMode === mode
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400'
+                    ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 {mode}
@@ -1207,7 +1207,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                   true
                 )
               }
-              className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              className="rounded border-slate-300 dark:border-slate-700 accent-teal-600 text-teal-600 focus:ring-teal-500"
             />
           </label>
         </div>
@@ -1230,7 +1230,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 true
               )
             }
-            className="w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+            className="w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
           >
             <option value="ft-in">Feet & Inches (14' 6")</option>
             <option value="ft">Decimal Feet (14.5 ft)</option>
@@ -1258,7 +1258,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                       true
                     )
                   }
-                  className="rounded border-slate-300 text-blue-600"
+                  className="rounded border-slate-300 dark:border-slate-700 accent-teal-600 text-teal-600"
                 />
               </label>
             ))}
@@ -1286,7 +1286,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 false
               )
             }
-            className="w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+            className="w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
           >
             <option value="all">All Environments</option>
             <option value="production">Production Only</option>
@@ -1344,12 +1344,12 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 key={issue.id}
                 type="button"
                 onClick={() => issue.objectId && onFocusObject(issue.objectId)}
-                className="w-full flex items-start gap-2 p-2 rounded-md bg-slate-50 dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 text-left text-[11px] text-slate-700 dark:text-slate-300"
+                className="w-full flex items-start gap-2 p-2 rounded-md bg-slate-50 dark:bg-[#111928] hover:bg-slate-100 dark:hover:bg-[#162134] text-left text-[11px] text-slate-700 dark:text-slate-300 transition-colors"
               >
                 {issue.severity === 'warning' ? (
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                 ) : (
-                  <Info className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+                  <Info className="w-3.5 h-3.5 text-teal-500 shrink-0 mt-0.5" />
                 )}
                 <span>{issue.message}</span>
               </button>
@@ -1359,13 +1359,13 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
       )}
 
       {!readOnly && (
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
+        <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80">
           <button
             type="button"
             onClick={onSaveAsTemplate}
-            className="w-full py-2 px-3 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            className="w-full py-2 px-3 rounded-lg border border-teal-200 dark:border-teal-800/70 bg-teal-50/60 dark:bg-teal-950/35 text-xs font-medium text-teal-800 dark:text-teal-300 hover:bg-teal-100/80 dark:hover:bg-teal-950/60 transition-colors"
           >
-            Save Diagram as Template
+            Save Design as Template
           </button>
         </div>
       )}

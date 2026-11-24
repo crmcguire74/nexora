@@ -6,7 +6,12 @@ import {
   PortSide,
   ViewportState,
 } from '../../types/diagram';
-import { DIAGRAM_THEMES } from '../../engine/themes';
+import {
+  adaptFillForDark,
+  adaptTextForDark,
+  DIAGRAM_THEMES,
+  liftStrokeForDark,
+} from '../../engine/themes';
 import {
   AlignmentGuide,
   buildConnectorPath,
@@ -15,6 +20,11 @@ import {
 } from '../../engine/geometry';
 import { createObjectFromLibraryItem, LibraryItem } from '../../engine/libraries';
 import { makeId } from '../../engine/templates';
+import {
+  DiagramObjectIconPaths,
+  hasCanvasInlineIcon,
+  isIconNativeObjectType,
+} from '../icons/ShapeIcons';
 
 interface StandardCanvasProps {
   doc: DiagramDocument;
@@ -119,6 +129,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
   const isBlueprint = doc.settings.theme === 'blueprint';
   const canvasBg = darkMode ? theme.canvasBgDark : theme.canvasBgLight;
   const gridColor = darkMode ? theme.gridColorDark : theme.gridColorLight;
+  const selectionAccent = darkMode ? '#14B8A6' : '#0D9488';
 
   // Keep doc ref fresh during rapid mousemove
   const docRef = useRef(doc);
@@ -467,7 +478,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
           locked: false,
           style: {
             fill: 'none',
-            stroke: darkMode ? '#60A5FA' : '#2563EB',
+            stroke: darkMode ? '#2DD4BF' : '#0F766E',
             strokeWidth: 2.5,
             textColor: '#0F172A',
             fontSize: 13,
@@ -729,7 +740,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
     onSetEditingObjectId(newObj.id);
   };
 
-  // Render individual shape geometry
+  // Render individual shape geometry (Icon-native architecture/network objects, containers with icons, cards with inline icons)
   const renderObjectShape = (obj: DiagramObject) => {
     const inMarqueePreview =
       marquee !== null &&
@@ -743,28 +754,22 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
           obj.y + obj.height >= Math.min(marquee.y1, marquee.y2) &&
           obj.y <= Math.max(marquee.y1, marquee.y2));
     const isSelected = selectedIds.includes(obj.id) || inMarqueePreview;
-    const isDarkNeutralFill =
-      darkMode &&
-      !isBlueprint &&
-      (obj.style.fill.toUpperCase() === '#FFFFFF' || obj.style.fill.toUpperCase() === '#F8FAFC');
+    const isHovered = hoveredObjId === obj.id;
+    const isIconNative = isIconNativeObjectType(obj.type) && obj.category !== 'container';
 
     const fill = isBlueprint
       ? theme.nodeBgLight
-      : isDarkNeutralFill
-      ? theme.nodeBgDark
-      : obj.style.fill;
+      : adaptFillForDark(obj.style.fill, darkMode);
 
-    const stroke = isSelected
-      ? '#2563EB'
-      : isBlueprint
+    const liftedStroke = isBlueprint
       ? theme.nodeBorderLight
-      : obj.style.stroke;
+      : liftStrokeForDark(obj.style.stroke, darkMode);
+
+    const stroke = isSelected ? selectionAccent : liftedStroke;
 
     const textColor = isBlueprint
       ? theme.textLight
-      : isDarkNeutralFill
-      ? theme.textDark
-      : obj.style.textColor;
+      : adaptTextForDark(obj.style.textColor, obj.style.fill, darkMode);
 
     const strokeDash = obj.style.dashed ? '6 4' : undefined;
     const strokeW = isSelected ? Math.max(2, obj.style.strokeWidth) : obj.style.strokeWidth;
@@ -781,7 +786,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
         <path
           d={d}
           fill="none"
-          stroke={isSelected ? '#2563EB' : obj.style.stroke}
+          stroke={isSelected ? selectionAccent : liftedStroke}
           strokeWidth={obj.style.strokeWidth}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -792,15 +797,16 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
     if (obj.category === 'container') {
       const isHighlight = highlightContainerId === obj.id;
       const isSwimlane = obj.type === 'swimlane';
+      const showContainerIcon = !isSwimlane && hasCanvasInlineIcon(obj.type);
       return (
         <g>
           <rect
             width={obj.width}
             height={obj.height}
             rx={obj.style.borderRadius}
-            fill={isHighlight ? 'rgba(37, 99, 235, 0.08)' : fill}
-            fillOpacity={isBlueprint ? 0.4 : darkMode ? 0.25 : 0.72}
-            stroke={isHighlight ? '#2563EB' : stroke}
+            fill={isHighlight ? (darkMode ? 'rgba(20, 184, 166, 0.12)' : 'rgba(13, 148, 136, 0.08)') : fill}
+            fillOpacity={isBlueprint ? 0.4 : darkMode ? 0.36 : 0.72}
+            stroke={isHighlight ? selectionAccent : stroke}
             strokeWidth={isHighlight ? 2 : strokeW}
             strokeDasharray={isSwimlane ? undefined : strokeDash || '6 4'}
           />
@@ -810,7 +816,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                 width={38}
                 height={obj.height}
                 rx={obj.style.borderRadius}
-                fill={darkMode ? '#1E293B' : '#E2E8F0'}
+                fill={darkMode ? '#121B2B' : '#E2E8F0'}
                 stroke={stroke}
                 strokeWidth={1}
               />
@@ -829,10 +835,20 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
             </>
           ) : (
             <g>
+              {showContainerIcon && (
+                <g transform="translate(12, 10) scale(0.72)">
+                  <DiagramObjectIconPaths
+                    type={obj.type}
+                    stroke={isBlueprint ? '#93C5FD' : liftedStroke}
+                    fill={darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.8)'}
+                    strokeWidth={1.85}
+                  />
+                </g>
+              )}
               <text
-                x={14}
+                x={showContainerIcon ? 34 : 14}
                 y={22}
-                fill={isBlueprint ? '#93C5FD' : darkMode ? '#CBD5E1' : '#334155'}
+                fill={isBlueprint ? '#93C5FD' : darkMode ? '#E2E8F0' : '#334155'}
                 fontSize={12}
                 fontWeight={600}
                 fontFamily="Plus Jakarta Sans, sans-serif"
@@ -841,7 +857,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
               </text>
               {obj.metadata.subtitle && (
                 <text
-                  x={14}
+                  x={showContainerIcon ? 34 : 14}
                   y={38}
                   fill={isBlueprint ? '#BFDBFE' : darkMode ? '#94A3B8' : '#64748B'}
                   fontSize={10.5}
@@ -852,6 +868,74 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
               )}
             </g>
           )}
+        </g>
+      );
+    }
+
+    // TRUE ICON-FIRST RENDERING for System Architecture & Network components (no enclosing box!)
+    if (isIconNative) {
+      const iconSize = Math.min(48, Math.max(30, Math.min(obj.width * 0.38, obj.height * 0.5)));
+      const iconX = (obj.width - iconSize) / 2;
+      const iconY = 4;
+      const scale = iconSize / 24;
+      const iconStroke = isBlueprint ? '#93C5FD' : liftedStroke;
+      const iconTintFill = isBlueprint
+        ? 'rgba(30, 58, 95, 0.55)'
+        : darkMode
+          ? `${liftedStroke}26`
+          : obj.style.fill === 'transparent' || obj.style.fill.toUpperCase() === '#FFFFFF'
+            ? `${obj.style.stroke}14`
+            : obj.style.fill;
+
+      return (
+        <g>
+          {/* Transparent hit target across entire bounding area */}
+          <rect width={obj.width} height={obj.height} rx={14} fill="transparent" />
+          {/* Subtle selection/hover halo ONLY when selected or hovered — never a static box */}
+          {(isSelected || isHovered) && (
+            <rect
+              x={1}
+              y={1}
+              width={obj.width - 2}
+              height={obj.height - 2}
+              rx={14}
+              fill={
+                isSelected
+                  ? darkMode
+                    ? 'rgba(20, 184, 166, 0.10)'
+                    : 'rgba(13, 148, 136, 0.06)'
+                  : darkMode
+                    ? 'rgba(148, 163, 184, 0.06)'
+                    : 'rgba(15, 23, 42, 0.03)'
+              }
+              stroke={isSelected ? selectionAccent : darkMode ? 'rgba(148, 163, 184, 0.35)' : 'rgba(148, 163, 184, 0.5)'}
+              strokeWidth={isSelected ? 1.75 : 1}
+              strokeDasharray={isSelected ? undefined : '4 3'}
+              data-export-ignore="true"
+            />
+          )}
+          {/* Subtle ambient radial backing behind icon in dark mode for optical pop */}
+          {darkMode && !isBlueprint && (
+            <circle
+              cx={obj.width / 2}
+              cy={iconY + iconSize / 2}
+              r={iconSize * 0.54}
+              fill={iconStroke}
+              fillOpacity={0.09}
+            />
+          )}
+          {/* Crisp, true vector icon silhouette */}
+          <g
+            transform={`translate(${iconX}, ${iconY}) scale(${scale})`}
+            filter={filterAttr}
+          >
+            <DiagramObjectIconPaths
+              type={obj.type}
+              stroke={iconStroke}
+              fill={iconTintFill}
+              strokeWidth={1.65}
+            />
+          </g>
         </g>
       );
     }
@@ -872,8 +956,8 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
           />
           <path
             d={`M 0 8 Q 0 0 8 0 L ${obj.width - 8} 0 Q ${obj.width} 0 ${obj.width} 8 L ${obj.width} ${headerH} L 0 ${headerH} Z`}
-            fill={obj.style.stroke}
-            fillOpacity={darkMode ? 0.28 : 0.12}
+            fill={liftedStroke}
+            fillOpacity={darkMode ? 0.24 : 0.12}
           />
           <line x1={0} y1={headerH} x2={obj.width} y2={headerH} stroke={stroke} strokeOpacity={0.35} strokeWidth={1} />
           <text
@@ -895,7 +979,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                   <text
                     x={12}
                     y={ry}
-                    fill={f.key === 'PK' ? '#D97706' : '#2563EB'}
+                    fill={f.key === 'PK' ? (darkMode ? '#FBBF24' : '#D97706') : selectionAccent}
                     fontSize={10}
                     fontWeight={700}
                     fontFamily="JetBrains Mono, monospace"
@@ -960,7 +1044,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
       );
     }
 
-    if (obj.type === 'database' || obj.type === 'arch-db') {
+    if (obj.type === 'database') {
       const ry = 11;
       const w = obj.width;
       const h = obj.height;
@@ -1015,16 +1099,17 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
           height={obj.height}
           rx={6}
           fill="transparent"
-          stroke={isSelected ? '#2563EB' : 'transparent'}
+          stroke={isSelected ? selectionAccent : 'transparent'}
           strokeWidth={1.25}
           strokeDasharray="4 3"
         />
       );
     }
 
-    // Standard rounded card (Process, Start/End, Architecture service, Network node, Org card, Sticky)
+    // Standard rounded card (Process, Start/End, Org card, Journey card, Flowchart specialty, Sticky)
     const radius = obj.type === 'start' ? obj.height / 2 : obj.style.borderRadius;
     const isSubprocess = obj.type === 'subprocess';
+    const showInlineIcon = hasCanvasInlineIcon(obj.type) && obj.width >= 110;
 
     return (
       <g filter={filterAttr}>
@@ -1042,6 +1127,16 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
             <line x1={12} y1={0} x2={12} y2={obj.height} stroke={stroke} strokeWidth={1.25} />
             <line x1={obj.width - 12} y1={0} x2={obj.width - 12} y2={obj.height} stroke={stroke} strokeWidth={1.25} />
           </>
+        )}
+        {showInlineIcon && (
+          <g transform={`translate(11, ${Math.max(8, (obj.height - 19) / 2)}) scale(0.8)`}>
+            <DiagramObjectIconPaths
+              type={obj.type}
+              stroke={isBlueprint ? '#93C5FD' : liftedStroke}
+              fill={darkMode ? `${liftedStroke}22` : `${obj.style.stroke}14`}
+              strokeWidth={1.85}
+            />
+          </g>
         )}
       </g>
     );
@@ -1182,10 +1277,10 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
             const { path, labelPos } = buildConnectorPath(conn, from, to);
             const isSelected = selectedConnectionId === conn.id;
             const strokeColor = isSelected
-              ? '#2563EB'
+              ? selectionAccent
               : isBlueprint
               ? theme.connectorLight
-              : conn.color;
+              : liftStrokeForDark(conn.color, darkMode);
             const dashArray =
               conn.lineStyle === 'dashed'
                 ? '6 4'
@@ -1250,7 +1345,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                           }}
-                          className="w-full h-full text-center text-xs font-medium bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-blue-500 rounded px-1.5 outline-none shadow-sm"
+                          className="w-full h-full text-center text-xs font-medium bg-white dark:bg-[#0D1422] text-slate-900 dark:text-slate-100 border border-teal-500 rounded px-1.5 outline-none shadow-sm"
                         />
                       </foreignObject>
                     ) : (
@@ -1261,8 +1356,8 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                           width={Math.max(48, conn.label!.length * 6.5 + 14)}
                           height={22}
                           rx={5}
-                          fill={isBlueprint ? '#1E3A5F' : darkMode ? '#0F172A' : '#FFFFFF'}
-                          stroke={isSelected ? '#2563EB' : isBlueprint ? '#60A5FA' : darkMode ? '#334155' : '#E2E8F0'}
+                          fill={isBlueprint ? '#1E3A5F' : darkMode ? '#0C121E' : '#FFFFFF'}
+                          stroke={isSelected ? selectionAccent : isBlueprint ? '#60A5FA' : darkMode ? '#26344B' : '#E2E8F0'}
                           strokeWidth={1}
                         />
                         <text
@@ -1290,15 +1385,35 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
             .map((obj) => {
               const isSelected = selectedIds.includes(obj.id);
               const isHovered = hoveredObjId === obj.id;
-              const isDarkNeutralFill =
-                darkMode &&
-                !isBlueprint &&
-                (obj.style.fill.toUpperCase() === '#FFFFFF' || obj.style.fill.toUpperCase() === '#F8FAFC');
-              const textColor = isBlueprint
-                ? theme.textLight
-                : isDarkNeutralFill
-                ? theme.textDark
-                : obj.style.textColor;
+              const isIconNative = isIconNativeObjectType(obj.type);
+              const showInlineIcon = !isIconNative && hasCanvasInlineIcon(obj.type) && obj.width >= 110;
+              const textColor = isIconNative
+                ? isBlueprint
+                  ? '#F0F9FF'
+                  : darkMode
+                    ? '#F1F5F9'
+                    : '#0F172A'
+                : isBlueprint
+                  ? theme.textLight
+                  : adaptTextForDark(obj.style.textColor, obj.style.fill, darkMode);
+
+              const iconSize = isIconNative
+                ? Math.min(48, Math.max(30, Math.min(obj.width * 0.38, obj.height * 0.5)))
+                : 0;
+              const labelX = isIconNative ? 2 : showInlineIcon ? 34 : 10;
+              const labelW = isIconNative
+                ? obj.width - 4
+                : showInlineIcon
+                  ? obj.width - 42
+                  : obj.width - 20;
+              const labelY = isIconNative
+                ? iconSize + 6
+                : obj.type === 'database'
+                  ? 18
+                  : 6;
+              const labelH = isIconNative
+                ? Math.max(24, obj.height - iconSize - 6)
+                : obj.height - (obj.type === 'database' ? 24 : 12);
 
               return (
                 <g
@@ -1318,7 +1433,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                   {/* Label & optional subtitle (not for ERD or freehand which render their own content) */}
                   {obj.category !== 'entity' && obj.category !== 'freehand' && (
                     editingObjectId === obj.id ? (
-                      <foreignObject x={8} y={6} width={obj.width - 16} height={obj.height - 12} data-export-ignore="true">
+                      <foreignObject x={4} y={isIconNative ? iconSize + 4 : 6} width={obj.width - 8} height={isIconNative ? Math.max(28, obj.height - iconSize - 4) : obj.height - 12} data-export-ignore="true">
                         <div className="w-full h-full flex items-center justify-center">
                           <input
                             autoFocus
@@ -1340,26 +1455,34 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                             }}
-                            className="w-full text-center text-xs font-medium bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-slate-100 border border-blue-500 rounded px-1.5 py-1 outline-none"
+                            className="w-full text-center text-xs font-medium bg-white/95 dark:bg-[#0D1422]/95 text-slate-900 dark:text-slate-100 border border-teal-500 rounded px-1.5 py-1 outline-none"
                           />
                         </div>
                       </foreignObject>
                     ) : (
-                      <foreignObject x={10} y={obj.type === 'database' || obj.type === 'arch-db' ? 18 : 6} width={obj.width - 20} height={obj.height - (obj.type === 'database' || obj.type === 'arch-db' ? 24 : 12)} style={{ pointerEvents: 'none' }}>
-                        <div className="w-full h-full flex flex-col items-center justify-center text-center leading-tight px-1">
+                      <foreignObject x={labelX} y={labelY} width={labelW} height={labelH} style={{ pointerEvents: 'none' }}>
+                        <div
+                          className={`w-full h-full flex flex-col leading-tight px-1 ${
+                            isIconNative
+                              ? 'items-center justify-start text-center pt-0.5'
+                              : showInlineIcon
+                                ? 'items-start justify-center text-left'
+                                : 'items-center justify-center text-center'
+                          }`}
+                        >
                           <span
                             style={{
                               color: textColor,
-                              fontSize: obj.style.fontSize,
+                              fontSize: isIconNative ? Math.min(12.5, obj.style.fontSize) : obj.style.fontSize,
                               fontWeight: obj.type === 'text' ? 700 : 600,
                             }}
-                            className="line-clamp-3 break-words"
+                            className={isIconNative ? 'line-clamp-2 break-words' : 'line-clamp-3 break-words'}
                           >
                             {obj.label}
                           </span>
                           {obj.metadata.subtitle && (
                             <span
-                              style={{ color: textColor, opacity: 0.68, fontSize: 10.5 }}
+                              style={{ color: textColor, opacity: 0.68, fontSize: 10 }}
                               className="mt-0.5 truncate max-w-full"
                             >
                               {obj.metadata.subtitle}
@@ -1391,8 +1514,8 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                             cx={lx}
                             cy={ly}
                             r={4.5}
-                            fill="#FFFFFF"
-                            stroke="#2563EB"
+                            fill={darkMode ? '#0C121E' : '#FFFFFF'}
+                            stroke={selectionAccent}
                             strokeWidth={1.75}
                             style={{ cursor: 'crosshair' }}
                             onMouseDown={(e) => {
@@ -1423,8 +1546,8 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                           width={8}
                           height={8}
                           rx={2}
-                          fill="#FFFFFF"
-                          stroke="#2563EB"
+                          fill={darkMode ? '#0C121E' : '#FFFFFF'}
+                          stroke={selectionAccent}
                           strokeWidth={1.5}
                           style={{ cursor }}
                           onMouseDown={(e) => {
@@ -1475,8 +1598,8 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                         });
                       }}
                     >
-                      <circle r={10} fill="#2563EB" fillOpacity={0.12} stroke="#2563EB" strokeWidth={1.25} />
-                      <path d="M -4 0 H 4 M 0 -4 V 4" stroke="#2563EB" strokeWidth={1.6} strokeLinecap="round" />
+                      <circle r={10} fill={selectionAccent} fillOpacity={0.14} stroke={selectionAccent} strokeWidth={1.25} />
+                      <path d="M -4 0 H 4 M 0 -4 V 4" stroke={selectionAccent} strokeWidth={1.6} strokeLinecap="round" />
                     </g>
                   );
                 })}
@@ -1494,7 +1617,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                 y1={start.y}
                 x2={connecting.currX}
                 y2={connecting.currY}
-                stroke="#2563EB"
+                stroke={selectionAccent}
                 strokeWidth={2}
                 strokeDasharray="5 4"
                 markerEnd="url(#arrow-end)"
@@ -1508,7 +1631,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
             <path
               d={freehandPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')}
               fill="none"
-              stroke="#2563EB"
+              stroke={selectionAccent}
               strokeWidth={2.5}
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -1525,7 +1648,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                 y1={g.start}
                 x2={g.position}
                 y2={g.end}
-                stroke="#2563EB"
+                stroke={selectionAccent}
                 strokeWidth={1 / viewport.zoom}
                 strokeDasharray={`${4 / viewport.zoom} ${3 / viewport.zoom}`}
                 data-export-ignore="true"
@@ -1537,7 +1660,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                 y1={g.position}
                 x2={g.end}
                 y2={g.position}
-                stroke="#2563EB"
+                stroke={selectionAccent}
                 strokeWidth={1 / viewport.zoom}
                 strokeDasharray={`${4 / viewport.zoom} ${3 / viewport.zoom}`}
                 data-export-ignore="true"
@@ -1545,20 +1668,33 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
             )
           )}
 
-          {/* Library Drop Ghost Preview */}
+          {/* Library Drop Ghost Preview with live icon silhouette */}
           {draggingLibraryItem && dropPreviewPos && (
-            <rect
-              x={dropPreviewPos.x - draggingLibraryItem.defaultWidth / 2}
-              y={dropPreviewPos.y - draggingLibraryItem.defaultHeight / 2}
-              width={draggingLibraryItem.defaultWidth}
-              height={draggingLibraryItem.defaultHeight}
-              rx={draggingLibraryItem.borderRadius ?? 10}
-              fill="rgba(37, 99, 235, 0.08)"
-              stroke="#2563EB"
-              strokeWidth={1.5}
-              strokeDasharray="5 4"
+            <g
+              transform={`translate(${dropPreviewPos.x - draggingLibraryItem.defaultWidth / 2}, ${dropPreviewPos.y - draggingLibraryItem.defaultHeight / 2})`}
+              opacity={0.85}
               data-export-ignore="true"
-            />
+            >
+              <rect
+                width={draggingLibraryItem.defaultWidth}
+                height={draggingLibraryItem.defaultHeight}
+                rx={draggingLibraryItem.borderRadius ?? 12}
+                fill={darkMode ? 'rgba(20, 184, 166, 0.10)' : 'rgba(13, 148, 136, 0.08)'}
+                stroke={selectionAccent}
+                strokeWidth={1.5}
+                strokeDasharray="5 4"
+              />
+              <g
+                transform={`translate(${draggingLibraryItem.defaultWidth / 2 - 18}, ${draggingLibraryItem.defaultHeight / 2 - 22}) scale(1.5)`}
+              >
+                <DiagramObjectIconPaths
+                  type={draggingLibraryItem.type}
+                  stroke={selectionAccent}
+                  fill={darkMode ? 'rgba(20, 184, 166, 0.18)' : 'rgba(13, 148, 136, 0.14)'}
+                  strokeWidth={1.65}
+                />
+              </g>
+            </g>
           )}
 
           {/* Multi-Selection Group Bounding Box (Drag anywhere in bounds to move all selected!) */}
@@ -1569,9 +1705,9 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                 y={multiSelectionBounds.y}
                 width={multiSelectionBounds.width}
                 height={multiSelectionBounds.height}
-                rx={8}
-                fill="rgba(37, 99, 235, 0.04)"
-                stroke="#2563EB"
+                rx={10}
+                fill={darkMode ? 'rgba(20, 184, 166, 0.06)' : 'rgba(13, 148, 136, 0.04)'}
+                stroke={selectionAccent}
                 strokeWidth={1.5 / viewport.zoom}
                 strokeDasharray={`${6 / viewport.zoom} ${4 / viewport.zoom}`}
                 style={{ cursor: 'move' }}
@@ -1594,8 +1730,9 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
               y={Math.min(marquee.y1, marquee.y2)}
               width={Math.abs(marquee.x2 - marquee.x1)}
               height={Math.abs(marquee.y2 - marquee.y1)}
-              fill="rgba(37, 99, 235, 0.09)"
-              stroke="#2563EB"
+              rx={4}
+              fill={darkMode ? 'rgba(20, 184, 166, 0.12)' : 'rgba(13, 148, 136, 0.09)'}
+              stroke={selectionAccent}
               strokeWidth={1.25 / viewport.zoom}
               strokeDasharray={`${5 / viewport.zoom} ${3 / viewport.zoom}`}
               data-export-ignore="true"
@@ -1607,7 +1744,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
       {/* Compact Rapid Flow Creation Menu */}
       {rapidPicker && (
         <div
-          className="absolute z-30 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg p-1.5 flex items-center gap-1"
+          className="absolute z-30 bg-white dark:bg-[#0D1422] border border-slate-200 dark:border-slate-700/80 rounded-lg shadow-xl p-1.5 flex items-center gap-1"
           style={{
             left: Math.max(12, rapidPicker.x * viewport.zoom + viewport.x - 110),
             top: Math.max(12, rapidPicker.y * viewport.zoom + viewport.y + 14),
@@ -1618,7 +1755,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
               key={choice.type}
               type="button"
               onClick={() => handleRapidCreate(choice)}
-              className="px-2.5 py-1.5 text-xs font-medium rounded-md text-slate-700 dark:text-slate-200 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950/60 dark:hover:text-blue-300 transition-colors whitespace-nowrap"
+              className="px-2.5 py-1.5 text-xs font-medium rounded-md text-slate-700 dark:text-slate-200 hover:bg-teal-50 hover:text-teal-800 dark:hover:bg-teal-950/60 dark:hover:text-teal-300 transition-colors whitespace-nowrap"
             >
               {choice.label.replace('?', '')}
             </button>
@@ -1628,7 +1765,7 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
 
       {/* Interactive Mini-Map */}
       {showMinimap && (
-        <div className="absolute right-4 bottom-16 z-20 w-44 h-28 rounded-lg bg-white/90 dark:bg-slate-900/90 backdrop-blur border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="absolute right-4 bottom-16 z-20 w-44 h-28 rounded-xl bg-white/90 dark:bg-[#0C121E]/90 backdrop-blur border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden">
           <svg
             viewBox={`${minimapBounds.minX} ${minimapBounds.minY} ${minimapBounds.width} ${minimapBounds.height}`}
             className="w-full h-full"
@@ -1641,8 +1778,8 @@ export const StandardCanvas: React.FC<StandardCanvasProps> = ({
                 width={o.width}
                 height={o.height}
                 rx={4}
-                fill={selectedIds.includes(o.id) ? '#2563EB' : o.category === 'container' ? 'rgba(148,163,184,0.2)' : '#94A3B8'}
-                stroke={o.category === 'container' ? '#94A3B8' : 'none'}
+                fill={selectedIds.includes(o.id) ? selectionAccent : o.category === 'container' ? 'rgba(148,163,184,0.18)' : darkMode ? '#475569' : '#94A3B8'}
+                stroke={o.category === 'container' ? '#64748B' : 'none'}
                 strokeWidth={4}
               />
             ))}

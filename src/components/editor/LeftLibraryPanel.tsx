@@ -18,6 +18,7 @@ import { LibraryItemMiniIcon, SequenceRoleMiniIcon } from '../icons/ShapeIcons';
 
 interface LeftLibraryPanelProps {
   doc: DiagramDocument;
+  darkMode: boolean;
   width: number;
   customComponents: CustomComponent[];
   favoriteIds: string[];
@@ -38,6 +39,7 @@ interface LeftLibraryPanelProps {
 
 export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
   doc,
+  darkMode,
   width,
   customComponents,
   favoriteIds,
@@ -121,17 +123,11 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
             onClickAddItem(item);
           }
         }}
-        className="group relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/70 hover:border-blue-500/60 dark:hover:border-blue-500/60 hover:bg-blue-50/30 dark:hover:bg-blue-950/30 transition-colors cursor-grab active:cursor-grabbing text-left focus-visible:outline-2 focus-visible:outline-blue-600"
+        className="group relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg border border-transparent hover:border-teal-500/40 dark:hover:border-teal-400/35 bg-slate-50/70 dark:bg-[#111928]/75 hover:bg-teal-50/50 dark:hover:bg-teal-950/35 transition-all cursor-grab active:cursor-grabbing text-left focus-visible:outline-2 focus-visible:outline-teal-500"
       >
-        <div
-          className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center border"
-          style={{
-            backgroundColor: item.fill === 'transparent' ? '#F8FAFC' : item.fill,
-            borderColor: item.stroke === 'transparent' ? '#CBD5E1' : item.stroke,
-            borderStyle: item.dashed ? 'dashed' : 'solid',
-          }}
-        >
-          <LibraryItemMiniIcon item={item} className="w-[18px] h-[18px]" />
+        {/* Pure, borderless icon silhouette stage — no square box trapping the icon */}
+        <div className="w-9 h-9 shrink-0 flex items-center justify-center transition-transform duration-150 group-hover:scale-110">
+          <LibraryItemMiniIcon item={item} darkMode={darkMode} className="w-7 h-7" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-xs font-medium text-slate-800 dark:text-slate-100 truncate">
@@ -165,18 +161,18 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
   return (
     <aside
       style={{ width }}
-      className="h-full shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden"
+      className="h-full shrink-0 bg-white dark:bg-[#0C121E] border-r border-slate-200/90 dark:border-slate-800/80 flex flex-col overflow-hidden"
       aria-label="Shape library and diagram outline"
     >
       {/* Segmented Tabs */}
-      <div className="p-2.5 border-b border-slate-200 dark:border-slate-800">
-        <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-800/80">
+      <div className="p-2.5 border-b border-slate-200/90 dark:border-slate-800/80">
+        <div className="grid grid-cols-2 gap-1 p-1 rounded-lg bg-slate-100/90 dark:bg-[#070B12] border border-slate-200/60 dark:border-slate-800/80">
           <button
             type="button"
             onClick={() => setTab('library')}
             className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
               tab === 'library'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm'
+                ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
@@ -188,7 +184,7 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
             onClick={() => setTab('outline')}
             className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
               tab === 'outline'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm'
+                ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
             }`}
           >
@@ -200,7 +196,7 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
 
       {tab === 'library' ? (
         <>
-          <div className="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800/80">
+          <div className="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800/70">
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
@@ -209,7 +205,7 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search components..."
                 aria-label="Search library components"
-                className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
+                className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded-lg bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors"
               />
             </div>
             <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
@@ -217,54 +213,42 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
             </p>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+          <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4">
             {/* Favorites */}
             {!query && favoriteItems.length > 0 && (
               <div>
-                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                <div className="px-1 text-[11px] font-semibold tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
                   Pinned Favorites
                 </div>
-                <div className="space-y-1.5">{favoriteItems.map(renderLibraryCard)}</div>
+                <div className="space-y-1">{favoriteItems.map(renderLibraryCard)}</div>
               </div>
             )}
 
             {/* Recently Used */}
             {!query && recentItems.length > 0 && (
               <div>
-                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                <div className="px-1 text-[11px] font-semibold tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
                   Recently Used
                 </div>
-                <div className="space-y-1.5">{recentItems.slice(0, 3).map(renderLibraryCard)}</div>
+                <div className="space-y-1">{recentItems.slice(0, 3).map(renderLibraryCard)}</div>
               </div>
             )}
 
             {/* Custom Reusable Components */}
             {!query && matchingCustom.length > 0 && (
               <div>
-                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                <div className="px-1 text-[11px] font-semibold tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
                   Saved Components
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   {matchingCustom.map((comp) => (
                     <div
                       key={comp.id}
                       onClick={() => onAddCustomComponent(comp)}
-                      className="group flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-blue-500/60 cursor-pointer"
+                      className="group flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg border border-transparent hover:border-teal-500/40 bg-slate-50/70 dark:bg-[#111928]/75 hover:bg-teal-50/50 dark:hover:bg-teal-950/35 cursor-pointer transition-all"
                     >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div
-                          className="w-6 h-6 rounded shrink-0 flex items-center justify-center border"
-                          style={{
-                            backgroundColor:
-                              comp.objectTemplate.style.fill === 'transparent'
-                                ? '#F8FAFC'
-                                : comp.objectTemplate.style.fill,
-                            borderColor:
-                              comp.objectTemplate.style.stroke === 'transparent'
-                                ? '#CBD5E1'
-                                : comp.objectTemplate.style.stroke,
-                          }}
-                        >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-7 h-7 shrink-0 flex items-center justify-center">
                           <LibraryItemMiniIcon
                             item={{
                               id: comp.id,
@@ -274,7 +258,8 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                               textColor: comp.objectTemplate.style.textColor,
                               dashed: comp.objectTemplate.style.dashed,
                             }}
-                            className="w-3.5 h-3.5"
+                            darkMode={darkMode}
+                            className="w-6 h-6"
                           />
                         </div>
                         <span className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate">
@@ -287,7 +272,7 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                           e.stopPropagation();
                           onDeleteCustomComponent(comp.id);
                         }}
-                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-600 p-0.5"
+                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 p-0.5 transition-opacity"
                         title="Delete custom component"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -306,7 +291,7 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                   <button
                     type="button"
                     onClick={() => toggleSection(section)}
-                    className="w-full flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 hover:text-slate-900 dark:hover:text-white"
+                    className="w-full px-1 flex items-center justify-between text-[11px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 mb-1.5 hover:text-slate-900 dark:hover:text-white transition-colors"
                   >
                     <span>{section}</span>
                     {isCollapsed ? (
@@ -316,7 +301,7 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                     )}
                   </button>
                   {!isCollapsed && (
-                    <div className="space-y-1.5">{secItems.map(renderLibraryCard)}</div>
+                    <div className="space-y-1">{secItems.map(renderLibraryCard)}</div>
                   )}
                 </div>
               );
@@ -324,13 +309,13 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
 
             {groupedSections.length === 0 && (
               <div className="py-8 text-center text-xs text-slate-500 dark:text-slate-400">
-                No matching components for "{query}"
+                No matching components for &quot;{query}&quot;
               </div>
             )}
           </div>
         </>
       ) : (
-        /* Accessible Outline & Layers Tree (PRD 11.8 & 12.5) */
+        /* Accessible Outline & Layers Tree */
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
           {doc.type === 'sequence' && doc.sequence ? (
             <>
@@ -346,10 +331,10 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                         key={p.id}
                         type="button"
                         onClick={() => onSelectSequenceParticipant?.(p.id)}
-                        className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left"
+                        className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#141F32] text-left transition-colors"
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <SequenceRoleMiniIcon role={p.role} color={p.color} className="w-3.5 h-3.5 shrink-0" />
+                          <SequenceRoleMiniIcon role={p.role} color={p.color} className="w-4 h-4 shrink-0" />
                           <span className="truncate font-medium">{p.name}</span>
                         </div>
                         <span className="text-[11px] text-slate-400 font-mono shrink-0 ml-2">{p.role}</span>
@@ -369,7 +354,7 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                         key={m.id}
                         type="button"
                         onClick={() => onSelectSequenceMessage?.(m.id)}
-                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left"
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#141F32] text-left transition-colors"
                       >
                         <span className="font-mono text-[11px] text-slate-400 tabular-nums">
                           {i + 1}.
@@ -392,7 +377,7 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                       key={r.id}
                       type="button"
                       onClick={() => onSelectFloorItem?.({ kind: 'room', id: r.id })}
-                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left"
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#141F32] text-left transition-colors"
                     >
                       <span className="truncate font-medium">{r.name}</span>
                       <span className="font-mono text-[11px] text-slate-400 tabular-nums">
@@ -412,7 +397,7 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                       key={f.id}
                       type="button"
                       onClick={() => onSelectFloorItem?.({ kind: 'furniture', id: f.id })}
-                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 text-left"
+                      className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#141F32] text-left transition-colors"
                     >
                       <span className="truncate">{f.label}</span>
                       <span className="font-mono text-[10.5px] text-slate-400">
@@ -439,18 +424,30 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                     return (
                       <div
                         key={o.id}
-                        className={`flex items-center justify-between gap-1 px-2 py-1.5 rounded-md text-xs ${
+                        className={`flex items-center justify-between gap-1.5 px-2 py-1.5 rounded-md text-xs transition-colors ${
                           isSel
-                            ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-medium'
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 font-medium'
+                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32]'
                         }`}
                       >
                         <button
                           type="button"
                           onClick={() => onFocusObject(o.id)}
-                          className="flex-1 text-left truncate"
+                          className="flex-1 flex items-center gap-2 text-left min-w-0"
                         >
-                          {o.label}
+                          <LibraryItemMiniIcon
+                            item={{
+                              id: o.id,
+                              type: o.type,
+                              fill: o.style.fill,
+                              stroke: o.style.stroke,
+                              textColor: o.style.textColor,
+                              dashed: o.style.dashed,
+                            }}
+                            darkMode={darkMode}
+                            className="w-4 h-4 shrink-0"
+                          />
+                          <span className="truncate">{o.label}</span>
                         </button>
                         <div className="flex items-center gap-0.5 shrink-0">
                           <button

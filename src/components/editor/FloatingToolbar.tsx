@@ -98,13 +98,13 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   const replaceableItems = getLibraryForType(doc.type).filter((i) => i.category === 'shape');
 
   return (
-    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200 dark:border-slate-700 shadow-md">
+    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white/95 dark:bg-[#0C121E]/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-lg dark:shadow-black/50">
       {multiCount >= 2 && (
         <>
-          <span className="px-2 text-xs font-medium text-blue-600 dark:text-blue-400 tabular-nums whitespace-nowrap">
+          <span className="px-2 text-xs font-medium text-teal-700 dark:text-teal-300 tabular-nums whitespace-nowrap">
             {multiCount} selected
           </span>
-          <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+          <div className="w-px h-4 bg-slate-200 dark:bg-slate-800 mx-0.5" />
         </>
       )}
       {/* Standard Diagram Contextual Actions */}
@@ -137,7 +137,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                 <span>Color</span>
               </button>
               {showColors && (
-                <div className="absolute top-full left-0 mt-2 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-lg flex gap-1.5">
+                <div className="absolute top-full left-0 mt-2 p-2 rounded-xl bg-white dark:bg-[#0D1422] border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-black/60 flex gap-1.5 nx-menu-enter">
                   {SWATCH_COLORS.map((sw) => (
                     <button
                       key={sw.name}
@@ -172,7 +172,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                 <span>Replace</span>
               </button>
               {showReplace && (
-                <div className="absolute top-full left-0 mt-2 w-48 max-h-60 overflow-y-auto p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-lg space-y-0.5">
+                <div className="absolute top-full left-0 mt-2 w-48 max-h-60 overflow-y-auto p-1.5 rounded-xl bg-white dark:bg-[#0D1422] border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-black/60 space-y-0.5 nx-menu-enter">
                   {replaceableItems.map((it) => (
                     <button
                       key={it.id}
@@ -181,7 +181,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                         onReplaceShape(it.type, it.label);
                         setShowReplace(false);
                       }}
-                      className="w-full text-left px-2.5 py-1.5 text-xs rounded-md text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/60 hover:text-blue-700 dark:hover:text-blue-300"
+                      className="w-full text-left px-2.5 py-1.5 text-xs rounded-md text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 hover:text-teal-800 dark:hover:text-teal-300 transition-colors"
                     >
                       {it.label}
                     </button>
@@ -283,13 +283,13 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
             <button
               type="button"
               onClick={() => setShowFragments((s) => !s)}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 whitespace-nowrap"
+              className="flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md text-teal-800 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 whitespace-nowrap transition-colors"
             >
               <Box className="w-3.5 h-3.5" />
               <span>Wrap in Fragment</span>
             </button>
             {showFragments && (
-              <div className="absolute top-full left-0 mt-2 w-40 p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-lg space-y-0.5">
+              <div className="absolute top-full left-0 mt-2 w-40 p-1.5 rounded-xl bg-white dark:bg-[#0D1422] border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-black/60 space-y-0.5 nx-menu-enter">
                 {(['alt', 'opt', 'loop', 'par'] as const).map((k) => (
                   <button
                     key={k}
@@ -298,7 +298,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
                       onWrapInFragment(k);
                       setShowFragments(false);
                     }}
-                    className="w-full text-left px-2.5 py-1.5 text-xs font-mono rounded-md text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/60"
+                    className="w-full text-left px-2.5 py-1.5 text-xs font-mono rounded-md text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/60 hover:text-teal-800 dark:hover:text-teal-300 transition-colors"
                   >
                     {k} fragment
                   </button>

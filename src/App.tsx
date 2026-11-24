@@ -19,13 +19,17 @@ import { DesktopFileHandle } from './engine/pcanvasFile';
 import { HomeDashboard } from './components/home/HomeDashboard';
 import { EditorWorkspace } from './components/editor/EditorWorkspace';
 import { OfflineIndicator } from './components/pwa/OfflineIndicator';
-import { PWAInstallModal } from './components/pwa/PWAInstallButton';
+import { PWAInstallModal, PWAUninstallModal } from './components/pwa/PWAInstallButton';
+import { WorkspaceSettingsModal } from './components/modals/WorkspaceSettingsModal';
 import { NexoraBrandLogo } from './components/icons/ShapeIcons';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('pc_theme') === 'dark';
+      const saved = localStorage.getItem('pc_theme');
+      if (saved === 'light') return false;
+      if (saved === 'dark') return true;
+      return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
     } catch {
       return false;
     }
@@ -41,6 +45,7 @@ export default function App() {
     fileName: string | null;
   }>({ handle: null, fileName: null });
   const [editorSession, setEditorSession] = useState(0);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -155,6 +160,11 @@ export default function App() {
     await handleSaveDiagram({ ...target, starred: !target.starred });
   };
 
+  const handleDeleteCustomTemplate = async (id: string) => {
+    await diagramRepo.deleteCustomTemplate(id);
+    await refreshLists();
+  };
+
   const handleUpdateProfile = (next: LocalProfile) => {
     setProfile(next);
     saveLocalProfile(next);
@@ -162,8 +172,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center gap-3 bg-slate-50 dark:bg-slate-950">
-        <NexoraBrandLogo className="w-10 h-10" />
+      <div className="h-screen w-screen flex flex-col items-center justify-center gap-3 bg-[#F6F8FB] dark:bg-[#070B12]">
+        <NexoraBrandLogo className="w-11 h-11" />
         <div className="text-sm font-medium text-slate-500 dark:text-slate-400">
           Loading Nexora workspace...
         </div>
@@ -183,6 +193,7 @@ export default function App() {
           onToggleDarkMode={() => setDarkMode((d) => !d)}
           profile={profile}
           customComponents={customComponents}
+          customTemplates={customTemplates}
           onSaveDiagram={handleSaveDiagram}
           onSaveCustomComponent={async (comp) => {
             await diagramRepo.saveCustomComponent(comp);
@@ -196,6 +207,7 @@ export default function App() {
             await diagramRepo.saveCustomTemplate(doc);
             await refreshLists();
           }}
+          onDeleteCustomTemplate={handleDeleteCustomTemplate}
           onImportNewDiagram={async (imported) => {
             await handleSaveDiagram(imported);
             setActiveDesktopFile({ handle: null, fileName: null });
@@ -204,6 +216,8 @@ export default function App() {
           }}
           onOpenDesktopDesign={handleOpenDesktopDesign}
           onStartNewDesign={handleCreateBlank}
+          onUseTemplate={handleUseTemplate}
+          onOpenWorkspaceSettings={() => setSettingsModalOpen(true)}
           onBackHome={async () => {
             setActiveDiagram(null);
             setActiveDesktopFile({ handle: null, fileName: null });
@@ -234,14 +248,24 @@ export default function App() {
             await diagramRepo.deleteCustomComponent(id);
             await refreshLists();
           }}
-          onDeleteCustomTemplate={async (id) => {
-            await diagramRepo.deleteCustomTemplate(id);
-            await refreshLists();
-          }}
+          onDeleteCustomTemplate={handleDeleteCustomTemplate}
+          onOpenWorkspaceSettings={() => setSettingsModalOpen(true)}
         />
       )}
       <OfflineIndicator />
       <PWAInstallModal />
+      <PWAUninstallModal />
+      <WorkspaceSettingsModal
+        open={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        profile={profile}
+        onUpdateProfile={handleUpdateProfile}
+        darkMode={darkMode}
+        onToggleDarkMode={() => setDarkMode((d) => !d)}
+        diagramCount={diagrams.length}
+        customTemplateCount={customTemplates.length}
+        customComponentCount={customComponents.length}
+      />
     </>
   );
 }

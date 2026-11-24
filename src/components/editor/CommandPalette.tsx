@@ -213,17 +213,17 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-start justify-center pt-24 px-4"
+      className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-start justify-center pt-24 px-4"
       onMouseDown={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden"
+        className="w-full max-w-lg rounded-2xl bg-white dark:bg-[#0D1422] border border-slate-200 dark:border-slate-800/90 shadow-2xl dark:shadow-black/70 overflow-hidden nx-menu-enter"
         onMouseDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="Universal Command Palette"
       >
-        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-          <Search className="w-4 h-4 text-slate-400 shrink-0" />
+        <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-200 dark:border-slate-800/80">
+          <Search className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
           <input
             autoFocus
             type="text"
@@ -237,9 +237,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               }
             }}
             placeholder="Type a command, component to insert, or element to find..."
-            className="flex-1 bg-transparent text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 outline-none"
+            className="flex-1 bg-transparent text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none"
           />
-          <kbd className="text-[11px] font-mono text-slate-400 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-0.5">
+          <kbd className="text-[11px] font-mono text-slate-400 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#080D16] rounded px-1.5 py-0.5">
             ESC
           </kbd>
         </div>
@@ -253,7 +253,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 act.run();
                 onClose();
               }}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs text-slate-700 dark:text-slate-200 hover:bg-teal-50 dark:hover:bg-teal-950/50 hover:text-teal-800 dark:hover:text-teal-300 transition-colors"
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 {act.id.startsWith('add-') ? (

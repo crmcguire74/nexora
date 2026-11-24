@@ -7,6 +7,29 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+:root {
+  --nx-bg: #f6f8fb;
+  --nx-surface: #ffffff;
+  --nx-surface-2: #f1f5f9;
+  --nx-surface-hover: #e8eef5;
+  --nx-border: rgba(15, 23, 42, 0.09);
+  --nx-border-strong: rgba(15, 23, 42, 0.16);
+  --nx-accent: #0f766e;
+  --nx-accent-soft: rgba(15, 118, 110, 0.1);
+}
+
+.dark {
+  --nx-bg: #070b12;
+  --nx-surface: #0c121e;
+  --nx-surface-2: #121b2b;
+  --nx-surface-hover: #19253a;
+  --nx-border: rgba(148, 163, 184, 0.14);
+  --nx-border-strong: rgba(148, 163, 184, 0.24);
+  --nx-accent: #14b8a6;
+  --nx-accent-soft: rgba(20, 184, 166, 0.14);
+  color-scheme: dark;
+}
+
 @layer base {
   html,
   body,
@@ -15,6 +38,13 @@
     margin: 0;
     padding: 0;
     font-family: var(--font-sans);
+    background-color: var(--nx-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .dark body {
+    letter-spacing: 0.006em;
   }
 
   h1,
@@ -23,11 +53,53 @@
   h4,
   .font-display {
     font-family: var(--font-display);
+    text-wrap: balance;
   }
 
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+}
+
+/* Studio ambient backdrop glow (subtle, zero neon slop) */
+.nexora-studio-backdrop {
+  background-image:
+    radial-gradient(900px 420px at 18% -10%, rgba(15, 118, 110, 0.07), transparent 65%),
+    radial-gradient(700px 360px at 88% -8%, rgba(14, 165, 233, 0.05), transparent 65%);
+}
+
+.dark .nexora-studio-backdrop {
+  background-image:
+    radial-gradient(960px 460px at 16% -12%, rgba(20, 184, 166, 0.11), transparent 65%),
+    radial-gradient(760px 400px at 86% -10%, rgba(56, 189, 248, 0.08), transparent 65%),
+    radial-gradient(640px 360px at 50% 105%, rgba(99, 102, 241, 0.05), transparent 70%);
+}
+
+/* Crisp panel surfaces with refined obsidian dark depth */
+.nx-panel {
+  background-color: var(--nx-surface);
+  border-color: var(--nx-border);
+}
+
+.nx-elevated {
+  background-color: var(--nx-surface-2);
+  border-color: var(--nx-border);
+}
+
+/* Dropdown menu animation */
+@keyframes nxMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.nx-menu-enter {
+  animation: nxMenuIn 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Custom subtle scrollbars for panels */
@@ -41,20 +113,20 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
-  border-radius: 3px;
+  background: rgba(100, 116, 139, 0.28);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.55);
+  background: rgba(100, 116, 139, 0.5);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.45);
+  background: rgba(148, 163, 184, 0.22);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.65);
+  background: rgba(148, 163, 184, 0.38);
 }
 
 @media (prefers-reduced-motion: reduce) {

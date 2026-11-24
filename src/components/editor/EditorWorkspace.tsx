@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeft,
+  BookmarkPlus,
   CheckCircle2,
   Command,
   Database,
   Download,
-  Eraser,
-  FilePlus2,
-  FolderOpen,
   Grid,
   Hand,
   HardDriveDownload,
@@ -47,11 +44,9 @@ import {
   createFurnitureFromLibraryItem,
   createObjectFromLibraryItem,
   DIAGRAM_TYPE_MAP,
-  DIAGRAM_TYPES,
   getLibraryForType,
   LibraryItem,
   NEXORA_MODULE_MAP,
-  NEXORA_MODULES,
 } from '../../engine/libraries';
 import { applyAutoLayout, LayoutDirection } from '../../engine/layout';
 import { detectRoomsFromWalls } from '../../engine/geometry';
@@ -63,11 +58,11 @@ import {
   saveDesignToDesktop,
 } from '../../engine/pcanvasFile';
 import {
-  DiagramTypeIllustration,
   NexoraBrandLogo,
   NexoraModuleIcon,
 } from '../icons/ShapeIcons';
-import { PWAInstallButton } from '../pwa/PWAInstallButton';
+import { NexoraHamburgerMenu } from '../navigation/NexoraHamburgerMenu';
+import { NewDesignModal } from '../modals/NewDesignModal';
 import { StandardCanvas } from '../canvas/StandardCanvas';
 import { SequenceCanvas } from '../canvas/SequenceCanvas';
 import { FloorPlanCanvas, FloorSelectionItem } from '../canvas/FloorPlanCanvas';
@@ -99,10 +94,12 @@ interface EditorWorkspaceProps {
   onToggleDarkMode: () => void;
   profile: LocalProfile;
   customComponents: CustomComponent[];
+  customTemplates: DiagramDocument[];
   onSaveDiagram: (doc: DiagramDocument) => Promise<void>;
   onSaveCustomComponent: (comp: CustomComponent) => Promise<void>;
   onDeleteCustomComponent: (id: string) => Promise<void>;
   onSaveCustomTemplate: (doc: DiagramDocument) => Promise<void>;
+  onDeleteCustomTemplate: (id: string) => Promise<void>;
   onImportNewDiagram: (doc: DiagramDocument) => void;
   onOpenDesktopDesign: (
     doc: DiagramDocument,
@@ -110,6 +107,8 @@ interface EditorWorkspaceProps {
     fileName: string
   ) => void;
   onStartNewDesign: (type: DiagramType) => void;
+  onUseTemplate: (doc: DiagramDocument) => void;
+  onOpenWorkspaceSettings: () => void;
   onBackHome: () => void;
 }
 
@@ -121,13 +120,17 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   onToggleDarkMode,
   profile,
   customComponents,
+  customTemplates,
   onSaveDiagram,
   onSaveCustomComponent,
   onDeleteCustomComponent,
   onSaveCustomTemplate,
+  onDeleteCustomTemplate,
   onImportNewDiagram,
   onOpenDesktopDesign,
   onStartNewDesign,
+  onUseTemplate,
+  onOpenWorkspaceSettings,
   onBackHome,
 }) => {
   const [doc, setDoc] = useState<DiagramDocument>(initialDoc);
@@ -185,6 +188,9 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false);
   const [newClearOpen, setNewClearOpen] = useState(false);
+  const [newModalTab, setNewModalTab] = useState<'blank' | 'templates'>('blank');
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false);
+  const [templateNameInput, setTemplateNameInput] = useState('');
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const saveTimerRef = useRef<number | null>(null);
@@ -747,6 +753,27 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
     setSelectedFragmentId(newFrag.id);
   };
 
+  // Open Save Design as Template dialog
+  const handlePromptSaveAsTemplate = useCallback(() => {
+    setTemplateNameInput(`${docRef.current.title} Template`);
+    setSaveTemplateOpen(true);
+  }, []);
+
+  const handleConfirmSaveAsTemplate = async () => {
+    const cleanName = templateNameInput.trim() || `${docRef.current.title} Template`;
+    const { snapshots: _snaps, ...rest } = docRef.current;
+    const templateDoc: DiagramDocument = {
+      ...structuredClone(rest),
+      id: makeId('ctpl'),
+      title: cleanName,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    await onSaveCustomTemplate(templateDoc);
+    setSaveTemplateOpen(false);
+    showToast(`Saved "${cleanName}" to My Templates`);
+  };
+
   // Save named version snapshot
   const handleCreateSnapshot = () => {
     const { snapshots: _prev, ...rest } = doc;
@@ -779,7 +806,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
 
   return (
     <div
-      className="h-screen w-screen flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 relative"
+      className="h-screen w-screen flex flex-col overflow-hidden bg-[#F6F8FB] dark:bg-[#070B12] text-slate-900 dark:text-slate-100 relative"
       onDragOver={(e) => {
         if (e.dataTransfer.types.includes('Files')) {
           e.preventDefault();
@@ -807,12 +834,12 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
     >
       {/* Drag-and-drop .nexora / .pcanvas file overlay */}
       {fileDropActive && (
-        <div className="pointer-events-none absolute inset-0 z-50 bg-teal-600/12 backdrop-blur-[2px] border-2 border-dashed border-teal-600 flex items-center justify-center">
-          <div className="px-6 py-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl text-center space-y-1">
+        <div className="pointer-events-none absolute inset-0 z-50 bg-teal-600/12 backdrop-blur-[2px] border-2 border-dashed border-teal-500 flex items-center justify-center">
+          <div className="px-6 py-4 rounded-xl bg-white dark:bg-[#0D1422] border border-slate-200 dark:border-slate-700 shadow-2xl text-center space-y-1">
             <div className="text-sm font-semibold text-slate-900 dark:text-white">
               Drop .nexora or .pcanvas file to view &amp; edit
             </div>
-            <div className="text-xs text-slate-500">
+            <div className="text-xs text-slate-500 dark:text-slate-400">
               Loads the design directly into Nexora
             </div>
           </div>
@@ -821,22 +848,34 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
 
       {/* Top Application Bar (Hidden in Presentation Mode) */}
       {!presentationMode && (
-        <header className="h-13 shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 flex items-center justify-between gap-3 z-30">
-          {/* Left Zone: Back + Nexora Mark + Title + Module + Save status */}
+        <header className="h-13 shrink-0 bg-white dark:bg-[#0C121E] border-b border-slate-200/90 dark:border-slate-800/80 px-3 flex items-center justify-between gap-3 z-30">
+          {/* Left Zone: Hamburger Menu + Nexora Mark + Editable Title + Module Breadcrumb */}
           <div className="flex items-center gap-2 min-w-0">
-            <button
-              type="button"
-              onClick={onBackHome}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
-              title="Back to Nexora Home"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
+            <NexoraHamburgerMenu
+              hasActiveDoc
+              readOnly={readOnly}
+              snapshotCount={doc.snapshots?.length ?? 0}
+              hasUndownloadedChanges={hasUndownloadedChanges}
+              onNewFile={() => {
+                setNewModalTab('blank');
+                setNewClearOpen(true);
+              }}
+              onNewFromTemplate={() => {
+                setNewModalTab('templates');
+                setNewClearOpen(true);
+              }}
+              onOpenFile={() => void handleOpenDesktopFile()}
+              onCloseFile={onBackHome}
+              onSaveToDrive={() => void handleSaveToDesktop(false)}
+              onOpenHistory={() => setHistoryDrawerOpen(true)}
+              onSaveAsTemplate={handlePromptSaveAsTemplate}
+              onOpenSettings={onOpenWorkspaceSettings}
+            />
             <button
               type="button"
               onClick={onBackHome}
               className="shrink-0 rounded-md hover:opacity-90 transition-opacity"
-              title="Nexora — The Visual Workspace"
+              title="Back to Nexora Home"
             >
               <NexoraBrandLogo className="w-6 h-6" />
             </button>
@@ -847,13 +886,11 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               disabled={readOnly}
               onChange={(e) => updateDoc({ ...doc, title: e.target.value }, false)}
               aria-label="Diagram title"
-              className="font-display text-sm font-semibold bg-transparent text-slate-900 dark:text-slate-100 px-1.5 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-slate-100 dark:focus:bg-slate-800 outline-none truncate max-w-[190px]"
+              className="font-display text-sm font-semibold bg-transparent text-slate-900 dark:text-slate-100 px-1.5 py-1 rounded hover:bg-slate-100 dark:hover:bg-[#141F32] focus:bg-slate-100 dark:focus:bg-[#141F32] outline-none truncate max-w-[190px]"
             />
             <span className="hidden lg:inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0">
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[11px] font-medium text-slate-700 dark:text-slate-300">
-                <NexoraModuleIcon module={moduleMeta.id} className="w-3 h-3 text-teal-700 dark:text-teal-400" />
-                <span>{moduleMeta.name}</span>
-              </span>
+              <NexoraModuleIcon module={moduleMeta.id} className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+              <span className="font-medium text-slate-700 dark:text-slate-300">{moduleMeta.name}</span>
               <span aria-hidden="true">·</span>
               <span>{typeMeta.shortName}</span>
             </span>
@@ -865,7 +902,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               type="button"
               onClick={handleUndo}
               disabled={historyPast.length === 0 || readOnly}
-              className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-35"
+              className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] disabled:opacity-35 transition-colors"
               title="Undo (Cmd+Z)"
             >
               <Undo2 className="w-4 h-4" />
@@ -874,7 +911,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               type="button"
               onClick={handleRedo}
               disabled={historyFuture.length === 0 || readOnly}
-              className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-35"
+              className="p-1.5 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] disabled:opacity-35 transition-colors"
               title="Redo (Cmd+Shift+Z)"
             >
               <Redo2 className="w-4 h-4" />
@@ -883,13 +920,13 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             <div className="w-px h-5 bg-slate-200 dark:bg-slate-800 mx-1.5" />
 
             {doc.type === 'floorplan' ? (
-              <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+              <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-100 dark:bg-[#070B12] border border-slate-200/70 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setFloorTool('select')}
-                  className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap ${
+                  className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
                     floorTool === 'select'
-                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
+                      ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                 >
@@ -899,9 +936,9 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={() => setFloorTool('wall')}
-                  className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap ${
+                  className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
                     floorTool === 'wall'
-                      ? 'bg-teal-700 text-white shadow-sm'
+                      ? 'bg-teal-700 text-white shadow-xs'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                 >
@@ -911,9 +948,9 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={() => setFloorTool('pan')}
-                  className={`p-1.5 rounded-md ${
+                  className={`p-1.5 rounded-md transition-colors ${
                     floorTool === 'pan'
-                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
+                      ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                   title="Pan Canvas"
@@ -922,13 +959,13 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 </button>
               </div>
             ) : doc.type !== 'sequence' ? (
-              <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+              <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-100 dark:bg-[#070B12] border border-slate-200/70 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setStandardTool('select')}
-                  className={`p-1.5 rounded-md ${
+                  className={`p-1.5 rounded-md transition-colors ${
                     standardTool === 'select'
-                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
+                      ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                   title="Select Tool (V)"
@@ -938,9 +975,9 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={() => setStandardTool('pan')}
-                  className={`p-1.5 rounded-md ${
+                  className={`p-1.5 rounded-md transition-colors ${
                     standardTool === 'pan'
-                      ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
+                      ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                   title="Pan Tool (Space+Drag)"
@@ -951,9 +988,9 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                   <button
                     type="button"
                     onClick={() => setStandardTool('pen')}
-                    className={`p-1.5 rounded-md ${
+                    className={`p-1.5 rounded-md transition-colors ${
                       standardTool === 'pen'
-                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
+                        ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                         : 'text-slate-600 dark:text-slate-400'
                     }`}
                     title="Freehand Sketch Pen"
@@ -963,7 +1000,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 )}
               </div>
             ) : (
-              <div className="hidden lg:flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+              <div className="hidden lg:flex items-center gap-1 p-0.5 rounded-lg bg-slate-100 dark:bg-[#070B12] border border-slate-200/70 dark:border-slate-800">
                 {(['modern', 'classic'] as const).map((m) => (
                   <button
                     key={m}
@@ -972,9 +1009,9 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                       doc.sequence &&
                       updateDoc({ ...doc, sequence: { ...doc.sequence, viewMode: m } }, true)
                     }
-                    className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize whitespace-nowrap ${
+                    className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize whitespace-nowrap transition-colors ${
                       doc.sequence?.viewMode === m
-                        ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm'
+                        ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                         : 'text-slate-600 dark:text-slate-400'
                     }`}
                   >
@@ -985,37 +1022,15 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             )}
           </div>
 
-          {/* Right Zone: New/Clear, Open/Save .nexora, PWA, Command Palette, AI Studio, Snapshots, Present, Export, Theme */}
-          <div className="flex items-center gap-1 shrink-0">
-            {!readOnly && (
-              <button
-                type="button"
-                onClick={() => setNewClearOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0"
-                title="Clear canvas or start a new design of any type"
-              >
-                <FilePlus2 className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">New / Clear</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => void handleOpenDesktopFile()}
-              className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0"
-              title="Open .nexora or .pcanvas file from computer (Cmd+O)"
-            >
-              <FolderOpen className="w-3.5 h-3.5" />
-              <span className="hidden xl:inline">Open</span>
-            </button>
-
+          {/* Right Zone: Clean, Focused Primary Actions (Full File/PWA/Settings in Hamburger Menu) */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
               onClick={() => void handleSaveToDesktop(false)}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
                 hasUndownloadedChanges
-                  ? 'border-teal-600 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/60'
-                  : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400'
+                  ? 'border-teal-500/60 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/60'
+                  : 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:border-teal-500/60 hover:text-teal-700 dark:hover:text-teal-300'
               }`}
               title="Download design to desktop as .nexora (Cmd+S)"
             >
@@ -1023,12 +1038,10 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               <span className="hidden sm:inline">Save .nexora</span>
             </button>
 
-            <PWAInstallButton compact className="hidden md:inline-flex" />
-
             <button
               type="button"
               onClick={() => setCmdOpen(true)}
-              className="hidden 2xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 whitespace-nowrap shrink-0"
+              className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#141F32] whitespace-nowrap shrink-0 transition-colors"
               title="Universal Command Palette (Cmd+K)"
             >
               <Command className="w-3.5 h-3.5" />
@@ -1039,7 +1052,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               <button
                 type="button"
                 onClick={() => setAiOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400 transition-colors whitespace-nowrap shrink-0"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-teal-500/60 hover:text-teal-700 dark:hover:text-teal-300 transition-colors whitespace-nowrap shrink-0"
                 title="AI Diagram Assistant (Optional)"
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -1050,8 +1063,12 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             <button
               type="button"
               onClick={() => setHistoryDrawerOpen((v) => !v)}
-              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
-              title="Version History"
+              className={`p-1.5 rounded-lg shrink-0 transition-colors ${
+                historyDrawerOpen
+                  ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32]'
+              }`}
+              title="History & Snapshots"
             >
               <History className="w-4 h-4" />
             </button>
@@ -1059,7 +1076,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             <button
               type="button"
               onClick={() => setPresentationMode(true)}
-              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] shrink-0 transition-colors"
               title="Presentation Preview"
             >
               <Play className="w-4 h-4" />
@@ -1068,16 +1085,16 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             <button
               type="button"
               onClick={onToggleDarkMode}
-              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
-              title="Toggle Light / Dark Mode"
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] shrink-0 transition-colors"
+              title="Toggle Light / Obsidian Dark Mode"
             >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
             </button>
 
             <button
               type="button"
               onClick={() => setExportOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-700 text-white text-xs font-medium hover:bg-teal-800 transition-colors whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-700 hover:bg-teal-600 text-white text-xs font-semibold transition-colors whitespace-nowrap shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export</span>
@@ -1088,22 +1105,22 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
 
       {/* Persistent IndexedDB Auto-Save & Desktop Download Reminder Bar */}
       {!presentationMode && (
-        <div className="shrink-0 px-3 py-1.5 bg-teal-50/75 dark:bg-teal-950/35 border-b border-teal-200/70 dark:border-teal-900/60 flex items-center justify-between gap-3 text-[11px] z-20">
+        <div className="shrink-0 px-3 py-1.5 bg-teal-50/75 dark:bg-[#091521] border-b border-teal-200/70 dark:border-teal-900/45 flex items-center justify-between gap-3 text-[11px] z-20">
           <div className="flex items-center gap-2 min-w-0">
             <span className="inline-flex items-center gap-1.5 font-medium text-teal-800 dark:text-teal-300 shrink-0">
               <Database className="w-3.5 h-3.5 text-teal-700 dark:text-teal-400" />
               <span>IndexedDB: {saveState === 'Saving...' ? 'Saving...' : 'Auto-saved'}</span>
             </span>
-            <span className="text-teal-400 dark:text-teal-700 shrink-0" aria-hidden="true">|</span>
+            <span className="text-teal-400 dark:text-teal-800 shrink-0" aria-hidden="true">·</span>
             {hasUndownloadedChanges ? (
               <span className="text-amber-800 dark:text-amber-300 font-medium truncate">
-                Changes are only in browser IndexedDB — remember to download a <code className="font-mono">.nexora</code> backup to your computer.
+                Changes are only in browser IndexedDB — remember to download a <code className="font-mono">.nexora</code> backup to your local drive.
               </span>
             ) : lastDownloadedAt ? (
               <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300 truncate">
                 <CheckCircle2 className="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
                 <span className="truncate">
-                  Backed up ({linkedFileName ?? lastDownloadedAt}). Always download a fresh <code className="font-mono">.nexora</code> copy after major edits.
+                  Backed up ({linkedFileName ?? lastDownloadedAt}). Download a fresh <code className="font-mono">.nexora</code> copy after major edits.
                 </span>
               </span>
             ) : (
@@ -1117,8 +1134,8 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             onClick={() => void handleSaveToDesktop(false)}
             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors whitespace-nowrap shrink-0 ${
               hasUndownloadedChanges
-                ? 'bg-teal-700 text-white hover:bg-teal-800 shadow-xs'
-                : 'border border-teal-600/35 dark:border-teal-500/40 bg-white dark:bg-slate-900 text-teal-800 dark:text-teal-200 hover:bg-teal-50 dark:hover:bg-teal-900/40'
+                ? 'bg-teal-700 text-white hover:bg-teal-600 shadow-xs'
+                : 'border border-teal-600/35 dark:border-teal-500/40 bg-white dark:bg-[#0D1422] text-teal-800 dark:text-teal-200 hover:bg-teal-50 dark:hover:bg-teal-900/40'
             }`}
           >
             <HardDriveDownload className="w-3 h-3" />
@@ -1133,7 +1150,8 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
         {!presentationMode && leftOpen && (
           <LeftLibraryPanel
             doc={doc}
-            width={256}
+            darkMode={darkMode}
+            width={260}
             customComponents={customComponents}
             favoriteIds={favoriteIds}
             recentIds={recentIds}
@@ -1429,8 +1447,8 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             </button>
           )}
 
-          {/* Bottom Canvas Toolbar (PRD 3.3) */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 px-2 py-1 rounded-xl bg-white/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200 dark:border-slate-800 shadow-sm">
+          {/* Bottom Canvas Toolbar */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 px-2 py-1 rounded-xl bg-white/95 dark:bg-[#0C121E]/95 backdrop-blur border border-slate-200/90 dark:border-slate-800 shadow-lg">
             {!presentationMode && (
               <button
                 type="button"
@@ -1600,49 +1618,46 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                 y: 280 - (obj.y + obj.height / 2) * vp.zoom,
               }));
             }}
-            onSaveAsTemplate={async () => {
-              await onSaveCustomTemplate({ ...doc, id: makeId('ctpl') });
-              showToast(`Saved "${doc.title}" as a reusable template`);
-            }}
+            onSaveAsTemplate={handlePromptSaveAsTemplate}
             readOnly={readOnly}
           />
         )}
 
         {/* Version History Slide-over */}
         {historyDrawerOpen && !presentationMode && (
-          <div className="absolute right-0 top-0 bottom-0 w-72 z-40 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-xl flex flex-col">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+          <div className="absolute right-0 top-0 bottom-0 w-72 z-40 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800/80">
               <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                Version History
+                History &amp; Snapshots
               </h3>
               <button
                 type="button"
                 onClick={() => setHistoryDrawerOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-700"
+                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="p-3 border-b border-slate-100 dark:border-slate-800/80">
               <button
                 type="button"
                 disabled={readOnly}
                 onClick={handleCreateSnapshot}
-                className="w-full py-2 px-3 rounded-lg bg-teal-700 text-white text-xs font-medium hover:bg-teal-800 disabled:opacity-50"
+                className="w-full py-2 px-3 rounded-lg bg-teal-700 text-white text-xs font-medium hover:bg-teal-600 disabled:opacity-50 transition-colors"
               >
                 Create Named Snapshot
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {(doc.snapshots ?? []).length === 0 ? (
-                <p className="text-xs text-slate-500 text-center py-6">
+                <p className="text-xs text-slate-500 dark:text-slate-400 text-center py-6">
                   No saved snapshots yet. Create a version snapshot before major structural changes.
                 </p>
               ) : (
                 (doc.snapshots ?? []).map((snap) => (
                   <div
                     key={snap.id}
-                    className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5"
+                    className="p-3 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/70 dark:bg-[#111928] space-y-1.5"
                   >
                     <div className="text-xs font-semibold text-slate-800 dark:text-slate-100">
                       {snap.label}
@@ -1657,7 +1672,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                           updateDoc({ ...snap.document, snapshots: doc.snapshots }, true);
                           showToast(`Restored ${snap.label}`);
                         }}
-                        className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline pt-1"
+                        className="flex items-center gap-1 text-xs font-medium text-teal-700 dark:text-teal-400 hover:underline pt-1"
                       >
                         <RotateCcw className="w-3 h-3" />
                         <span>Restore version</span>
@@ -1727,125 +1742,93 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
         }}
       />
 
-      {/* Clear & Start New Design Modal */}
-      {newClearOpen && (
+      {/* New File / New from Template / Clear Canvas Modal */}
+      <NewDesignModal
+        open={newClearOpen}
+        initialTab={newModalTab}
+        onClose={() => setNewClearOpen(false)}
+        customTemplates={customTemplates}
+        onCreateBlank={onStartNewDesign}
+        onUseTemplate={onUseTemplate}
+        onDeleteCustomTemplate={(id) => void onDeleteCustomTemplate(id)}
+        activeDocTitle={doc.title}
+        activeDocTypeName={typeMeta.name}
+        hasUndownloadedChanges={hasUndownloadedChanges}
+        onClearCurrentCanvas={readOnly ? undefined : handleClearCurrentCanvas}
+        onDownloadBackup={() => void handleSaveToDesktop(false)}
+      />
+
+      {/* Save Current Design as Reusable Template Modal */}
+      {saveTemplateOpen && (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-xs flex items-center justify-center p-4"
-          onMouseDown={() => setNewClearOpen(false)}
+          className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center p-4"
+          onMouseDown={() => setSaveTemplateOpen(false)}
         >
           <div
-            className="w-full max-w-2xl rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden"
+            className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0D1422] border border-slate-200 dark:border-slate-800/90 shadow-2xl overflow-hidden nx-menu-enter"
             onMouseDown={(e) => e.stopPropagation()}
             role="dialog"
-            aria-label="Clear Canvas or Start New Design"
+            aria-modal="true"
+            aria-label="Save Design as Template"
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
-              <div>
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  Clear Canvas or Start New Design
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Wipe the active canvas clean or open a fresh design of any diagram type.
-                </p>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800/80">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-950/60 border border-teal-200/80 dark:border-teal-800/70 flex items-center justify-center text-teal-700 dark:text-teal-400">
+                  <BookmarkPlus className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-display text-sm font-semibold text-slate-900 dark:text-white">
+                    Save Design as Template
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Reuse this {typeMeta.shortName.toLowerCase()} layout anytime via New from Template
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
-                onClick={() => setNewClearOpen(false)}
-                className="p-1.5 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                onClick={() => setSaveTemplateOpen(false)}
+                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-
-            <div className="p-5 space-y-5 max-h-[75vh] overflow-y-auto">
-              {/* Backup reminder if changes haven't been downloaded */}
-              {hasUndownloadedChanges && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/70">
-                  <div className="space-y-0.5">
-                    <div className="text-xs font-semibold text-teal-900 dark:text-teal-200">
-                      Download a .nexora backup before clearing or switching?
-                    </div>
-                    <div className="text-xs text-teal-800/80 dark:text-teal-300/80">
-                      Your work is auto-saved in IndexedDB, but keeping a desktop copy ensures you can always reopen it later.
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void handleSaveToDesktop(false)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-700 text-white text-xs font-medium hover:bg-teal-800 transition-colors whitespace-nowrap shrink-0"
-                  >
-                    <HardDriveDownload className="w-3.5 h-3.5" />
-                    <span>Download .nexora</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Clear current canvas bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
-                <div className="space-y-0.5">
-                  <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                    Clear Current {typeMeta.name}
-                  </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">
-                    Removes all elements on &quot;{doc.title}&quot; while keeping your title and settings (undoable with Cmd+Z).
-                  </div>
-                </div>
+            <form
+              className="p-5 space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void handleConfirmSaveAsTemplate();
+              }}
+            >
+              <label className="block">
+                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Template Name
+                </span>
+                <input
+                  autoFocus
+                  type="text"
+                  value={templateNameInput}
+                  onChange={(e) => setTemplateNameInput(e.target.value)}
+                  placeholder="e.g. Multi-Region AWS Architecture"
+                  className="mt-1.5 w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+                />
+              </label>
+              <div className="flex items-center justify-end gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={handleClearCurrentCanvas}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-red-200 dark:border-red-900/60 bg-white dark:bg-slate-900 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors whitespace-nowrap shrink-0"
+                  onClick={() => setSaveTemplateOpen(false)}
+                  className="px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#141F32]"
                 >
-                  <Eraser className="w-3.5 h-3.5" />
-                  <span>Clear Canvas</span>
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-teal-700 hover:bg-teal-600 text-white text-xs font-semibold transition-colors"
+                >
+                  Save Template
                 </button>
               </div>
-
-              {/* Start new design grouped by Nexora's 4 Modules */}
-              <div className="space-y-4">
-                <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Start Fresh Blank Design by Nexora Module
-                </div>
-                {NEXORA_MODULES.map((mod) => {
-                  const modTypes = DIAGRAM_TYPES.filter((dt) => dt.module === mod.id);
-                  return (
-                    <div key={mod.id} className="space-y-2">
-                      <div className="flex items-center gap-2 text-xs font-semibold text-slate-800 dark:text-slate-200">
-                        <NexoraModuleIcon module={mod.id} className="w-4 h-4 text-teal-700 dark:text-teal-400" />
-                        <span>{mod.name}</span>
-                        <span className="text-[11px] font-normal text-slate-400">
-                          — {mod.subtitle}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                        {modTypes.map((dt) => (
-                          <button
-                            key={dt.type}
-                            type="button"
-                            onClick={() => {
-                              setNewClearOpen(false);
-                              onStartNewDesign(dt.type);
-                            }}
-                            className="group flex flex-col text-left rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-teal-600 dark:hover:border-teal-500 transition-colors overflow-hidden"
-                          >
-                            <div className="px-3 pt-2.5 pb-1.5 bg-slate-50/70 dark:bg-slate-950/50 border-b border-slate-100 dark:border-slate-800/80">
-                              <DiagramTypeIllustration type={dt.type} className="w-full h-14" />
-                            </div>
-                            <div className="p-2.5">
-                              <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">
-                                {dt.name}
-                              </div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
-                                {dt.shortName} studio
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
@@ -1853,21 +1836,21 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
       {/* Keyboard Shortcuts Help Modal */}
       {shortcutsOpen && (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center p-4"
           onMouseDown={() => setShortcutsOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl p-5 space-y-4"
+            className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0D1422] border border-slate-200 dark:border-slate-800/90 shadow-2xl p-5 space-y-4 nx-menu-enter"
             onMouseDown={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <h3 className="font-display text-sm font-semibold text-slate-900 dark:text-slate-100">
                 Nexora Keyboard Shortcuts
               </h3>
               <button
                 type="button"
                 onClick={() => setShortcutsOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-700"
+                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1891,10 +1874,10 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               ].map(([desc, keys]) => (
                 <div
                   key={desc}
-                  className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0"
+                  className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800/80 last:border-0"
                 >
                   <span className="text-slate-600 dark:text-slate-300">{desc}</span>
-                  <kbd className="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+                  <kbd className="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-100 dark:bg-[#141F32] text-slate-700 dark:text-slate-200 border border-slate-200/70 dark:border-slate-700/70">
                     {keys}
                   </kbd>
                 </div>

@@ -34,6 +34,8 @@ import {
   NexoraModuleIcon,
 } from '../icons/ShapeIcons';
 import { PWAInstallButton } from '../pwa/PWAInstallButton';
+import { NexoraHamburgerMenu } from '../navigation/NexoraHamburgerMenu';
+import { NewDesignModal } from '../modals/NewDesignModal';
 import { importFromMermaid, importFromNativeJson } from '../../engine/exportImport';
 import {
   DesktopFileHandle,
@@ -65,6 +67,7 @@ interface HomeDashboardProps {
   onToggleStarDiagram: (id: string) => void;
   onDeleteCustomComponent: (id: string) => void;
   onDeleteCustomTemplate: (id: string) => void;
+  onOpenWorkspaceSettings: () => void;
 }
 
 function formatRelativeDate(iso: string): string {
@@ -96,6 +99,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   onToggleStarDiagram,
   onDeleteCustomComponent,
   onDeleteCustomTemplate,
+  onOpenWorkspaceSettings,
 }) => {
   const [section, setSection] = useState<HomeSection>('home');
   const [activeModule, setActiveModule] = useState<NexoraModuleId | 'all'>('all');
@@ -106,6 +110,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
   const [importError, setImportError] = useState<string | null>(null);
   const [statusNotice, setStatusNotice] = useState<string | null>(null);
   const [fileDropActive, setFileDropActive] = useState(false);
+  const [newModalOpen, setNewModalOpen] = useState(false);
+  const [newModalTab, setNewModalTab] = useState<'blank' | 'templates'>('blank');
 
   const folders = useMemo(() => {
     const set = new Set<string>(['All']);
@@ -268,15 +274,15 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
   return (
     <div
-      className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col relative"
+      className="min-h-screen nexora-studio-backdrop text-slate-900 dark:text-slate-100 flex flex-col relative"
       onDragOver={handleDragOverRoot}
       onDragLeave={handleDragLeaveRoot}
       onDrop={handleDropRoot}
     >
       {fileDropActive && (
         <div className="fixed inset-0 z-50 bg-teal-600/15 dark:bg-teal-500/20 backdrop-blur-[2px] flex items-center justify-center p-6 pointer-events-none">
-          <div className="px-8 py-6 rounded-2xl bg-white dark:bg-slate-900 border-2 border-dashed border-teal-600 shadow-2xl text-center space-y-2">
-            <FolderOpen className="w-8 h-8 text-teal-700 dark:text-teal-400 mx-auto" />
+          <div className="px-8 py-6 rounded-2xl bg-white dark:bg-[#0D1422] border-2 border-dashed border-teal-500 shadow-2xl text-center space-y-2">
+            <FolderOpen className="w-8 h-8 text-teal-600 dark:text-teal-400 mx-auto" />
             <div className="font-display text-base font-semibold text-slate-900 dark:text-white">
               Drop .nexora file to view &amp; edit
             </div>
@@ -287,22 +293,37 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
         </div>
       )}
       {/* Clean 3-Zone Top Bar Contract */}
-      <header className="sticky top-0 z-30 h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800">
+      <header className="sticky top-0 z-30 h-16 bg-white/90 dark:bg-[#0C121E]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between gap-8">
-          {/* Zone 1: Nexora Brand Logo & Wordmark */}
-          <button
-            type="button"
-            onClick={() => {
-              setSection('home');
-              setActiveModule('all');
-            }}
-            className="inline-flex items-center gap-2.5 whitespace-nowrap shrink-0 group"
-          >
-            <NexoraBrandLogo className="w-7 h-7 transition-transform group-hover:scale-105" />
-            <span className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              nexora
-            </span>
-          </button>
+          {/* Zone 1: Hamburger Menu + Nexora Brand Logo & Wordmark */}
+          <div className="flex items-center gap-3 shrink-0">
+            <NexoraHamburgerMenu
+              hasActiveDoc={false}
+              onNewFile={() => {
+                setNewModalTab('blank');
+                setNewModalOpen(true);
+              }}
+              onNewFromTemplate={() => {
+                setNewModalTab('templates');
+                setNewModalOpen(true);
+              }}
+              onOpenFile={() => void handleOpenPCanvasPicker()}
+              onOpenSettings={onOpenWorkspaceSettings}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setSection('home');
+                setActiveModule('all');
+              }}
+              className="inline-flex items-center gap-2.5 whitespace-nowrap shrink-0 group"
+            >
+              <NexoraBrandLogo className="w-7 h-7 transition-transform group-hover:scale-105" />
+              <span className="font-display text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                nexora
+              </span>
+            </button>
+          </div>
 
           {/* Zone 2: 4 Clean Text Nav Links */}
           <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
@@ -323,7 +344,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 }}
                 className={`py-1 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
                   section === key
-                    ? 'text-slate-900 dark:text-white border-teal-700 dark:border-teal-400'
+                    ? 'text-slate-900 dark:text-white border-teal-600 dark:border-teal-400'
                     : 'text-slate-500 dark:text-slate-400 border-transparent hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
@@ -332,13 +353,23 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             ))}
           </nav>
 
-          {/* Zone 3: Install App (auto-hides when installed) & New Creation */}
+          {/* Zone 3: Theme Toggle + New Creation */}
           <div className="flex items-center gap-2 shrink-0">
-            <PWAInstallButton compact className="hidden sm:inline-flex" />
             <button
               type="button"
-              onClick={() => onCreateBlank('flowchart')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-teal-700 text-white text-xs font-semibold hover:bg-teal-800 transition-colors whitespace-nowrap shrink-0"
+              onClick={onToggleDarkMode}
+              className="p-2 rounded-lg border border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#141F32] transition-colors shrink-0"
+              title={darkMode ? 'Switch to Light Studio' : 'Switch to Obsidian Dark'}
+            >
+              {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setNewModalTab('blank');
+                setNewModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-teal-700 hover:bg-teal-600 text-white text-xs font-semibold transition-colors whitespace-nowrap shrink-0 shadow-xs"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>New Creation</span>
@@ -348,7 +379,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
       </header>
 
       {/* Mobile Nav Strip */}
-      <div className="md:hidden flex items-center gap-4 px-6 py-2.5 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 overflow-x-auto text-xs font-medium">
+      <div className="md:hidden flex items-center gap-4 px-6 py-2.5 bg-white dark:bg-[#0C121E] border-b border-slate-200 dark:border-slate-800 overflow-x-auto text-xs font-medium">
         {(
           [
             ['home', 'Home'],
@@ -376,7 +407,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           <>
             {/* Section 1: Nexora Suite Brand Hero & 4-Module Hierarchy */}
             <section className="space-y-6">
-              <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 space-y-6 shadow-xs">
+              <div className="rounded-2xl bg-white dark:bg-[#0C121E] border border-slate-200/90 dark:border-slate-800/80 p-6 sm:p-8 space-y-6 shadow-xs">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                   <div className="flex items-center gap-4">
                     <NexoraBrandLogo className="w-12 h-12 shrink-0" />
@@ -394,7 +425,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     <button
                       type="button"
                       onClick={handleOpenPCanvasPicker}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400 transition-colors whitespace-nowrap shrink-0"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#111928] text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-teal-500/60 hover:text-teal-700 dark:hover:text-teal-300 transition-colors whitespace-nowrap shrink-0"
                       title="Open a .nexora or .pcanvas design file from your computer"
                     >
                       <FolderOpen className="w-3.5 h-3.5" />
@@ -403,16 +434,8 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     <PWAInstallButton />
                     <button
                       type="button"
-                      onClick={onToggleDarkMode}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 whitespace-nowrap shrink-0"
-                    >
-                      {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-                      <span>{darkMode ? 'Light' : 'Dark'}</span>
-                    </button>
-                    <button
-                      type="button"
                       onClick={() => setSection('templates')}
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400 transition-colors whitespace-nowrap shrink-0"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#111928] text-xs font-medium text-slate-700 dark:text-slate-200 hover:border-teal-500/60 hover:text-teal-700 dark:hover:text-teal-300 transition-colors whitespace-nowrap shrink-0"
                     >
                       <span>Templates</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -422,12 +445,12 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
 
                 {/* Subtle architectural connector bracket mirroring the Nexora brand system */}
                 <div className="hidden sm:block relative h-5 -mb-2" aria-hidden="true">
-                  <div className="absolute left-1/2 top-0 w-px h-2.5 bg-slate-300 dark:bg-slate-700" />
-                  <div className="absolute left-[12.5%] right-[12.5%] top-2.5 h-px bg-slate-300 dark:bg-slate-700" />
-                  <div className="absolute left-[12.5%] top-2.5 w-px h-2.5 bg-slate-300 dark:bg-slate-700" />
-                  <div className="absolute left-[37.5%] top-2.5 w-px h-2.5 bg-slate-300 dark:bg-slate-700" />
-                  <div className="absolute left-[62.5%] top-2.5 w-px h-2.5 bg-slate-300 dark:bg-slate-700" />
-                  <div className="absolute left-[87.5%] top-2.5 w-px h-2.5 bg-slate-300 dark:bg-slate-700" />
+                  <div className="absolute left-1/2 top-0 w-px h-2.5 bg-slate-300/80 dark:bg-slate-700/80" />
+                  <div className="absolute left-[12.5%] right-[12.5%] top-2.5 h-px bg-slate-300/80 dark:bg-slate-700/80" />
+                  <div className="absolute left-[12.5%] top-2.5 w-px h-2.5 bg-slate-300/80 dark:bg-slate-700/80" />
+                  <div className="absolute left-[37.5%] top-2.5 w-px h-2.5 bg-slate-300/80 dark:bg-slate-700/80" />
+                  <div className="absolute left-[62.5%] top-2.5 w-px h-2.5 bg-slate-300/80 dark:bg-slate-700/80" />
+                  <div className="absolute left-[87.5%] top-2.5 w-px h-2.5 bg-slate-300/80 dark:bg-slate-700/80" />
                 </div>
 
                 {/* 4 Nexora Module Suite Cards: Flow, Space, Sequence, Architect */}
@@ -444,15 +467,15 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                         }
                         className={`group flex flex-col items-center text-center p-5 rounded-xl border transition-all ${
                           isSelected
-                            ? 'bg-teal-50/80 dark:bg-teal-950/50 border-teal-600 dark:border-teal-500 ring-1 ring-teal-600/30'
-                            : 'bg-slate-50/70 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 hover:border-teal-600/60 dark:hover:border-teal-500/60'
+                            ? 'bg-teal-50/80 dark:bg-teal-950/45 border-teal-600 dark:border-teal-400/70 ring-1 ring-teal-500/25'
+                            : 'bg-slate-50/75 dark:bg-[#101827] border-slate-200/80 dark:border-slate-800/90 hover:border-teal-500/50 dark:hover:border-teal-400/50 hover:bg-white dark:hover:bg-[#131E30]'
                         }`}
                       >
                         <div
                           className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 transition-colors ${
                             isSelected
                               ? 'bg-teal-700 text-white'
-                              : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400'
+                              : 'bg-white dark:bg-[#0A101B] border border-slate-200/80 dark:border-slate-800 text-slate-700 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400'
                           }`}
                         >
                           <NexoraModuleIcon module={mod.id} className="w-5 h-5" />
@@ -498,7 +521,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   )}
                 </div>
 
-                {/* Visually Distinct Creation Cards */}
+                {/* Visually Distinct Creation Cards (clean unboxed module typography — zero static pills) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {visibleStudios.map((item) => {
                     const mod = NEXORA_MODULE_MAP[item.module];
@@ -507,9 +530,9 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                         key={item.type}
                         type="button"
                         onClick={() => onCreateBlank(item.type)}
-                        className="group flex flex-col text-left rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-600/70 dark:hover:border-teal-500/70 transition-colors overflow-hidden focus-visible:outline-2 focus-visible:outline-teal-700"
+                        className="group flex flex-col text-left rounded-xl bg-white dark:bg-[#0C121E] border border-slate-200/90 dark:border-slate-800/80 hover:border-teal-500/70 dark:hover:border-teal-400/60 transition-all overflow-hidden focus-visible:outline-2 focus-visible:outline-teal-600"
                       >
-                        <div className="w-full px-5 pt-4 pb-2 bg-slate-50/70 dark:bg-slate-950/40 border-b border-slate-100 dark:border-slate-800/80">
+                        <div className="w-full px-5 pt-4 pb-2 bg-slate-50/75 dark:bg-[#080D16] border-b border-slate-100 dark:border-slate-800/70">
                           <DiagramTypeIllustration
                             type={item.type}
                             className="w-full h-22 transition-transform duration-200 group-hover:scale-[1.03]"
@@ -517,13 +540,11 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                         </div>
                         <div className="p-4 space-y-1.5">
                           <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="font-display text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors truncate">
-                                {item.name}
-                              </span>
-                            </div>
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[10px] font-medium text-slate-600 dark:text-slate-300 shrink-0">
-                              <NexoraModuleIcon module={mod.id} className="w-2.5 h-2.5 text-teal-700 dark:text-teal-400" />
+                            <span className="font-display text-sm font-semibold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors truncate">
+                              {item.name}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400 shrink-0">
+                              <NexoraModuleIcon module={mod.id} className="w-3 h-3 text-teal-600 dark:text-teal-400" />
                               <span>{mod.name}</span>
                             </span>
                           </div>
@@ -539,7 +560,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             </section>
 
             {/* Always-Visible IndexedDB & Desktop Download Reminder */}
-            <section className="rounded-xl bg-teal-50/80 dark:bg-teal-950/35 border border-teal-200/80 dark:border-teal-900/60 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <section className="rounded-xl bg-teal-50/80 dark:bg-[#091822] border border-teal-200/80 dark:border-teal-900/50 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-start gap-3">
                 <div className="p-2 rounded-lg bg-teal-700/10 dark:bg-teal-400/10 text-teal-700 dark:text-teal-400 shrink-0 mt-0.5">
                   <Database className="w-4 h-4" />
@@ -549,14 +570,14 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     Auto-saved in Browser IndexedDB — Always Remember to Download Your Creations
                   </div>
                   <p className="text-xs text-teal-900/80 dark:text-teal-200/80 leading-relaxed">
-                    Every edit is automatically stored locally in IndexedDB so you can work offline anytime. Because clearing browser data can erase local storage, click <strong>Download .nexora</strong> on any project to keep a permanent backup on your desktop.
+                    Every edit is automatically stored locally in IndexedDB so you can work offline anytime. Click <strong>Download .nexora</strong> on any project to keep a permanent copy on your local drive.
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={handleOpenPCanvasPicker}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-teal-600/35 dark:border-teal-500/40 bg-white dark:bg-slate-900 text-xs font-semibold text-teal-800 dark:text-teal-200 hover:bg-teal-50 dark:hover:bg-teal-900/40 whitespace-nowrap shrink-0"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-teal-600/35 dark:border-teal-500/40 bg-white dark:bg-[#0D1422] text-xs font-semibold text-teal-800 dark:text-teal-200 hover:bg-teal-50 dark:hover:bg-teal-900/40 whitespace-nowrap shrink-0 transition-colors"
               >
                 <FolderOpen className="w-3.5 h-3.5" />
                 <span>Open Saved .nexora</span>
@@ -584,12 +605,12 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search creations..."
-                      className="pl-8 pr-3 py-1.5 text-xs rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 w-52 focus:outline-none focus:border-teal-600"
+                      className="pl-8 pr-3 py-1.5 text-xs rounded-lg bg-white dark:bg-[#0C121E] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 w-52 focus:outline-none focus:border-teal-500"
                     />
                   </div>
 
                   {/* Folder Filter Segmented Buttons */}
-                  <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                  <div className="flex items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-[#0C121E] border border-slate-200/80 dark:border-slate-800">
                     {folders.map((folder) => (
                       <button
                         key={folder}
@@ -597,7 +618,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                         onClick={() => setFolderFilter(folder)}
                         className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                           folderFilter === folder
-                            ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                            ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                         }`}
                       >
@@ -607,7 +628,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   </div>
 
                   {/* Import File Action */}
-                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-teal-600 cursor-pointer whitespace-nowrap shrink-0">
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0C121E] text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-teal-500 cursor-pointer whitespace-nowrap shrink-0 transition-colors">
                     <Upload className="w-3.5 h-3.5" />
                     <span>Import .nexora / Mermaid</span>
                     <input
@@ -643,7 +664,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   </p>
                 </div>
               ) : (
-                <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800">
+                <div className="rounded-xl bg-white dark:bg-[#0C121E] border border-slate-200/90 dark:border-slate-800/80 divide-y divide-slate-100 dark:divide-slate-800/80">
                   {filteredDiagrams.map((d) => {
                     const meta = DIAGRAM_TYPE_MAP[d.type];
                     const mod = NEXORA_MODULE_MAP[meta.module];
@@ -657,14 +678,14 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     return (
                       <div
                         key={d.id}
-                        className="group flex items-center justify-between gap-4 px-5 py-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
+                        className="group flex items-center justify-between gap-4 px-5 py-3.5 hover:bg-slate-50/80 dark:hover:bg-[#111928]/80 transition-colors"
                       >
                         <button
                           type="button"
                           onClick={() => onOpenDiagram(d)}
                           className="flex items-center gap-4 min-w-0 flex-1 text-left"
                         >
-                          <div className="w-16 h-11 rounded-md bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 p-1 shrink-0">
+                          <div className="w-16 h-11 rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200/80 dark:border-slate-800 p-1 shrink-0">
                             <DiagramTypeIllustration type={d.type} className="w-full h-full" />
                           </div>
                           <div className="min-w-0">
@@ -753,14 +774,14 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search templates..."
-                  className="pl-8 pr-3 py-2 text-xs rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-64 focus:outline-none focus:border-blue-500"
+                  className="pl-8 pr-3 py-2 text-xs rounded-lg bg-white dark:bg-[#0C121E] border border-slate-200 dark:border-slate-800 w-64 focus:outline-none focus:border-teal-500"
                 />
               </div>
             </div>
 
             {/* Nexora Module Filter Bar */}
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex flex-wrap items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+              <div className="flex flex-wrap items-center gap-1 p-1 rounded-lg bg-slate-100 dark:bg-[#0C121E] border border-slate-200/80 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => {
@@ -769,7 +790,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   }}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                     templateModuleFilter === 'all' && templateFilter === 'all'
-                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                      ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                       : 'text-slate-600 dark:text-slate-400'
                   }`}
                 >
@@ -785,7 +806,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     }}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                       templateModuleFilter === mod.id
-                        ? 'bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-300 shadow-xs'
+                        ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
                         : 'text-slate-600 dark:text-slate-400'
                     }`}
                   >
@@ -803,9 +824,9 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                 return (
                   <div
                     key={tpl.id}
-                    className="flex flex-col rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden"
+                    className="flex flex-col rounded-xl bg-white dark:bg-[#0C121E] border border-slate-200/90 dark:border-slate-800/80 overflow-hidden"
                   >
-                    <div className="px-6 py-5 bg-slate-50/70 dark:bg-slate-950/40 border-b border-slate-100 dark:border-slate-800">
+                    <div className="px-6 py-5 bg-slate-50/75 dark:bg-[#080D16] border-b border-slate-100 dark:border-slate-800/70">
                       <DiagramTypeIllustration type={tpl.category} className="w-full h-24" />
                     </div>
                     <div className="p-4 flex-1 flex flex-col justify-between gap-4">
@@ -921,12 +942,12 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
               </p>
             </div>
 
-            <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 space-y-5">
+            <div className="rounded-xl bg-white dark:bg-[#0C121E] border border-slate-200/90 dark:border-slate-800/80 p-6 space-y-5">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   Local Development Identity
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Switch roles to verify read-only Viewer mode versus full Owner/Editor workflows without configuring external cloud auth.
                 </p>
               </div>
@@ -942,7 +963,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     onChange={(e) =>
                       onUpdateProfile({ ...profile, workspaceName: e.target.value })
                     }
-                    className="mt-1 w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    className="mt-1 w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-teal-500"
                   />
                 </label>
 
@@ -955,7 +976,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                     onChange={(e) =>
                       onUpdateProfile({ ...profile, role: e.target.value as LocalUserRole })
                     }
-                    className="mt-1 w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    className="mt-1 w-full px-3 py-2 text-xs rounded-lg bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:outline-none focus:border-teal-500"
                   >
                     <option value="owner">Diagram Owner (Full Control)</option>
                     <option value="editor">Editor (Can Modify)</option>
@@ -969,17 +990,17 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                     Interface Appearance
                   </div>
-                  <div className="text-xs text-slate-500">
-                    Switch between Light Studio and Dark Slate workspace themes.
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    Switch between Crisp Light Studio and Obsidian Dark workspace themes.
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={onToggleDarkMode}
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#141F32] transition-colors"
                 >
-                  {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-                  <span>{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                  {darkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5" />}
+                  <span>{darkMode ? 'Light Mode' : 'Obsidian Dark'}</span>
                 </button>
               </div>
 
@@ -988,14 +1009,14 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
                   <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                     Install Nexora Desktop App (PWA)
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
                     Run Nexora as a standalone offline-ready desktop window on macOS, Windows, or ChromeOS.
                   </div>
                 </div>
                 <PWAInstallButton />
               </div>
 
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 tabular-nums">
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                 <span>Local Auto-Save Engine</span>
                 <span className="font-mono text-slate-700 dark:text-slate-300">
                   Nexora IndexedDB · {diagrams.length} creations · Export .nexora backups anytime
@@ -1005,6 +1026,16 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
           </section>
         )}
       </main>
+
+      <NewDesignModal
+        open={newModalOpen}
+        initialTab={newModalTab}
+        onClose={() => setNewModalOpen(false)}
+        customTemplates={customTemplates}
+        onCreateBlank={onCreateBlank}
+        onUseTemplate={onUseTemplate}
+        onDeleteCustomTemplate={onDeleteCustomTemplate}
+      />
     </div>
   );
 };
