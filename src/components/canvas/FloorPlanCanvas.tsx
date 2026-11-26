@@ -1351,10 +1351,18 @@ export const FloorPlanCanvas: React.FC<FloorPlanCanvasProps> = ({
               Math.max(w.y1, w.y2) >= Math.min(marquee.y1, marquee.y2) &&
               Math.min(w.y1, w.y2) <= Math.max(marquee.y1, marquee.y2);
             const isSel = isSelectedItem('wall', w.id) || inMarquee;
+            const hasCustomWallColor =
+              Boolean(w.color) &&
+              w.color !== '#F8FAFC' &&
+              w.color !== '#F6F5F1' &&
+              w.color !== '#F5F3EE' &&
+              w.color !== '#EAECEF';
             const wallColor = isSel
               ? '#2563EB'
               : isBlueprint
               ? '#E0F2FE'
+              : hasCustomWallColor
+              ? w.color!
               : darkMode
               ? '#CBD5E1'
               : '#1E293B';

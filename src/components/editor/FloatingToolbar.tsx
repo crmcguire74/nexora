@@ -21,9 +21,17 @@ import {
   DiagramObject,
   FragmentKind,
   SequenceMessageType,
+  SurfaceTextureId,
 } from '../../types/diagram';
 import { SWATCH_COLORS } from '../../engine/themes';
 import { getLibraryForType } from '../../engine/libraries';
+import {
+  ASSET_COLOR_SWATCHES,
+  FLOOR_COLOR_SWATCHES,
+  getTextureSwatchDataUrl,
+  SURFACE_TEXTURES,
+  WALL_COLOR_SWATCHES,
+} from '../../engine/floor3dMaterials';
 import { FloorSelectionItem } from '../canvas/FloorPlanCanvas';
 import { Tooltip } from '../ui/Tooltip';
 
@@ -51,6 +59,7 @@ interface FloatingToolbarProps {
   // Floorplan actions
   onFlipDoorSwing: () => void;
   onRotateFurniture: () => void;
+  onApplyFloorSurface?: (patch: { color?: string; texture?: SurfaceTextureId }) => void;
 }
 
 export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
@@ -75,16 +84,19 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   onWrapInFragment,
   onFlipDoorSwing,
   onRotateFurniture,
+  onApplyFloorSurface,
 }) => {
   const [showColors, setShowColors] = useState(false);
   const [showReplace, setShowReplace] = useState(false);
   const [showFragments, setShowFragments] = useState(false);
+  const [showFloorMaterial, setShowFloorMaterial] = useState(false);
 
   const hasStandard = selectedObjects.length > 0 || Boolean(selectedConnectionId);
   const hasSequence =
     doc.type === 'sequence' &&
     (selectedMessageIds.length > 0 || selectedParticipantIds.length > 0 || Boolean(selectedFragmentId));
   const hasFloor = doc.type === 'floorplan' && selectedFloorItems.length > 0;
+  const isFloor3D = doc.type === 'floorplan' && doc.floorplan?.viewMode === '3d';
 
   if (!hasStandard && !hasSequence && !hasFloor) return null;
 
@@ -99,7 +111,13 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   const replaceableItems = getLibraryForType(doc.type).filter((i) => i.category === 'shape');
 
   return (
-    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 px-2 py-1.5 rounded-xl bg-white/95 dark:bg-[#0C121E]/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 shadow-lg dark:shadow-black/50">
+    <div
+      className={`absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 px-2 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg dark:shadow-black/50 ${
+        isFloor3D
+          ? 'bg-white/95 dark:bg-[#0C121E]/95'
+          : 'bg-white/95 dark:bg-[#0C121E]/95 backdrop-blur-md'
+      }`}
+    >
       {multiCount >= 2 && (
         <>
           <span className="px-2 text-xs font-medium text-teal-700 dark:text-teal-300 tabular-nums whitespace-nowrap">
@@ -382,6 +400,94 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
       )}
 
       {/* Floor Plan Contextual Actions */}
+      {hasFloor && onApplyFloorSurface && (
+        <div className="relative">
+          <Tooltip
+            label="Surface Color & Texture"
+            description="Apply marble, wood, carpet, tile, brick, or paint colors to selected floorplan elements"
+            disabled={showFloorMaterial}
+          >
+            <button
+              type="button"
+              onClick={() => setShowFloorMaterial((s) => !s)}
+              className={`flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
+                showFloorMaterial
+                  ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300'
+                  : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <Palette className="w-3.5 h-3.5" />
+              <span>Finish</span>
+            </button>
+          </Tooltip>
+          {showFloorMaterial && (
+            <div className="absolute top-full left-0 mt-2 w-64 p-2.5 rounded-xl bg-white dark:bg-[#0D1422] border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-black/60 space-y-2.5 nx-menu-enter">
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">
+                  Textures
+                </div>
+                <div className="grid grid-cols-4 gap-1">
+                  {SURFACE_TEXTURES.filter((t) =>
+                    singleFloorItem?.kind === 'wall'
+                      ? t.forWalls
+                      : singleFloorItem?.kind === 'room'
+                      ? t.forFloors
+                      : t.forAssets
+                  )
+                    .slice(0, 12)
+                    .map((tex) => (
+                      <button
+                        key={tex.id}
+                        type="button"
+                        onClick={() => {
+                          onApplyFloorSurface({ texture: tex.id, color: tex.defaultTint });
+                          setShowFloorMaterial(false);
+                        }}
+                        className="flex flex-col items-center p-1 rounded-md border border-slate-200 dark:border-slate-800 hover:border-teal-500 transition-colors"
+                        title={tex.name}
+                      >
+                        <div
+                          className="w-full h-5 rounded-sm bg-cover bg-center border border-black/10"
+                          style={{
+                            backgroundImage: `url(${getTextureSwatchDataUrl(tex.id, tex.defaultTint)})`,
+                          }}
+                        />
+                        <span className="text-[9px] text-slate-600 dark:text-slate-300 truncate w-full text-center mt-0.5">
+                          {tex.name.split(' ')[0]}
+                        </span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">
+                  Paint / Tint
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(singleFloorItem?.kind === 'wall'
+                    ? WALL_COLOR_SWATCHES
+                    : singleFloorItem?.kind === 'room'
+                    ? FLOOR_COLOR_SWATCHES
+                    : ASSET_COLOR_SWATCHES
+                  ).map((sw) => (
+                    <button
+                      key={sw.hex}
+                      type="button"
+                      onClick={() => {
+                        onApplyFloorSurface({ color: sw.hex });
+                        setShowFloorMaterial(false);
+                      }}
+                      title={sw.name}
+                      className="w-5 h-5 rounded-md border border-slate-300 dark:border-slate-700 hover:scale-110 transition-transform"
+                      style={{ backgroundColor: sw.hex }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       {hasFloor && singleFloorItem?.kind === 'opening' && (
         <Tooltip
           label="Flip Door Swing"
@@ -401,6 +507,7 @@ export const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
         <Tooltip
           label="Rotate Item +45°"
           description="Rotate the selected furniture or fixture 45 degrees clockwise"
+          shortcut="R"
         >
           <button
             type="button"

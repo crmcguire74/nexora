@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
   BookmarkPlus,
+  Box,
   CheckCircle2,
   Command,
   Database,
@@ -11,6 +12,7 @@ import {
   HardDriveDownload,
   History,
   Keyboard,
+  Layers,
   Magnet,
   Map as MapIcon,
   Maximize2,
@@ -38,9 +40,11 @@ import {
   DiagramSnapshot,
   DiagramThemeId,
   DiagramType,
+  FloorRoom,
   FragmentKind,
   LocalProfile,
   SequenceMessageType,
+  SurfaceTextureId,
   ViewportState,
 } from '../../types/diagram';
 import {
@@ -54,6 +58,7 @@ import {
 import { applyAutoLayout, LayoutDirection } from '../../engine/layout';
 import { detectRoomsFromWalls, isUSUnit } from '../../engine/geometry';
 import { makeId } from '../../engine/templates';
+import { getDefaultAsset3DMetrics } from '../../engine/floor3dAssets';
 import {
   DesktopFileHandle,
   openDesignFromDesktop,
@@ -69,6 +74,7 @@ import { NewDesignModal } from '../modals/NewDesignModal';
 import { StandardCanvas } from '../canvas/StandardCanvas';
 import { SequenceCanvas } from '../canvas/SequenceCanvas';
 import { FloorPlanCanvas, FloorSelectionItem } from '../canvas/FloorPlanCanvas';
+import { FloorPlan3DCanvas } from '../canvas/FloorPlan3DCanvas';
 import { LeftLibraryPanel } from './LeftLibraryPanel';
 import { RightPropertiesPanel } from './RightPropertiesPanel';
 import { FloatingToolbar } from './FloatingToolbar';
@@ -756,7 +762,13 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
         setSelectedFloorItems([{ kind: 'opening', id: newOp.id }]);
         return;
       }
-      const furn = createFurnitureFromLibraryItem(item, 4.5 + Math.random() * 1.5, 3.5 + Math.random() * 1.5);
+      const metrics = getDefaultAsset3DMetrics(item.type);
+      const stagger = (fp.furniture.length % 5) * 0.45;
+      const furn = {
+        ...createFurnitureFromLibraryItem(item, 3.8 + stagger, 3.2 + stagger * 0.6),
+        height: metrics.height,
+        texture: metrics.defaultTexture,
+      };
       updateDoc({ ...doc, floorplan: { ...fp, furniture: [...fp.furniture, furn] } }, true);
       setSelectedFloorItems([{ kind: 'furniture', id: furn.id }]);
       return;
@@ -1026,6 +1038,65 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
 
             {doc.type === 'floorplan' && doc.floorplan ? (
               <div className="flex items-center gap-2">
+                {/* 2D Plan / 3D Studio View Switcher */}
+                <div
+                  className="flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-100 dark:bg-[#070B12] border border-slate-200/70 dark:border-slate-800"
+                  role="group"
+                  aria-label="Floor plan 2D or 3D mode"
+                >
+                  <Tooltip
+                    label="2D Floor Plan Mode"
+                    description="Precision architectural drafting with wall resizing, snap grid, and blueprint dimensions"
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateDoc(
+                          {
+                            ...doc,
+                            floorplan: { ...doc.floorplan!, viewMode: '2d' },
+                          },
+                          false
+                        )
+                      }
+                      className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md whitespace-nowrap transition-colors ${
+                        (doc.floorplan.viewMode ?? '2d') === '2d'
+                          ? 'bg-white dark:bg-[#141F32] text-teal-800 dark:text-teal-300 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      }`}
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      <span>2D</span>
+                    </button>
+                  </Tooltip>
+                  <Tooltip
+                    label="3D Studio & Walkthrough Mode"
+                    description="Explore, furnish, paint walls/textures, and walk through your space in interactive 3D"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        updateDoc(
+                          {
+                            ...doc,
+                            floorplan: { ...doc.floorplan!, viewMode: '3d' },
+                          },
+                          false
+                        );
+                        showToast('3D Studio active — Orbit, Walk, Drag Assets, or Paint Surfaces');
+                      }}
+                      className={`flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md whitespace-nowrap transition-colors ${
+                        doc.floorplan.viewMode === '3d'
+                          ? 'bg-teal-700 text-white shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      }`}
+                    >
+                      <Box className="w-3.5 h-3.5" />
+                      <span>3D View</span>
+                    </button>
+                  </Tooltip>
+                </div>
+
                 <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-100 dark:bg-[#070B12] border border-slate-200/70 dark:border-slate-800">
                   <Tooltip
                     label="Select & Resize Tool"
@@ -1624,6 +1695,61 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
                   true
                 );
               }}
+              onApplyFloorSurface={({ color, texture }) => {
+                if (!doc.floorplan || selectedFloorItems.length === 0) return;
+                const fpCur = doc.floorplan;
+                const wallIds = new Set(selectedFloorItems.filter((s) => s.kind === 'wall').map((s) => s.id));
+                const roomIds = new Set(selectedFloorItems.filter((s) => s.kind === 'room').map((s) => s.id));
+                const furnIds = new Set(selectedFloorItems.filter((s) => s.kind === 'furniture').map((s) => s.id));
+                const opIds = new Set(selectedFloorItems.filter((s) => s.kind === 'opening').map((s) => s.id));
+                updateDoc(
+                  {
+                    ...doc,
+                    floorplan: {
+                      ...fpCur,
+                      walls: fpCur.walls.map((w) =>
+                        wallIds.has(w.id)
+                          ? {
+                              ...w,
+                              ...(color ? { color } : {}),
+                              ...(texture ? { texture } : {}),
+                            }
+                          : w
+                      ),
+                      rooms: fpCur.rooms.map((r) =>
+                        roomIds.has(r.id)
+                          ? {
+                              ...r,
+                              ...(color ? { color } : {}),
+                              ...(texture
+                                ? { floorMaterial: texture as FloorRoom['floorMaterial'] }
+                                : {}),
+                            }
+                          : r
+                      ),
+                      furniture: fpCur.furniture.map((f) =>
+                        furnIds.has(f.id)
+                          ? {
+                              ...f,
+                              ...(color ? { color } : {}),
+                              ...(texture ? { texture } : {}),
+                            }
+                          : f
+                      ),
+                      openings: fpCur.openings.map((op) =>
+                        opIds.has(op.id)
+                          ? {
+                              ...op,
+                              ...(color ? { color } : {}),
+                              ...(texture ? { texture } : {}),
+                            }
+                          : op
+                      ),
+                    },
+                  },
+                  true
+                );
+              }}
             />
           )}
 
@@ -1647,21 +1773,41 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               onDropLibraryItemDone={() => setDraggingLibraryItem(null)}
             />
           ) : doc.type === 'floorplan' && doc.floorplan ? (
-            <FloorPlanCanvas
-              doc={doc}
-              darkMode={darkMode}
-              viewport={viewport}
-              onViewportChange={setViewport}
-              activeTool={floorTool}
-              onSetTool={setFloorTool}
-              selectedItems={selectedFloorItems}
-              onSelectItems={setSelectedFloorItems}
-              onUpdateDoc={updateDoc}
-              readOnly={readOnly}
-              svgRef={svgRef}
-              draggingLibraryItem={draggingLibraryItem}
-              onDropLibraryItemDone={() => setDraggingLibraryItem(null)}
-            />
+            doc.floorplan.viewMode === '3d' ? (
+              <FloorPlan3DCanvas
+                doc={doc}
+                darkMode={darkMode}
+                activeTool={floorTool}
+                onSetTool={setFloorTool}
+                selectedItems={selectedFloorItems}
+                onSelectItems={setSelectedFloorItems}
+                onUpdateDoc={updateDoc}
+                readOnly={readOnly}
+                draggingLibraryItem={draggingLibraryItem}
+                onDropLibraryItemDone={() => setDraggingLibraryItem(null)}
+                leftOpen={leftOpen}
+                rightOpen={rightOpen}
+                onToggleLeft={() => setLeftOpen((v) => !v)}
+                onToggleRight={() => setRightOpen((v) => !v)}
+                presentationMode={presentationMode}
+              />
+            ) : (
+              <FloorPlanCanvas
+                doc={doc}
+                darkMode={darkMode}
+                viewport={viewport}
+                onViewportChange={setViewport}
+                activeTool={floorTool}
+                onSetTool={setFloorTool}
+                selectedItems={selectedFloorItems}
+                onSelectItems={setSelectedFloorItems}
+                onUpdateDoc={updateDoc}
+                readOnly={readOnly}
+                svgRef={svgRef}
+                draggingLibraryItem={draggingLibraryItem}
+                onDropLibraryItemDone={() => setDraggingLibraryItem(null)}
+              />
+            )
           ) : (
             <StandardCanvas
               doc={doc}
@@ -1698,7 +1844,8 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
             </button>
           )}
 
-          {/* Bottom Canvas Toolbar */}
+          {/* Bottom Canvas Toolbar (2D Canvases — 3D Floorplan uses its own unified bottom dock) */}
+          {!(doc.type === 'floorplan' && doc.floorplan?.viewMode === '3d') && (
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 px-2 py-1 rounded-xl bg-white/95 dark:bg-[#0C121E]/95 backdrop-blur border border-slate-200/90 dark:border-slate-800 shadow-lg">
             {!presentationMode && (
               <Tooltip
@@ -1883,6 +2030,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
               </Tooltip>
             )}
           </div>
+          )}
 
           {/* Subtle Toast Feedback */}
           {toast && (
@@ -1896,6 +2044,7 @@ export const EditorWorkspace: React.FC<EditorWorkspaceProps> = ({
         {!presentationMode && rightOpen && (
           <RightPropertiesPanel
             doc={doc}
+            darkMode={darkMode}
             selectedObject={selectedObjects.length === 1 ? selectedObjects[0] : null}
             selectedConnection={selectedConnection}
             selectedParticipantId={singleParticipantId}

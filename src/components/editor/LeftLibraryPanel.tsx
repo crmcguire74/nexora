@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import {
+  Box,
   ChevronDown,
   ChevronRight,
   Eye,
@@ -15,6 +16,7 @@ import {
 import { CustomComponent, DiagramDocument } from '../../types/diagram';
 import { getLibraryForType, LibraryItem } from '../../engine/libraries';
 import { LibraryItemMiniIcon, SequenceRoleMiniIcon } from '../icons/ShapeIcons';
+import { LibraryItem3DThumb } from './Asset3DPreview';
 
 interface LeftLibraryPanelProps {
   doc: DiagramDocument;
@@ -62,8 +64,19 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
   const [tab, setTab] = useState<'library' | 'outline'>('library');
   const [query, setQuery] = useState('');
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [assetView3D, setAssetView3D] = useState<boolean>(
+    doc.type === 'floorplan' && doc.floorplan?.viewMode === '3d'
+  );
   const isDraggingRef = useRef(false);
   const lastDragEndRef = useRef(0);
+
+  // Sync default 3D library thumbnails when user switches floorplan between 2D and 3D
+  const floorViewMode = doc.floorplan?.viewMode;
+  React.useEffect(() => {
+    if (doc.type === 'floorplan' && floorViewMode) {
+      setAssetView3D(floorViewMode === '3d');
+    }
+  }, [doc.type, floorViewMode]);
 
   const items = useMemo(() => getLibraryForType(doc.type), [doc.type]);
 
@@ -141,9 +154,13 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
         }}
         className="group relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg border border-transparent hover:border-teal-500/40 dark:hover:border-teal-400/35 bg-slate-50/70 dark:bg-[#111928]/75 hover:bg-teal-50/50 dark:hover:bg-teal-950/35 transition-all cursor-grab active:cursor-grabbing text-left focus-visible:outline-2 focus-visible:outline-teal-500"
       >
-        {/* Pure, borderless icon silhouette stage — no square box trapping the icon */}
-        <div className="w-9 h-9 shrink-0 flex items-center justify-center transition-transform duration-150 group-hover:scale-110">
-          <LibraryItemMiniIcon item={item} darkMode={darkMode} className="w-7 h-7" />
+        {/* Pure, borderless icon silhouette stage — or live 3D studio render for Floor Plan assets */}
+        <div className="w-10 h-10 shrink-0 flex items-center justify-center transition-transform duration-150 group-hover:scale-110">
+          {doc.type === 'floorplan' && assetView3D ? (
+            <LibraryItem3DThumb item={item} className="w-10 h-10" />
+          ) : (
+            <LibraryItemMiniIcon item={item} darkMode={darkMode} className="w-7 h-7" />
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-xs font-medium text-slate-800 dark:text-slate-100 truncate">
@@ -224,9 +241,42 @@ export const LeftLibraryPanel: React.FC<LeftLibraryPanelProps> = ({
                 className="w-full pl-8 pr-2.5 py-1.5 text-xs rounded-lg bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 transition-colors"
               />
             </div>
-            <p className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-              Drag onto canvas or click to insert
-            </p>
+            <div className="mt-1.5 flex items-center justify-between gap-2">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Drag onto canvas or click to insert
+              </p>
+              {doc.type === 'floorplan' && (
+                <div
+                  className="inline-flex items-center p-0.5 rounded-md bg-slate-100 dark:bg-[#070B12] border border-slate-200/80 dark:border-slate-800 shrink-0"
+                  role="group"
+                  aria-label="Library asset preview mode"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setAssetView3D(false)}
+                    className={`px-1.5 py-0.5 text-[10px] font-semibold rounded transition-colors ${
+                      !assetView3D
+                        ? 'bg-white dark:bg-[#141F32] text-teal-700 dark:text-teal-300 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    2D
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAssetView3D(true)}
+                    className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold rounded transition-colors ${
+                      assetView3D
+                        ? 'bg-teal-600 text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <Box className="w-2.5 h-2.5" />
+                    <span>3D</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-4">

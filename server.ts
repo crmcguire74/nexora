@@ -240,12 +240,26 @@ async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
     const disableHmr = process.env.DISABLE_HMR === 'true';
+    const disableClientWsPlugin = {
+      name: 'nexora-disable-hmr-client-ws',
+      enforce: 'post' as const,
+      transform(code: string, id: string) {
+        if (id.includes('vite/dist/client/client.mjs')) {
+          return code.replace(
+            /transport\.connect\s*\(\s*createHMRHandler\s*\(\s*handleMessage\s*\)\s*\)\s*;?/,
+            '/* WebSocket disabled when DISABLE_HMR=true */'
+          );
+        }
+        return null;
+      },
+    };
     const vite = await createViteServer({
+      plugins: disableHmr ? [disableClientWsPlugin] : [],
       server: {
         middlewareMode: true,
         allowedHosts: true,
-        hmr: disableHmr ? false : { server: httpServer },
-        ws: disableHmr ? false : undefined,
+        hmr: disableHmr ? false : true,
+        ws: disableHmr ? false : { server: httpServer },
       },
       appType: 'spa',
     });

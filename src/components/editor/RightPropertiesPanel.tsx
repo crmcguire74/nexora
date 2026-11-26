@@ -16,9 +16,11 @@ import {
   DiagramDocument,
   DiagramObject,
   DiagramThemeId,
+  FloorRoom,
   FragmentKind,
   MeasurementUnit,
   SequenceMessageType,
+  SurfaceTextureId,
 } from '../../types/diagram';
 import { DIAGRAM_THEMES, PROTOCOL_STYLES, SWATCH_COLORS } from '../../engine/themes';
 import { LayoutDirection, validateDiagram } from '../../engine/layout';
@@ -31,9 +33,19 @@ import {
   metersToInputValue,
 } from '../../engine/geometry';
 import { makeId } from '../../engine/templates';
+import {
+  ASSET_COLOR_SWATCHES,
+  FLOOR_COLOR_SWATCHES,
+  SURFACE_TEXTURE_MAP,
+  WALL_COLOR_SWATCHES,
+} from '../../engine/floor3dMaterials';
+import { getDefaultAsset3DMetrics } from '../../engine/floor3dAssets';
+import { SurfaceMaterialPicker } from './SurfaceMaterialPicker';
+import { InteractiveAsset3DPreview } from './Asset3DPreview';
 
 interface RightPropertiesPanelProps {
   doc: DiagramDocument;
+  darkMode?: boolean;
   selectedObject: DiagramObject | null;
   selectedConnection: DiagramConnection | null;
   selectedParticipantId: string | null;
@@ -49,6 +61,7 @@ interface RightPropertiesPanelProps {
 
 export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
   doc,
+  darkMode = false,
   selectedObject,
   selectedConnection,
   selectedParticipantId,
@@ -509,6 +522,9 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
   // ==========================================
   if (doc.type === 'floorplan' && doc.floorplan && selectedFloorItem) {
     const fp = doc.floorplan;
+    const unitSuffix = getDimensionInputSuffix(fp.unit);
+    const dimStep = fp.unit === 'mm' ? 50 : fp.unit === 'cm' ? 5 : 0.1;
+    const dimMin = fp.unit === 'mm' ? 300 : fp.unit === 'cm' ? 30 : isUSUnit(fp.unit) ? 1 : 0.3;
 
     if (selectedFloorItem.kind === 'room') {
       const room = fp.rooms.find((r) => r.id === selectedFloorItem.id);
@@ -516,7 +532,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
         return (
           <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
             <div>
-              <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">Room</h3>
+              <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">Room &amp; Floor</h3>
               <p className="text-xs font-mono text-slate-500 dark:text-slate-400 tabular-nums mt-0.5">
                 Area: {formatArea(room.areaSqM, fp.unit)}
               </p>
@@ -541,66 +557,53 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   )
                 }
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
               />
             </label>
-            <label className="block">
-              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Floor Material</span>
-              <select
-                value={room.floorMaterial}
-                disabled={readOnly}
-                onChange={(e) =>
-                  onUpdateDoc(
-                    {
-                      ...doc,
-                      floorplan: {
-                        ...fp,
-                        rooms: fp.rooms.map((r) =>
-                          r.id === room.id
-                            ? { ...r, floorMaterial: e.target.value as typeof r.floorMaterial }
-                            : r
-                        ),
-                      },
+
+            <SurfaceMaterialPicker
+              title="Floor Texture & Color"
+              target="floor"
+              selectedTexture={(room.floorMaterial || 'hardwood') as SurfaceTextureId}
+              selectedColor={room.color || '#FFFFFF'}
+              colorSwatches={FLOOR_COLOR_SWATCHES}
+              disabled={readOnly}
+              onChangeTexture={(tex) =>
+                onUpdateDoc(
+                  {
+                    ...doc,
+                    floorplan: {
+                      ...fp,
+                      rooms: fp.rooms.map((r) =>
+                        r.id === room.id
+                          ? {
+                              ...r,
+                              floorMaterial: tex as FloorRoom['floorMaterial'],
+                              color:
+                                r.color === '#F8FAFC' || r.color === '#F0F9FF' || r.color === '#F0FDFA'
+                                  ? '#FFFFFF'
+                                  : r.color,
+                            }
+                          : r
+                      ),
                     },
-                    true
-                  )
-                }
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
-              >
-                <option value="hardwood">Hardwood</option>
-                <option value="carpet">Carpet</option>
-                <option value="tile">Ceramic Tile</option>
-                <option value="concrete">Polished Concrete</option>
-                <option value="marble">Stone / Marble</option>
-              </select>
-            </label>
-            <div>
-              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1.5">
-                Tint
-              </span>
-              <div className="flex gap-1.5">
-                {['#F8FAFC', '#F0F9FF', '#F0FDFA', '#FFFBEB', '#FEF2F2'].map((col) => (
-                  <button
-                    key={col}
-                    type="button"
-                    onClick={() =>
-                      onUpdateDoc(
-                        {
-                          ...doc,
-                          floorplan: {
-                            ...fp,
-                            rooms: fp.rooms.map((r) => (r.id === room.id ? { ...r, color: col } : r)),
-                          },
-                        },
-                        true
-                      )
-                    }
-                    className={`w-6 h-6 rounded border border-slate-300 dark:border-slate-700 ${room.color === col ? 'ring-2 ring-teal-500' : ''}`}
-                    style={{ backgroundColor: col }}
-                  />
-                ))}
-              </div>
-            </div>
+                  },
+                  true
+                )
+              }
+              onChangeColor={(hex) =>
+                onUpdateDoc(
+                  {
+                    ...doc,
+                    floorplan: {
+                      ...fp,
+                      rooms: fp.rooms.map((r) => (r.id === room.id ? { ...r, color: hex } : r)),
+                    },
+                  },
+                  true
+                )
+              }
+            />
           </aside>
         );
       }
@@ -609,17 +612,24 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
     if (selectedFloorItem.kind === 'furniture') {
       const f = fp.furniture.find((item) => item.id === selectedFloorItem.id);
       if (f) {
-        const unitSuffix = getDimensionInputSuffix(fp.unit);
-        const dimStep = fp.unit === 'mm' ? 50 : fp.unit === 'cm' ? 5 : 0.1;
-        const dimMin = fp.unit === 'mm' ? 300 : fp.unit === 'cm' ? 30 : isUSUnit(fp.unit) ? 1 : 0.3;
+        const metrics = getDefaultAsset3DMetrics(f.type);
+        const curHeight = f.height ?? metrics.height;
+        const curTex = f.texture ?? metrics.defaultTexture;
+
         return (
           <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
             <div>
-              <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">Furniture</h3>
+              <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                Asset &amp; 3D Model
+              </h3>
               <p className="text-xs font-mono text-slate-500 tabular-nums mt-0.5">
-                {formatLength(f.width, fp.unit)} × {formatLength(f.depth, fp.unit)}
+                {formatLength(f.width, fp.unit)} × {formatLength(f.depth, fp.unit)} × {formatLength(curHeight, fp.unit)}
               </p>
             </div>
+
+            {/* Interactive Rotatable 3D Asset Preview */}
+            <InteractiveAsset3DPreview furniture={f} darkMode={darkMode} />
+
             <label className="block">
               <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Label</span>
               <input
@@ -640,13 +650,14 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                     true
                   )
                 }
-                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
+                className="mt-1 w-full px-2.5 py-1.5 text-xs rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none text-slate-900 dark:text-slate-100"
               />
             </label>
-            <div className="grid grid-cols-2 gap-2">
+
+            <div className="grid grid-cols-3 gap-1.5">
               <label>
-                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
-                  Width ({unitSuffix})
+                <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                  W ({unitSuffix})
                 </span>
                 <input
                   type="number"
@@ -664,7 +675,7 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                             it.id === f.id
                               ? {
                                   ...it,
-                                  width: Math.max(0.3, inputValueToMeters(Number(e.target.value), fp.unit)),
+                                  width: Math.max(0.25, inputValueToMeters(Number(e.target.value), fp.unit)),
                                 }
                               : it
                           ),
@@ -677,8 +688,8 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 />
               </label>
               <label>
-                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
-                  Depth ({unitSuffix})
+                <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                  D ({unitSuffix})
                 </span>
                 <input
                   type="number"
@@ -696,7 +707,39 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                             it.id === f.id
                               ? {
                                   ...it,
-                                  depth: Math.max(0.3, inputValueToMeters(Number(e.target.value), fp.unit)),
+                                  depth: Math.max(0.25, inputValueToMeters(Number(e.target.value), fp.unit)),
+                                }
+                              : it
+                          ),
+                        },
+                      },
+                      true
+                    )
+                  }
+                  className="mt-1 w-full px-2 py-1.5 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
+                />
+              </label>
+              <label>
+                <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400">
+                  H ({unitSuffix})
+                </span>
+                <input
+                  type="number"
+                  step={dimStep}
+                  min={0.05}
+                  value={metersToInputValue(curHeight, fp.unit)}
+                  disabled={readOnly}
+                  onChange={(e) =>
+                    onUpdateDoc(
+                      {
+                        ...doc,
+                        floorplan: {
+                          ...fp,
+                          furniture: fp.furniture.map((it) =>
+                            it.id === f.id
+                              ? {
+                                  ...it,
+                                  height: Math.max(0.05, inputValueToMeters(Number(e.target.value), fp.unit)),
                                 }
                               : it
                           ),
@@ -709,33 +752,102 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 />
               </label>
             </div>
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
-                Rotation ({f.rotation}°)
-              </span>
-              <button
-                type="button"
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                  Rotation ({f.rotation}°)
+                </span>
+                <button
+                  type="button"
+                  disabled={readOnly}
+                  onClick={() =>
+                    onUpdateDoc(
+                      {
+                        ...doc,
+                        floorplan: {
+                          ...fp,
+                          furniture: fp.furniture.map((it) =>
+                            it.id === f.id ? { ...it, rotation: (it.rotation + 45) % 360 } : it
+                          ),
+                        },
+                      },
+                      true
+                    )
+                  }
+                  className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  <RotateCw className="w-3 h-3" />
+                  <span>+45°</span>
+                </button>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={355}
+                step={5}
+                value={f.rotation}
                 disabled={readOnly}
-                onClick={() =>
+                onChange={(e) =>
                   onUpdateDoc(
                     {
                       ...doc,
                       floorplan: {
                         ...fp,
                         furniture: fp.furniture.map((it) =>
-                          it.id === f.id ? { ...it, rotation: (it.rotation + 45) % 360 } : it
+                          it.id === f.id ? { ...it, rotation: Number(e.target.value) } : it
                         ),
                       },
                     },
-                    true
+                    false
                   )
                 }
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                <RotateCw className="w-3.5 h-3.5" />
-                <span>+45°</span>
-              </button>
+                className="w-full accent-teal-600"
+              />
             </div>
+
+            <SurfaceMaterialPicker
+              title="Asset Material & Color"
+              target="asset"
+              selectedTexture={curTex}
+              selectedColor={f.color || SURFACE_TEXTURE_MAP[curTex].defaultTint}
+              colorSwatches={ASSET_COLOR_SWATCHES}
+              disabled={readOnly}
+              onChangeTexture={(tex) =>
+                onUpdateDoc(
+                  {
+                    ...doc,
+                    floorplan: {
+                      ...fp,
+                      furniture: fp.furniture.map((it) =>
+                        it.id === f.id
+                          ? {
+                              ...it,
+                              texture: tex,
+                              color: SURFACE_TEXTURE_MAP[tex]?.defaultTint ?? it.color,
+                            }
+                          : it
+                      ),
+                    },
+                  },
+                  true
+                )
+              }
+              onChangeColor={(hex) =>
+                onUpdateDoc(
+                  {
+                    ...doc,
+                    floorplan: {
+                      ...fp,
+                      furniture: fp.furniture.map((it) =>
+                        it.id === f.id ? { ...it, color: hex } : it
+                      ),
+                    },
+                  },
+                  true
+                )
+              }
+            />
           </aside>
         );
       }
@@ -745,12 +857,16 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
       const w = fp.walls.find((item) => item.id === selectedFloorItem.id);
       if (w) {
         const len = Math.hypot(w.x2 - w.x1, w.y2 - w.y1);
+        const curHeight = w.height ?? fp.wallHeight ?? 2.75;
+        const curTex = w.texture ?? 'plaster';
+        const curColor = w.color || (w.kind === 'exterior' ? '#EAECEF' : '#F6F5F1');
+
         return (
           <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
             <div>
               <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100">Wall Segment</h3>
               <p className="text-xs font-mono text-slate-500 tabular-nums mt-0.5">
-                Length: {formatLength(len, fp.unit)}
+                Length: {formatLength(len, fp.unit)} · Height: {formatLength(curHeight, fp.unit)}
               </p>
             </div>
             <label className="block">
@@ -785,6 +901,262 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 </option>
               </select>
             </label>
+
+            <label className="block">
+              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                Wall Height ({unitSuffix})
+              </span>
+              <input
+                type="number"
+                step={dimStep}
+                min={0.5}
+                value={metersToInputValue(curHeight, fp.unit)}
+                disabled={readOnly}
+                onChange={(e) =>
+                  onUpdateDoc(
+                    {
+                      ...doc,
+                      floorplan: {
+                        ...fp,
+                        walls: fp.walls.map((it) =>
+                          it.id === w.id
+                            ? {
+                                ...it,
+                                height: Math.max(0.8, inputValueToMeters(Number(e.target.value), fp.unit)),
+                              }
+                            : it
+                        ),
+                      },
+                    },
+                    true
+                  )
+                }
+                className="mt-1 w-full px-2.5 py-1.5 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
+              />
+            </label>
+
+            <SurfaceMaterialPicker
+              title="Wall Finish & Paint Color"
+              target="wall"
+              selectedTexture={curTex}
+              selectedColor={curColor}
+              colorSwatches={WALL_COLOR_SWATCHES}
+              disabled={readOnly}
+              onChangeTexture={(tex) =>
+                onUpdateDoc(
+                  {
+                    ...doc,
+                    floorplan: {
+                      ...fp,
+                      walls: fp.walls.map((it) =>
+                        it.id === w.id
+                          ? {
+                              ...it,
+                              texture: tex,
+                              color:
+                                tex === 'brick' || tex === 'stone' || tex === 'hardwood' || tex === 'walnut'
+                                  ? SURFACE_TEXTURE_MAP[tex].defaultTint
+                                  : it.color ?? SURFACE_TEXTURE_MAP[tex].defaultTint,
+                            }
+                          : it
+                      ),
+                    },
+                  },
+                  true
+                )
+              }
+              onChangeColor={(hex) =>
+                onUpdateDoc(
+                  {
+                    ...doc,
+                    floorplan: {
+                      ...fp,
+                      walls: fp.walls.map((it) => (it.id === w.id ? { ...it, color: hex } : it)),
+                    },
+                  },
+                  true
+                )
+              }
+            />
+
+            {!readOnly && fp.walls.length > 1 && (
+              <button
+                type="button"
+                onClick={() =>
+                  onUpdateDoc(
+                    {
+                      ...doc,
+                      floorplan: {
+                        ...fp,
+                        walls: fp.walls.map((it) => ({
+                          ...it,
+                          color: curColor,
+                          texture: curTex,
+                        })),
+                      },
+                    },
+                    true
+                  )
+                }
+                className="w-full py-1.5 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#111928] hover:border-teal-500/60 text-[11px] font-semibold text-slate-700 dark:text-slate-200 transition-colors"
+              >
+                Apply Wall Finish to All Walls
+              </button>
+            )}
+          </aside>
+        );
+      }
+    }
+
+    if (selectedFloorItem.kind === 'opening') {
+      const op = fp.openings.find((item) => item.id === selectedFloorItem.id);
+      if (op) {
+        const isWin = op.kind === 'window';
+        const curH = op.height ?? (isWin ? 1.35 : 2.12);
+        const curSill = op.sillHeight ?? 0.9;
+        const curTex = op.texture ?? (isWin ? 'solid' : 'hardwood');
+        const curColor = op.color || (isWin ? '#F8FAFC' : '#B98A5D');
+
+        return (
+          <aside className="w-72 h-full shrink-0 bg-white dark:bg-[#0C121E] border-l border-slate-200 dark:border-slate-800/80 overflow-y-auto p-4 space-y-4">
+            <div>
+              <h3 className="text-xs font-semibold text-slate-900 dark:text-slate-100 capitalize">
+                {op.kind.replace('-', ' ')}
+              </h3>
+              <p className="text-xs font-mono text-slate-500 tabular-nums mt-0.5">
+                {formatLength(op.width, fp.unit)} wide × {formatLength(curH, fp.unit)} tall
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <label>
+                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                  Width ({unitSuffix})
+                </span>
+                <input
+                  type="number"
+                  step={dimStep}
+                  min={dimMin}
+                  value={metersToInputValue(op.width, fp.unit)}
+                  disabled={readOnly}
+                  onChange={(e) =>
+                    onUpdateDoc(
+                      {
+                        ...doc,
+                        floorplan: {
+                          ...fp,
+                          openings: fp.openings.map((it) =>
+                            it.id === op.id
+                              ? { ...it, width: Math.max(0.45, inputValueToMeters(Number(e.target.value), fp.unit)) }
+                              : it
+                          ),
+                        },
+                      },
+                      true
+                    )
+                  }
+                  className="mt-1 w-full px-2 py-1.5 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
+                />
+              </label>
+              <label>
+                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                  Height ({unitSuffix})
+                </span>
+                <input
+                  type="number"
+                  step={dimStep}
+                  min={0.4}
+                  value={metersToInputValue(curH, fp.unit)}
+                  disabled={readOnly}
+                  onChange={(e) =>
+                    onUpdateDoc(
+                      {
+                        ...doc,
+                        floorplan: {
+                          ...fp,
+                          openings: fp.openings.map((it) =>
+                            it.id === op.id
+                              ? { ...it, height: Math.max(0.4, inputValueToMeters(Number(e.target.value), fp.unit)) }
+                              : it
+                          ),
+                        },
+                      },
+                      true
+                    )
+                  }
+                  className="mt-1 w-full px-2 py-1.5 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
+                />
+              </label>
+            </div>
+
+            {isWin && (
+              <label className="block">
+                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                  Sill Height ({unitSuffix})
+                </span>
+                <input
+                  type="number"
+                  step={dimStep}
+                  min={0}
+                  value={metersToInputValue(curSill, fp.unit)}
+                  disabled={readOnly}
+                  onChange={(e) =>
+                    onUpdateDoc(
+                      {
+                        ...doc,
+                        floorplan: {
+                          ...fp,
+                          openings: fp.openings.map((it) =>
+                            it.id === op.id
+                              ? { ...it, sillHeight: Math.max(0, inputValueToMeters(Number(e.target.value), fp.unit)) }
+                              : it
+                          ),
+                        },
+                      },
+                      true
+                    )
+                  }
+                  className="mt-1 w-full px-2 py-1.5 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
+                />
+              </label>
+            )}
+
+            <SurfaceMaterialPicker
+              title={isWin ? 'Window Frame Finish' : 'Door & Frame Finish'}
+              target="asset"
+              selectedTexture={curTex}
+              selectedColor={curColor}
+              colorSwatches={ASSET_COLOR_SWATCHES}
+              disabled={readOnly}
+              onChangeTexture={(tex) =>
+                onUpdateDoc(
+                  {
+                    ...doc,
+                    floorplan: {
+                      ...fp,
+                      openings: fp.openings.map((it) =>
+                        it.id === op.id
+                          ? { ...it, texture: tex, color: SURFACE_TEXTURE_MAP[tex]?.defaultTint ?? it.color }
+                          : it
+                      ),
+                    },
+                  },
+                  true
+                )
+              }
+              onChangeColor={(hex) =>
+                onUpdateDoc(
+                  {
+                    ...doc,
+                    floorplan: {
+                      ...fp,
+                      openings: fp.openings.map((it) => (it.id === op.id ? { ...it, color: hex } : it)),
+                    },
+                  },
+                  true
+                )
+              }
+            />
           </aside>
         );
       }
@@ -1333,6 +1705,35 @@ export const RightPropertiesPanel: React.FC<RightPropertiesPanelProps> = ({
                 </>
               )}
             </select>
+          </label>
+
+          <label className="block pt-1">
+            <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+              Default Ceiling Height ({getDimensionInputSuffix(doc.floorplan.unit)})
+            </span>
+            <input
+              type="number"
+              step={doc.floorplan.unit === 'mm' ? 100 : doc.floorplan.unit === 'cm' ? 10 : 0.1}
+              min={1}
+              value={metersToInputValue(doc.floorplan.wallHeight ?? 2.75, doc.floorplan.unit)}
+              disabled={readOnly}
+              onChange={(e) =>
+                onUpdateDoc(
+                  {
+                    ...doc,
+                    floorplan: {
+                      ...doc.floorplan!,
+                      wallHeight: Math.max(
+                        1.2,
+                        inputValueToMeters(Number(e.target.value), doc.floorplan!.unit)
+                      ),
+                    },
+                  },
+                  true
+                )
+              }
+              className="mt-1 w-full px-2.5 py-1.5 text-xs font-mono tabular-nums rounded-md bg-slate-50 dark:bg-[#080D16] border border-slate-200 dark:border-slate-800 focus:border-teal-500 focus:outline-none"
+            />
           </label>
 
           <div className="space-y-2 pt-1">

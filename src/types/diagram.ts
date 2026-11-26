@@ -196,6 +196,31 @@ export interface SequenceData {
 // Floor Plan Semantic Model (Meters canonical)
 // ==========================================
 
+export type SurfaceTextureId =
+  | 'solid'
+  | 'plaster'
+  | 'hardwood'
+  | 'walnut'
+  | 'parquet'
+  | 'marble'
+  | 'carrara'
+  | 'granite'
+  | 'tile'
+  | 'subway-tile'
+  | 'terrazzo'
+  | 'carpet'
+  | 'fabric'
+  | 'leather'
+  | 'brick'
+  | 'stone'
+  | 'concrete'
+  | 'slate'
+  | 'metal'
+  | 'glass';
+
+export type FloorLightingPreset = 'daylight' | 'golden' | 'evening';
+export type FloorWallVisibility = 'full' | 'cutaway';
+
 export interface FloorWall {
   id: string;
   x1: number; // meters
@@ -204,6 +229,9 @@ export interface FloorWall {
   y2: number; // meters
   thickness: number; // meters (0.2 exterior, 0.12 interior)
   kind: 'exterior' | 'interior';
+  height?: number; // meters (default 2.75)
+  color?: string; // hex surface tint/paint color
+  texture?: SurfaceTextureId; // procedural PBR material finish
 }
 
 export interface FloorOpening {
@@ -214,13 +242,29 @@ export interface FloorOpening {
   width: number; // meters
   swing: 'left' | 'right';
   swingInward: boolean;
+  height?: number; // meters (doors ~2.1m, windows ~1.35m)
+  sillHeight?: number; // meters above floor for windows (~0.9m)
+  color?: string;
+  texture?: SurfaceTextureId;
 }
 
 export interface FloorRoom {
   id: string;
   name: string;
   roomType: string;
-  floorMaterial: 'hardwood' | 'carpet' | 'tile' | 'concrete' | 'marble';
+  floorMaterial:
+    | 'hardwood'
+    | 'walnut'
+    | 'parquet'
+    | 'carpet'
+    | 'tile'
+    | 'terrazzo'
+    | 'concrete'
+    | 'marble'
+    | 'carrara'
+    | 'stone'
+    | 'slate'
+    | 'solid';
   color: string;
   polygon: Array<{ x: number; y: number }>; // meters
   areaSqM: number;
@@ -235,8 +279,11 @@ export interface FloorFurniture {
   y: number; // meters (center)
   width: number; // meters
   depth: number; // meters
+  height?: number; // meters (3D height override)
+  elevation?: number; // meters off ground
   rotation: number; // degrees
   color: string;
+  texture?: SurfaceTextureId;
   layerId: string;
   locked?: boolean;
 }
@@ -248,6 +295,10 @@ export interface FloorPlanData {
   showDimensions: boolean;
   showFurniture: boolean;
   showRooms: boolean;
+  viewMode?: '2d' | '3d';
+  wallHeight?: number; // default wall height in meters (2.75)
+  lightingPreset?: FloorLightingPreset;
+  wallVisibility?: FloorWallVisibility;
   walls: FloorWall[];
   openings: FloorOpening[];
   rooms: FloorRoom[];
